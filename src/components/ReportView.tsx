@@ -1826,7 +1826,7 @@ export default function ReportView({
         {/* Kop Surat / Letterhead */}
         <div className="border-b-4 border-double border-slate-900 pb-4 text-center">
           <h1 className="text-2xl font-black tracking-tight uppercase text-slate-900">
-            {companyProfile?.name || "DN MANAJEMEN KEUANGAN"}
+            MANAJEMEN KEUANGAN APOTEK ASSYIFA FARMA CIDERES
           </h1>
           {companyProfile ? (
             <div className="text-[10px] text-slate-600 mt-1 space-y-0.5">
