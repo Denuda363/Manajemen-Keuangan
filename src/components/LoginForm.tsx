@@ -256,11 +256,11 @@ export default function LoginForm({ onLoginSuccess }: LoginFormProps) {
           <Sparkles className="w-8 h-8" />
         </motion.div>
         
-        <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight">
-          Fina<span className="text-indigo-600">Smart</span>
+        <h2 className="text-2xl font-black text-slate-900 tracking-tight uppercase">
+          DN <span className="text-indigo-600">Manajemen Keuangan</span>
         </h2>
         <p className="mt-2 text-sm text-slate-600 max-w-sm mx-auto">
-          Manajemen Keuangan Otomatis – Solusi cerdas atur pemasukan & pengeluaran Anda.
+          DN Manajemen Keuangan – Solusi cerdas atur pemasukan & pengeluaran usaha dan pribadi Anda.
         </p>
       </div>
 
@@ -415,7 +415,7 @@ export default function LoginForm({ onLoginSuccess }: LoginFormProps) {
           </motion.div>
 
         <p className="mt-6 text-center text-xs text-slate-400">
-          Hak Cipta © 2026 FinaSmart Keuangan. Berjalan aman pada peramban Anda.
+          Hak Cipta © 2026 DN Manajemen Keuangan. Berjalan aman pada peramban Anda.
         </p>
       </div>
     </div>

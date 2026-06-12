@@ -25,6 +25,18 @@ export interface User {
   email: string;
 }
 
+export interface CompanyProfile {
+  id: string;
+  name: string;
+  address: string;
+  phone: string;
+  email: string;
+  businessType: string;
+  npwp: string;
+  description: string;
+  updatedAt: string;
+}
+
 export interface BudgetLimit {
   category: string;
   limitAmount: number;

@@ -57,5 +57,12 @@ service cloud.firestore {
       allow create, update: if isValidId(transactionId) && incoming().id == transactionId && isValidTransaction(incoming());
       allow delete: if true;
     }
+
+    // 3. Company Profile Settings
+    match /company/{companyId} {
+      allow read, get, list: if true;
+      allow create, update: if isValidId(companyId) && incoming().id == companyId;
+      allow delete: if isValidId(companyId);
+    }
   }
 }

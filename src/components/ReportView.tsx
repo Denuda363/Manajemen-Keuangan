@@ -4,7 +4,7 @@
  */
 
 import { useState, useMemo } from "react";
-import { Transaction, CATEGORY_COLORS } from "../types";
+import { Transaction, CATEGORY_COLORS, CompanyProfile } from "../types";
 import { 
   TrendingUp, TrendingDown, CreditCard, Wallet, Calendar, 
   BarChart2, PieChart, ChevronLeft, ChevronRight, Activity,
@@ -20,6 +20,7 @@ interface ReportViewProps {
     name: string;
     email: string;
   };
+  companyProfile?: CompanyProfile | null;
 }
 
 const MONTH_NAMES = [
@@ -32,7 +33,7 @@ const MONTH_SHORT = [
   "Jul", "Agu", "Sep", "Okt", "Nov", "Des"
 ];
 
-export default function ReportView({ transactions, user }: ReportViewProps) {
+export default function ReportView({ transactions, user, companyProfile }: ReportViewProps) {
   // Filter types: "harian" (Tanggal), "mingguan" (Mingguan), "bulanan" (Bulan), "tahunan" (Tahun)
   const [filterType, setFilterType] = useState<"harian" | "mingguan" | "bulanan" | "tahunan">("bulanan");
   const [showPdfGuide, setShowPdfGuide] = useState(false);
@@ -1602,11 +1603,21 @@ export default function ReportView({ transactions, user }: ReportViewProps) {
         
         {/* Kop Surat / Letterhead */}
         <div className="border-b-4 border-double border-slate-900 pb-4 text-center">
-          <h1 className="text-2xl font-extrabold tracking-tight uppercase text-slate-900">FinaSmart Financial Statement</h1>
-          <p className="text-xs tracking-widest text-slate-500 uppercase mt-1">Sistem Laporan Pembukuan Kas Personal Terintegrasi</p>
+          <h1 className="text-2xl font-black tracking-tight uppercase text-slate-900">
+            {companyProfile?.name || "DN MANAJEMEN KEUANGAN"}
+          </h1>
+          {companyProfile ? (
+            <div className="text-[10px] text-slate-600 mt-1 space-y-0.5">
+              <p className="font-semibold">{companyProfile.businessType}</p>
+              <p>{companyProfile.address}</p>
+              <p className="font-mono">Telp: {companyProfile.phone} | Surel: {companyProfile.email} | NPWP: {companyProfile.npwp}</p>
+            </div>
+          ) : (
+            <p className="text-xs tracking-widest text-slate-500 uppercase mt-1">Sistem Laporan Pembukuan Kas Personal &amp; Bisnis Terintegrasi</p>
+          )}
           
           <div className="mt-4 flex justify-between items-center px-1 text-[9px] font-mono text-slate-500">
-            <span>Model: Sistem Kas Otomatis FinaSmart</span>
+            <span>Model: Sistem Kas DN Manajemen Keuangan</span>
             <span>Tanggal Cetak: {new Date().toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" })} WIB</span>
           </div>
         </div>
@@ -1614,8 +1625,8 @@ export default function ReportView({ transactions, user }: ReportViewProps) {
         {/* User Identity Info */}
         <div className="grid grid-cols-2 gap-4 text-xs pt-1">
           <div>
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Disusun Untuk:</span>
-            <p className="font-bold text-slate-800 text-sm mt-0.5">{user?.name || "Pengguna FinaSmart"}</p>
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Disusun Oleh/Untuk:</span>
+            <p className="font-bold text-slate-800 text-sm mt-0.5">{user?.name || "Pengguna Sistem"}</p>
             <p className="font-mono text-slate-500 text-[10px] mt-0.5">Username: @{user?.username || "user"}</p>
             <p className="text-slate-500 text-[10px]">Email: {user?.email || "-"}</p>
           </div>
@@ -1781,7 +1792,7 @@ export default function ReportView({ transactions, user }: ReportViewProps) {
           <div className="text-center h-20 flex flex-col justify-between">
             <span className="text-slate-600">Penanggung Jawab Laporan,</span>
             <div className="border-t border-slate-800 w-36 mx-auto pt-1">
-              <span className="font-bold block text-slate-900">{user?.name || "Pengguna FinaSmart"}</span>
+              <span className="font-bold block text-slate-900">{user?.name || "Staf Keuangan"}</span>
               <span className="text-[7px] text-slate-400 font-mono">ID: @{user?.username || "user"}</span>
             </div>
           </div>

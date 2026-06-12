@@ -4,14 +4,15 @@
  */
 
 import { useState, useEffect, useMemo, FormEvent } from "react";
-import { User, Transaction, INCOME_CATEGORIES, EXPENSE_CATEGORIES } from "../types";
+import { User, Transaction, INCOME_CATEGORIES, EXPENSE_CATEGORIES, CompanyProfile } from "../types";
 import { parseTransactionText } from "../utils/parser";
 import ReportView from "./ReportView";
 import TransactionsList from "./TransactionsList";
 import { 
   LogOut, Sparkles, Plus, Wallet, CreditCard, ChevronRight,
   TrendingUp, TrendingDown, DollarSign, Calendar, ListTodo, AlertTriangle, Check, BookOpen, PiggyBank,
-  LayoutDashboard, History, BarChart3, Target, Settings, Users, FolderTree, RefreshCw, Trash2, Edit2, ShieldAlert
+  LayoutDashboard, History, BarChart3, Target, Settings, Users, FolderTree, RefreshCw, Trash2, Edit2, ShieldAlert,
+  Building, MapPin, Phone, Mail, FileText, Cpu
 } from "lucide-react";
 import { motion } from "motion/react";
 import { collection, doc, setDoc, getDoc, getDocs, deleteDoc, updateDoc, query, where, onSnapshot, writeBatch } from "firebase/firestore";
@@ -63,7 +64,18 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
   const [expenseCategories, setExpenseCategories] = useState<string[]>(EXPENSE_CATEGORIES);
 
   // Settings sub-tab state
-  const [settingsActiveTab, setSettingsActiveTab] = useState<"pengguna" | "kategori" | "reset">("pengguna");
+  const [settingsActiveTab, setSettingsActiveTab] = useState<"pengguna" | "kategori" | "reset" | "perusahaan">("pengguna");
+
+  // Company Profile states
+  const [companyProfile, setCompanyProfile] = useState<CompanyProfile | null>(null);
+  const [isEditingCompany, setIsEditingCompany] = useState(false);
+  const [companyFormName, setCompanyFormName] = useState("");
+  const [companyFormAddress, setCompanyFormAddress] = useState("");
+  const [companyFormPhone, setCompanyFormPhone] = useState("");
+  const [companyFormEmail, setCompanyFormEmail] = useState("");
+  const [companyFormBusinessType, setCompanyFormBusinessType] = useState("");
+  const [companyFormNpwp, setCompanyFormNpwp] = useState("");
+  const [companyFormDescription, setCompanyFormDescription] = useState("");
 
   // User Management lists
   const [usersList, setUsersList] = useState<any[]>([]);
@@ -144,10 +156,37 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
       handleFirestoreError(error, OperationType.LIST, "users");
     });
 
+    // 4. Listen to Company Profile in real-time
+    const companyDocRef = doc(db, "company", "profile");
+    const unsubCompany = onSnapshot(companyDocRef, (docSnap) => {
+      if (docSnap.exists()) {
+        const data = docSnap.data() as CompanyProfile;
+        setCompanyProfile(data);
+      } else {
+        const defaultCompany: CompanyProfile = {
+          id: "profile",
+          name: "DN MANAJEMEN KEUANGAN",
+          address: "Gedung DN Biz Center, Lt. 5, Jl. Asia Afrika No. 120, Bandung, Jawa Barat",
+          phone: "+62 22 4567 890",
+          email: "support@dn-manajemen.co.id",
+          businessType: "Penyedia Jasa Solusi Keuangan & Operasional Usaha Mikro, Kecil, dan Menengah (UMKM)",
+          npwp: "31.456.789.2-401.000",
+          description: "Perusahaan finansial terpadu yang membantu bisnis Anda mencatat kas, setoran, serta mengawasi likuiditas perusahaan.",
+          updatedAt: new Date().toISOString()
+        };
+        setDoc(companyDocRef, defaultCompany).catch(err => {
+          console.error("Gagal inisialisasi profil perusahaan:", err);
+        });
+      }
+    }, (error) => {
+      console.warn("Profil perusahaan belum dimuat:", error);
+    });
+
     return () => {
       unsubUser();
       unsubTx();
       unsubUsersList();
+      unsubCompany();
     };
   }, [user.id]);
 
@@ -747,6 +786,57 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
     }
   };
 
+  // Company Profile action handlers
+  const startEditingCompany = () => {
+    if (companyProfile) {
+      setCompanyFormName(companyProfile.name);
+      setCompanyFormAddress(companyProfile.address);
+      setCompanyFormPhone(companyProfile.phone);
+      setCompanyFormEmail(companyProfile.email);
+      setCompanyFormBusinessType(companyProfile.businessType);
+      setCompanyFormNpwp(companyProfile.npwp);
+      setCompanyFormDescription(companyProfile.description);
+    } else {
+      setCompanyFormName("DN MANAJEMEN KEUANGAN");
+      setCompanyFormAddress("");
+      setCompanyFormPhone("");
+      setCompanyFormEmail("");
+      setCompanyFormBusinessType("");
+      setCompanyFormNpwp("");
+      setCompanyFormDescription("");
+    }
+    setIsEditingCompany(true);
+  };
+
+  const handleUpdateCompanyProfile = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!companyFormName.trim()) {
+      triggerToast("Nama perusahaan wajib diisi!");
+      return;
+    }
+
+    try {
+      const companyDocRef = doc(db, "company", "profile");
+      const updatedProfile: CompanyProfile = {
+        id: "profile",
+        name: companyFormName,
+        address: companyFormAddress,
+        phone: companyFormPhone,
+        email: companyFormEmail,
+        businessType: companyFormBusinessType,
+        npwp: companyFormNpwp,
+        description: companyFormDescription,
+        updatedAt: new Date().toISOString()
+      };
+      await setDoc(companyDocRef, updatedProfile);
+      setIsEditingCompany(false);
+      triggerToast("Profil perusahaan berhasil diperbarui!");
+    } catch (err: any) {
+      console.error("Gagal memperbarui profil perusahaan:", err);
+      triggerToast("Gagal memperbarui: " + err.message);
+    }
+  };
+
   // Compute spending over budget limits for the current month
   const budgetAlerts = useMemo(() => {
     const alerts: { category: string; spent: number; limit: number; pct: number }[] = [];
@@ -814,7 +904,9 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
               </svg>
             </div>
             <div>
-              <span className="text-xl font-black tracking-tight text-slate-900">FinaSmart</span>
+              <span className="text-xl font-black tracking-tight text-slate-900 uppercase">
+                DN <span className="text-indigo-600">Manajemen Keuangan</span>
+              </span>
               <span className="hidden leading-none sm:inline-block ml-4 px-3 py-1 bg-green-100/80 text-green-700 text-xs font-bold rounded-full border border-green-200/50">
                 Sistem Otomatis Aktif
               </span>
@@ -1404,7 +1496,7 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
             exit={{ opacity: 0, y: -12 }}
             className="space-y-6"
           >
-            <ReportView transactions={transactions} user={user} />
+            <ReportView transactions={transactions} user={user} companyProfile={companyProfile} />
           </motion.div>
         )}
 
@@ -1659,38 +1751,47 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
                 </div>
                 <div>
                   <h2 className="text-sm font-black text-slate-800 uppercase tracking-tight">Pengaturan Sistem</h2>
-                  <p className="text-[10px] text-slate-400 font-medium">Kelola akun pengguna, kustomisasi kategori anggaran & transaksi, serta reset basis data.</p>
+                  <p className="text-[10px] text-slate-400 font-medium">Kelola akun pengguna, profil perusahaan/institusi Anda, kustomisasi kategori anggaran & harian, serta reset data.</p>
                 </div>
               </div>
             </div>
 
             {/* Sub-navigation tabs block */}
-            <div className="flex bg-slate-100 p-1 rounded-xl max-w-md">
+            <div className="grid grid-cols-2 sm:grid-cols-4 bg-slate-100 p-1 rounded-2xl max-w-2xl gap-1.5">
               <button
                 onClick={() => setSettingsActiveTab("pengguna")}
-                className={`flex-1 py-2 text-center text-xs font-bold rounded-lg transition-all duration-200 flex items-center justify-center gap-1.5 cursor-pointer ${
+                className={`py-2.5 px-3 text-center text-xs font-bold rounded-xl transition-all duration-200 flex items-center justify-center gap-1.5 cursor-pointer ${
                   settingsActiveTab === "pengguna" ? "bg-white text-indigo-700 shadow-sm" : "text-slate-500 hover:text-slate-800"
                 }`}
               >
-                <Users className="w-3.5 h-3.5" />
+                <Users className="w-3.5 h-3.5 shrink-0" />
                 <span>Manajemen User</span>
               </button>
               <button
+                onClick={() => setSettingsActiveTab("perusahaan")}
+                className={`py-2.5 px-3 text-center text-xs font-bold rounded-xl transition-all duration-200 flex items-center justify-center gap-1.5 cursor-pointer ${
+                  settingsActiveTab === "perusahaan" ? "bg-white text-indigo-700 shadow-sm" : "text-slate-500 hover:text-slate-800"
+                }`}
+              >
+                <Building className="w-3.5 h-3.5 shrink-0" />
+                <span>Profil Perusahaan</span>
+              </button>
+              <button
                 onClick={() => setSettingsActiveTab("kategori")}
-                className={`flex-1 py-2 text-center text-xs font-bold rounded-lg transition-all duration-200 flex items-center justify-center gap-1.5 cursor-pointer ${
+                className={`py-2.5 px-3 text-center text-xs font-bold rounded-xl transition-all duration-200 flex items-center justify-center gap-1.5 cursor-pointer ${
                   settingsActiveTab === "kategori" ? "bg-white text-indigo-700 shadow-sm" : "text-slate-500 hover:text-slate-800"
                 }`}
               >
-                <FolderTree className="w-3.5 h-3.5" />
+                <FolderTree className="w-3.5 h-3.5 shrink-0" />
                 <span>Kategori</span>
               </button>
               <button
                 onClick={() => setSettingsActiveTab("reset")}
-                className={`flex-1 py-2 text-center text-xs font-bold rounded-lg transition-all duration-200 flex items-center justify-center gap-1.5 cursor-pointer ${
+                className={`py-2.5 px-3 text-center text-xs font-bold rounded-xl transition-all duration-200 flex items-center justify-center gap-1.5 cursor-pointer ${
                   settingsActiveTab === "reset" ? "bg-white text-red-700 shadow-sm" : "text-slate-500 hover:text-slate-800"
                 }`}
               >
-                <RefreshCw className="w-3.5 h-3.5" />
+                <RefreshCw className="w-3.5 h-3.5 shrink-0" />
                 <span>Reset Data</span>
               </button>
             </div>
@@ -1853,6 +1954,229 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
                     )}
                   </div>
                 </div>
+              </div>
+            )}
+
+            {/* Sub-tab: PROFIL PERUSAHAAN */}
+            {settingsActiveTab === "perusahaan" && (
+              <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm space-y-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-5">
+                  <div>
+                    <h3 className="text-base font-bold text-slate-800 flex items-center gap-1.5">
+                      <Building className="w-5 h-5 text-indigo-600 shrink-0" />
+                      <span>Identitas & Profil Perusahaan</span>
+                    </h3>
+                    <p className="text-[10px] text-slate-400 mt-0.5">Atur informasi formal lembaga Anda yang akan tercermin pada identitas sistem serta kop laporan keuangan.</p>
+                  </div>
+                  {!isEditingCompany && (
+                    <button
+                      onClick={startEditingCompany}
+                      className="px-4 py-2 border border-slate-200 hover:border-indigo-200 hover:bg-slate-50 bg-white text-slate-700 font-extrabold text-xs rounded-xl cursor-pointer flex items-center gap-1.5 transition-all"
+                    >
+                      <Edit2 className="w-4 h-4 text-indigo-600" />
+                      <span>Ubah Profil</span>
+                    </button>
+                  )}
+                </div>
+
+                {!isEditingCompany ? (
+                  <div className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100/80 space-y-3">
+                        <span className="text-[10px] font-black uppercase text-slate-400 tracking-wider block">Detail Utama Perusahaan</span>
+                        
+                        <div className="flex items-start gap-3">
+                          <Building className="w-4 h-4 text-slate-400 mt-0.5 shrink-0" />
+                          <div>
+                            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wide block">Nama Perusahaan</span>
+                            <span className="text-sm font-semibold text-slate-800">{companyProfile?.name || "DN MANAJEMEN KEUANGAN"}</span>
+                          </div>
+                        </div>
+
+                        <div className="flex items-start gap-3">
+                          <Cpu className="w-4 h-4 text-slate-400 mt-0.5 shrink-0" />
+                          <div>
+                            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wide block">Jenis Sektor Usaha</span>
+                            <span className="text-xs font-medium text-slate-700">{companyProfile?.businessType || "Penyedia Jasa Keuangan & Solusi Finansial UMKM"}</span>
+                          </div>
+                        </div>
+
+                        <div className="flex items-start gap-3">
+                          <FileText className="w-4 h-4 text-slate-400 mt-0.5 shrink-0" />
+                          <div>
+                            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wide block">Nomor Pokok Wajib Pajak (NPWP)</span>
+                            <span className="text-xs font-mono text-slate-700">{companyProfile?.npwp || "31.456.789.2-401.000"}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100/80 space-y-3">
+                        <span className="text-[10px] font-black uppercase text-slate-400 tracking-wider block">Kontak & Lokasi</span>
+
+                        <div className="flex items-start gap-3">
+                          <Phone className="w-4 h-4 text-slate-400 mt-0.5 shrink-0" />
+                          <div>
+                            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wide block">Saluran Kontak Telepon</span>
+                            <span className="text-xs font-medium text-slate-700">{companyProfile?.phone || "+62 22 4567 890"}</span>
+                          </div>
+                        </div>
+
+                        <div className="flex items-start gap-3">
+                          <Mail className="w-4 h-4 text-slate-400 mt-0.5 shrink-0" />
+                          <div>
+                            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wide block">Alamat Surel Resmi</span>
+                            <span className="text-xs font-medium text-slate-700">{companyProfile?.email || "support@dn-manajemen.co.id"}</span>
+                          </div>
+                        </div>
+
+                        <div className="flex items-start gap-3">
+                          <MapPin className="w-4 h-4 text-slate-400 mt-0.5 shrink-0" />
+                          <div>
+                            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wide block">Lokasi Alamat Kantor</span>
+                            <span className="text-xs font-semibold text-slate-700 leading-relaxed">{companyProfile?.address || "Gedung DN Biz Center, Lt. 5, Jl. Asia Afrika No. 120, Bandung, Jawa Barat"}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100/80">
+                      <div className="flex items-start gap-3">
+                        <BookOpen className="w-4 h-4 text-slate-400 mt-0.5 shrink-0" />
+                        <div>
+                          <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wide block">Deskripsi & Aktivitas Usaha</span>
+                          <p className="text-xs text-slate-600 mt-1 leading-relaxed italic">
+                            "{companyProfile?.description || "Perusahaan finansial terpadu yang membantu bisnis Anda mencatat kas, setoran, serta mengawasi likuiditas perusahaan."}"
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {companyProfile?.updatedAt && (
+                      <div className="text-right">
+                        <span className="text-[9px] font-medium text-slate-400 font-mono">Pembaruan Terakhir: {new Date(companyProfile.updatedAt).toLocaleString("id-ID")}</span>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <form onSubmit={handleUpdateCompanyProfile} className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wide flex items-center gap-1">
+                          <Building className="w-3.5 h-3.5" />
+                          <span>Nama Perusahaan *</span>
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          value={companyFormName}
+                          onChange={(e) => setCompanyFormName(e.target.value)}
+                          placeholder="Masukkan nama resmi perusahaan"
+                          className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-indigo-500 text-slate-800"
+                        />
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wide flex items-center gap-1">
+                          <Cpu className="w-3.5 h-3.5" />
+                          <span>Sektor/Jenis Usaha</span>
+                        </label>
+                        <input
+                          type="text"
+                          value={companyFormBusinessType}
+                          onChange={(e) => setCompanyFormBusinessType(e.target.value)}
+                          placeholder="Contoh: Perdagangan Ritel atau Jasa Konsultasi"
+                          className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-indigo-500 text-slate-800"
+                        />
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wide flex items-center gap-1">
+                          <FileText className="w-3.5 h-3.5" />
+                          <span>Nomor NPWP</span>
+                        </label>
+                        <input
+                          type="text"
+                          value={companyFormNpwp}
+                          onChange={(e) => setCompanyFormNpwp(e.target.value)}
+                          placeholder="xx.xxx.xxx.x-xxx.xxx"
+                          className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono focus:outline-indigo-500 text-slate-800"
+                        />
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wide flex items-center gap-1">
+                          <Phone className="w-3.5 h-3.5" />
+                          <span>Telepon Hubung</span>
+                        </label>
+                        <input
+                          type="text"
+                          value={companyFormPhone}
+                          onChange={(e) => setCompanyFormPhone(e.target.value)}
+                          placeholder="Contoh: 021-xxxxxxxx / 08xxxxxxxxxx"
+                          className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-indigo-500 text-slate-800"
+                        />
+                      </div>
+
+                      <div className="space-y-1.5 md:col-span-2">
+                        <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wide flex items-center gap-1">
+                          <Mail className="w-3.5 h-3.5" />
+                          <span>Surel (Email) Resmi</span>
+                        </label>
+                        <input
+                          type="email"
+                          value={companyFormEmail}
+                          onChange={(e) => setCompanyFormEmail(e.target.value)}
+                          placeholder="kontak@perusahaan.com"
+                          className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-indigo-500 text-slate-800"
+                        />
+                      </div>
+
+                      <div className="space-y-1.5 md:col-span-2">
+                        <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wide flex items-center gap-1">
+                          <MapPin className="w-3.5 h-3.5" />
+                          <span>Alamat Lengkap Kantor</span>
+                        </label>
+                        <textarea
+                          rows={2}
+                          value={companyFormAddress}
+                          onChange={(e) => setCompanyFormAddress(e.target.value)}
+                          placeholder="Jalan, Gedung, Kota, Provinsi, Kode Pos..."
+                          className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-indigo-500 text-slate-800"
+                        />
+                      </div>
+
+                      <div className="space-y-1.5 md:col-span-2">
+                        <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wide flex items-center gap-1">
+                          <BookOpen className="w-3.5 h-3.5" />
+                          <span>Deskripsi Singkat Aktivitas Bisnis</span>
+                        </label>
+                        <textarea
+                          rows={3}
+                          value={companyFormDescription}
+                          onChange={(e) => setCompanyFormDescription(e.target.value)}
+                          placeholder="Deskripsikan secara singkat bidang usaha Anda dan visi utama pembukuan..."
+                          className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-indigo-500 text-slate-800"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="flex gap-2 justify-end pt-3">
+                      <button
+                        type="button"
+                        onClick={() => setIsEditingCompany(false)}
+                        className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-xs rounded-xl cursor-pointer transition-all"
+                      >
+                        Batal
+                      </button>
+                      <button
+                        type="submit"
+                        className="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl cursor-pointer shadow-md shadow-indigo-100 transition-all"
+                      >
+                        Simpan Profil
+                      </button>
+                    </div>
+                  </form>
+                )}
               </div>
             )}
 
