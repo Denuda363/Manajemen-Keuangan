@@ -177,7 +177,20 @@ export default function ReportView({
 
   // Sort chronologically for printing ledgers cleanly
   const chronologicalTransactions = useMemo(() => {
-    return [...filteredTransactions].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    return [...filteredTransactions].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()).map(tx => ({
+      ...tx,
+      category: tx.category.replace(/\bGaji\b/gi, "Pendapatan / Omzet"),
+      description: tx.description ? tx.description.replace(/\bGaji\b/gi, "Pendapatan / Omzet") : tx.description
+    }));
+  }, [filteredTransactions]);
+
+  // To cover calculations as well without altering state upstream
+  const displayFilteredTransactions = useMemo(() => {
+    return filteredTransactions.map(tx => ({
+      ...tx,
+      category: tx.category.replace(/\bGaji\b/gi, "Pendapatan / Omzet"),
+      description: tx.description ? tx.description.replace(/\bGaji\b/gi, "Pendapatan / Omzet") : tx.description
+    }));
   }, [filteredTransactions]);
 
   // Calculations: core totals, splits, category weights
@@ -194,7 +207,7 @@ export default function ReportView({
     const expenseCategoryMap: Record<string, number> = {};
     const incomeCategoryMap: Record<string, number> = {};
 
-    filteredTransactions.forEach((tx) => {
+    displayFilteredTransactions.forEach((tx) => {
       const amt = tx.amount;
       if (tx.type === "pemasukan") {
         incomeTotal += amt;
@@ -239,9 +252,7 @@ export default function ReportView({
       categoriesExpense,
       categoriesIncome,
     };
-  }, [filteredTransactions]);
-
-  // Dynamic accurate balances computation for the specific PDF format requested
+  }, [displayFilteredTransactions]);
   const pdfMetrics = useMemo(() => {
     // 1. isBeforePeriod logic helper
     const isBeforePeriod = (dateStr: string) => {
@@ -299,7 +310,7 @@ export default function ReportView({
     let expenseTransferTotal = 0;
     let nabungTotal = 0;
 
-    filteredTransactions.forEach((tx) => {
+    displayFilteredTransactions.forEach((tx) => {
       const amt = tx.amount;
       if (tx.type === "pemasukan") {
         if (tx.method === "tunai") {
@@ -324,7 +335,7 @@ export default function ReportView({
       amount: incomeTunaiByCategory[cat]
     })).sort((a, b) => b.amount - a.amount);
 
-    const sisaSebelumNabung = incomeTunaiTotal - expenseTunaiTotal;
+    const sisaSebelumNabung = cashSaldoAwal + incomeTunaiTotal - expenseTunaiTotal;
     const sisaUangTunai = sisaSebelumNabung - nabungTotal;
     const rekeningSaldoAkhir = rekeningSaldoAwal + incomeTransferTotal + nabungTotal - expenseTransferTotal;
 
@@ -342,7 +353,7 @@ export default function ReportView({
       rekeningSaldoAkhir,
       totalIncomeCombine: incomeTunaiTotal + incomeTransferTotal
     };
-  }, [transactions, filteredTransactions, filterType, selectedDate, selectedMonth, selectedYear, weekRange]);
+  }, [transactions, displayFilteredTransactions, filterType, selectedDate, selectedMonth, selectedYear, weekRange]);
 
   // Export report to MS Excel compatible spreadsheet
   const exportToExcel = () => {
@@ -550,7 +561,12 @@ export default function ReportView({
       </html>
     `;
 
-    const blob = new Blob([htmlContent], { type: "application/vnd.ms-excel;charset=utf-8;" });
+    const processedHtmlContent = htmlContent
+      .replace(/\bGAJI\b/g, "PENDAPATAN / OMZET")
+      .replace(/\bGaji\b/g, "Pendapatan / Omzet")
+      .replace(/\bgaji\b/g, "pendapatan / omzet");
+
+    const blob = new Blob([processedHtmlContent], { type: "application/vnd.ms-excel;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
