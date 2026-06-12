@@ -151,8 +151,8 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
       handleFirestoreError(error, OperationType.GET, `users/${user.id}`);
     });
 
-    // 2. Listen to this user's transactions list
-    const qTx = query(collection(db, "transactions"), where("userId", "==", user.id));
+    // 2. Listen to all transactions list
+    const qTx = query(collection(db, "transactions"));
     const unsubTx = onSnapshot(qTx, (querySnapshot) => {
       const txs: Transaction[] = [];
       querySnapshot.forEach((docSnap) => {
@@ -334,7 +334,7 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
         const existingTx = transactions.find(t => t.id === editingTransactionId);
         const updatedTx: Transaction = {
           id: editingTransactionId,
-          userId: user.id,
+          userId: existingTx?.userId || user.id,
           type: formType,
           method: formMethod,
           amount: amountNum,
@@ -1459,8 +1459,8 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
                         onChange={(e) => setFormCategory(e.target.value)}
                       >
                         {formType === "pemasukan"
-                          ? incomeCategories.map(c => <option key={c} value={c}>{c}</option>)
-                          : expenseCategories.map(c => <option key={c} value={c}>{c}</option>)
+                          ? Array.from(new Set([...incomeCategories, ...(formCategory ? [formCategory] : [])])).map(c => <option key={c} value={c}>{c}</option>)
+                          : Array.from(new Set([...expenseCategories, ...(formCategory ? [formCategory] : [])])).map(c => <option key={c} value={c}>{c}</option>)
                         }
                       </select>
                     </div>
