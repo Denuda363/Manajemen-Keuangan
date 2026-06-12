@@ -425,7 +425,7 @@ export default function ReportView({
               <td colspan="2" style="font-weight: bold; color: #0f172a;">PENDAPATAN TUNAI</td>
             </tr>
             <tr>
-              <td style="padding-left: 20px; font-weight: 500; color: #475569;">SALDO AWAL TUNAI</td>
+              <td style="padding-left: 20px; font-weight: 500; color: #475569;">SALDO AWAL TUNAI/METKO KEMARIN</td>
               <td class="num" style="color: #475569;">Rp ${pdfMetrics.cashSaldoAwal.toLocaleString("id-ID")}</td>
             </tr>
             ${pdfMetrics.incomeTunaiList.length === 0 
@@ -1283,7 +1283,7 @@ export default function ReportView({
                 <div className="space-y-4">
                   <div className="bg-white p-4 rounded-xl border border-slate-200/60 shadow-2xs space-y-1.5">
                     <div className="font-extrabold text-indigo-950 uppercase tracking-wider text-[11px] border-b pb-1 border-slate-100 flex items-center justify-between">
-                      <span>SALDO AWAL KAS TUNAI</span>
+                      <span>SALDO AWAL KAS TUNAI/METKO KEMARIN</span>
                       <Wallet className="w-3.5 h-3.5 text-slate-400" />
                     </div>
                     <div className="flex justify-between text-[11px]">
@@ -1684,7 +1684,7 @@ export default function ReportView({
           <div className="space-y-1">
             <div className="font-extrabold">PENDAPATAN TUNAI</div>
             <div className="flex justify-between pl-6 font-medium text-slate-600 italic">
-              <span>SALDO AWAL KAS TUNAI</span>
+              <span>SALDO AWAL KAS TUNAI/METKO KEMARIN</span>
               <span>Rp {pdfMetrics.cashSaldoAwal.toLocaleString("id-ID")}</span>
             </div>
             {pdfMetrics.incomeTunaiList.length === 0 ? (
