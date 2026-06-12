@@ -812,13 +812,13 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
   // Company Profile action handlers
   const startEditingCompany = () => {
     if (companyProfile) {
-      setCompanyFormName(companyProfile.name);
-      setCompanyFormAddress(companyProfile.address);
-      setCompanyFormPhone(companyProfile.phone);
-      setCompanyFormEmail(companyProfile.email);
-      setCompanyFormBusinessType(companyProfile.businessType);
-      setCompanyFormNpwp(companyProfile.npwp);
-      setCompanyFormDescription(companyProfile.description);
+      setCompanyFormName(companyProfile.name || "");
+      setCompanyFormAddress(companyProfile.address || "");
+      setCompanyFormPhone(companyProfile.phone || "");
+      setCompanyFormEmail(companyProfile.email || "");
+      setCompanyFormBusinessType(companyProfile.businessType || "");
+      setCompanyFormNpwp(companyProfile.npwp || "");
+      setCompanyFormDescription(companyProfile.description || "");
     } else {
       setCompanyFormName("DN MANAJEMEN KEUANGAN");
       setCompanyFormAddress("");
@@ -842,13 +842,13 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
       const companyDocRef = doc(db, "company", "profile");
       const updatedProfile: CompanyProfile = {
         id: "profile",
-        name: companyFormName,
-        address: companyFormAddress,
-        phone: companyFormPhone,
-        email: companyFormEmail,
-        businessType: companyFormBusinessType,
-        npwp: companyFormNpwp,
-        description: companyFormDescription,
+        name: companyFormName || "",
+        address: companyFormAddress || "",
+        phone: companyFormPhone || "",
+        email: companyFormEmail || "",
+        businessType: companyFormBusinessType || "",
+        npwp: companyFormNpwp || "",
+        description: companyFormDescription || "",
         updatedAt: new Date().toISOString()
       };
       await setDoc(companyDocRef, updatedProfile);

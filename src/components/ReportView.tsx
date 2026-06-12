@@ -306,6 +306,10 @@ export default function ReportView({
     const incomeTunaiMap = new Map<string, { category: string, amount: number, dateStr: string }>();
     const expenseTunaiMap = new Map<string, { category: string, amount: number, dateStr: string }>();
 
+    // Income and Expense Transfer broken down by category in the selected period, including date for weekly/monthly
+    const incomeTransferMap = new Map<string, { category: string, amount: number, dateStr: string }>();
+    const expenseTransferMap = new Map<string, { category: string, amount: number, dateStr: string }>();
+
     let incomeTunaiTotal = 0;
     let incomeTransferTotal = 0;
     let expenseTunaiTotal = 0;
@@ -332,6 +336,10 @@ export default function ReportView({
           incomeTunaiMap.get(categoryLabel)!.amount += amt;
           incomeTunaiTotal += amt;
         } else {
+          if (!incomeTransferMap.has(categoryLabel)) {
+            incomeTransferMap.set(categoryLabel, { category: categoryLabel, amount: 0, dateStr: tx.date });
+          }
+          incomeTransferMap.get(categoryLabel)!.amount += amt;
           incomeTransferTotal += amt;
         }
       } else if (tx.type === "pengeluaran") {
@@ -342,6 +350,10 @@ export default function ReportView({
           expenseTunaiMap.get(categoryLabel)!.amount += amt;
           expenseTunaiTotal += amt;
         } else {
+          if (!expenseTransferMap.has(categoryLabel)) {
+            expenseTransferMap.set(categoryLabel, { category: categoryLabel, amount: 0, dateStr: tx.date });
+          }
+          expenseTransferMap.get(categoryLabel)!.amount += amt;
           expenseTransferTotal += amt;
         }
       } else if (tx.type === "nabung") {
@@ -355,6 +367,12 @@ export default function ReportView({
     const expenseTunaiList = Array.from(expenseTunaiMap.values())
       .sort((a, b) => new Date(a.dateStr).getTime() - new Date(b.dateStr).getTime() || b.amount - a.amount);
 
+    const incomeTransferList = Array.from(incomeTransferMap.values())
+      .sort((a, b) => new Date(a.dateStr).getTime() - new Date(b.dateStr).getTime() || b.amount - a.amount);
+      
+    const expenseTransferList = Array.from(expenseTransferMap.values())
+      .sort((a, b) => new Date(a.dateStr).getTime() - new Date(b.dateStr).getTime() || b.amount - a.amount);
+
     const sisaSebelumNabung = cashSaldoAwal + incomeTunaiTotal - expenseTunaiTotal;
     const sisaUangTunai = sisaSebelumNabung - nabungTotal;
     const rekeningSaldoAkhir = rekeningSaldoAwal + incomeTransferTotal + nabungTotal - expenseTransferTotal;
@@ -364,6 +382,8 @@ export default function ReportView({
       rekeningSaldoAwal,
       incomeTunaiList,
       expenseTunaiList,
+      incomeTransferList,
+      expenseTransferList,
       incomeTunaiTotal,
       expenseTunaiTotal,
       sisaSebelumNabung,
@@ -490,7 +510,19 @@ export default function ReportView({
 
             <!-- PENDAPATAN TRANSFER -->
             <tr>
-              <td class="bold" style="font-weight: bold; color: #000;">PENDAPATAN TRANSFER</td>
+              <td colspan="2" class="bold" style="font-weight: bold; color: #000;">PENDAPATAN TRANSFER</td>
+            </tr>
+            ${pdfMetrics.incomeTransferList.length === 0 
+              ? `<tr><td style="padding-left: 20px; font-style: italic; color: #64748b;">NIHIL</td><td class="num">Rp 0</td></tr>`
+              : pdfMetrics.incomeTransferList.map(item => `
+                  <tr>
+                    <td style="padding-left: 20px; font-weight: 500;">${item.category}</td>
+                    <td class="num">Rp ${item.amount.toLocaleString("id-ID")}</td>
+                  </tr>
+                `).join("")
+            }
+            <tr class="bg-total" style="background-color: #cbd5e1; font-weight: bold;">
+              <td style="font-weight: bold; padding-left: 20px;">TOTAL PENDAPATAN TF</td>
               <td class="num" style="font-weight: bold;">Rp ${pdfMetrics.incomeTransferTotal.toLocaleString("id-ID")}</td>
             </tr>
 
@@ -534,11 +566,18 @@ export default function ReportView({
               <td style="padding-left: 20px; font-weight: 500; color: #4f46e5;">NABUNG</td>
               <td class="num" style="color: #4f46e5;">Rp ${pdfMetrics.nabungTotal.toLocaleString("id-ID")}</td>
             </tr>
-            ${pdfMetrics.expenseTransferTotal > 0 
-              ? `<tr>
-                  <td style="padding-left: 20px; font-weight: 500; color: #dc2626; font-style: italic;">PENGELUARAN TF</td>
-                  <td class="num" style="color: #dc2626; font-style: italic;">-Rp ${pdfMetrics.expenseTransferTotal.toLocaleString("id-ID")}</td>
-                </tr>`
+            ${pdfMetrics.expenseTransferList.length > 0 
+              ? `<tr><td colspan="2" style="font-weight: bold; color: #dc2626; padding-left: 20px;">PENGELUARAN TF</td></tr>` +
+                pdfMetrics.expenseTransferList.map(item => `
+                <tr>
+                  <td style="padding-left: 30px; font-weight: 500; font-style: italic;">${item.category}</td>
+                  <td class="num" style="color: #dc2626; font-style: italic;">-Rp ${item.amount.toLocaleString("id-ID")}</td>
+                </tr>
+              `).join("") +
+              `<tr>
+                 <td style="padding-left: 20px; font-weight: bold; color: #dc2626;">TOTAL PENGELUARAN TF</td>
+                 <td class="num" style="color: #dc2626; font-weight: bold;">-Rp ${pdfMetrics.expenseTransferTotal.toLocaleString("id-ID")}</td>
+               </tr>`
               : ""
             }
             <tr class="bg-total" style="background-color: #0f172a; color: #ffffff; font-weight: 950; font-size: 12px;">
@@ -1393,9 +1432,21 @@ export default function ReportView({
                     <div className="font-extrabold text-indigo-950 uppercase tracking-wider text-[11px] border-b pb-1 border-slate-100">
                       PENDAPATAN TRANSFER
                     </div>
-                    <div className="flex justify-between text-[11px]">
-                      <span className="text-slate-600">RP</span>
-                      <span className="font-bold">{pdfMetrics.incomeTransferTotal.toLocaleString("id-ID")}</span>
+                    {pdfMetrics.incomeTransferList.length === 0 ? (
+                      <div className="text-slate-400 italic text-[11px] py-1">NIHIL</div>
+                    ) : (
+                      <div className="space-y-1">
+                        {pdfMetrics.incomeTransferList.map((item, idx) => (
+                          <div key={idx} className="flex justify-between text-[11px]">
+                            <span className="text-slate-600">{item.category}</span>
+                            <span className="font-bold">Rp {item.amount.toLocaleString("id-ID")}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    <div className="flex justify-between text-[11px] border-t border-slate-100 pt-1.5 mt-1">
+                      <span className="text-slate-600 font-bold">TOTAL PENDAPATAN TF</span>
+                      <span className="font-bold">Rp {pdfMetrics.incomeTransferTotal.toLocaleString("id-ID")}</span>
                     </div>
                     <div className="flex justify-between font-extrabold text-slate-900 border-t border-slate-100 pt-1.5 mt-1 text-[11px]">
                       <span>TOTAL PENDAPATAN</span>
@@ -1448,10 +1499,19 @@ export default function ReportView({
                           <span className="text-slate-400">NABUNG</span>
                           <span className="font-bold text-amber-400">Rp {pdfMetrics.nabungTotal.toLocaleString("id-ID")}</span>
                         </div>
-                        {pdfMetrics.expenseTransferTotal > 0 && (
-                          <div className="flex justify-between text-red-400 italic font-mono">
-                            <span className="text-slate-450 text-[10px]">PENGELUARAN TF</span>
-                            <span className="font-bold text-[10px]">-Rp {pdfMetrics.expenseTransferTotal.toLocaleString("id-ID")}</span>
+                        {pdfMetrics.expenseTransferList.length > 0 && (
+                          <div className="space-y-1 mt-2 mb-2 border-t border-slate-700/50 pt-2">
+                            <div className="text-[10px] font-bold text-red-400 mb-1">PENGELUARAN TF</div>
+                            {pdfMetrics.expenseTransferList.map((item, idx) => (
+                              <div key={idx} className="flex justify-between text-red-300 italic font-mono pl-2">
+                                <span className="text-slate-400 text-[10px]">{item.category}</span>
+                                <span className="font-bold text-[10px]">-Rp {item.amount.toLocaleString("id-ID")}</span>
+                              </div>
+                            ))}
+                            <div className="flex justify-between text-red-500 font-bold text-[10px] pt-1">
+                              <span>TOTAL PENGELUARAN TF</span>
+                              <span>-Rp {pdfMetrics.expenseTransferTotal.toLocaleString("id-ID")}</span>
+                            </div>
                           </div>
                         )}
                       </div>
@@ -1790,9 +1850,19 @@ export default function ReportView({
           {/* PENDAPATAN TRANSFER */}
           <div className="space-y-1 pt-1">
             <div className="font-extrabold">PENDAPATAN TRANSFER</div>
-            <div className="flex justify-between pl-6 font-medium">
-              <span>RP</span>
-              <span>{pdfMetrics.incomeTransferTotal.toLocaleString("id-ID")}</span>
+            {pdfMetrics.incomeTransferList.length === 0 ? (
+              <div className="pl-6 text-slate-500">NIHIL Rp 0</div>
+            ) : (
+              pdfMetrics.incomeTransferList.map((item, idx) => (
+                <div key={idx} className="flex justify-between pl-6 font-medium">
+                  <span>{item.category}</span>
+                  <span>Rp {item.amount.toLocaleString("id-ID")}</span>
+                </div>
+              ))
+            )}
+            <div className="flex justify-between font-extrabold border-t border-slate-900 pt-1 mt-1 pl-6">
+              <span>TOTAL PENDAPATAN TF</span>
+              <span>Rp {pdfMetrics.incomeTransferTotal.toLocaleString("id-ID")}</span>
             </div>
             <div className="flex justify-between font-extrabold border-t border-slate-900 pt-1 mt-1 pl-6">
               <span>TOTAL PENDAPATAN</span>
@@ -1838,10 +1908,19 @@ export default function ReportView({
                 <span>NABUNG</span>
                 <span>Rp {pdfMetrics.nabungTotal.toLocaleString("id-ID")}</span>
               </div>
-              {pdfMetrics.expenseTransferTotal > 0 && (
-                <div className="flex justify-between italic text-slate-700 font-medium">
-                  <span>PENGELUARAN TF</span>
-                  <span>-Rp {pdfMetrics.expenseTransferTotal.toLocaleString("id-ID")}</span>
+              {pdfMetrics.expenseTransferList.length > 0 && (
+                <div className="space-y-1">
+                  <div className="font-extrabold pb-1">PENGELUARAN TF</div>
+                  {pdfMetrics.expenseTransferList.map((item, idx) => (
+                    <div key={idx} className="flex justify-between italic text-slate-700 font-medium pl-6">
+                      <span>{item.category}</span>
+                      <span>-Rp {item.amount.toLocaleString("id-ID")}</span>
+                    </div>
+                  ))}
+                  <div className="flex justify-between font-extrabold border-t border-slate-900 pt-1 mt-1 pl-6">
+                    <span>TOTAL PENGELUARAN TF</span>
+                    <span>-Rp {pdfMetrics.expenseTransferTotal.toLocaleString("id-ID")}</span>
+                  </div>
                 </div>
               )}
               <div className="flex justify-between font-extrabold border-t-2 border-slate-900 pt-2 mt-2 text-sm text-[#000]">
