@@ -136,7 +136,7 @@ export function parseTransactionText(inputText: string): ParsedTransaction {
   if (type === "pemasukan") {
     category = "Lain-lain";
     if (/gaji|salary|gajian/i.test(lowerText)) {
-      category = "Gaji";
+      category = "Pendapatan";
     } else if (/saham|crypto|emas|dividen|invest/i.test(lowerText)) {
       category = "Investasi";
     } else if (/jual|laku|dagang|bisnis|omset|toko/i.test(lowerText)) {

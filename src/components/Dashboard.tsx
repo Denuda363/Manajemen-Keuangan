@@ -99,11 +99,24 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
   const [resetPin, setResetPin] = useState("");
   const [resetError, setResetError] = useState("");
 
+  // Initial Balance States
+  const [initialCashBalance, setInitialCashBalance] = useState<number>(0);
+  const [initialTransferBalance, setInitialTransferBalance] = useState<number>(0);
+  const [formInitialCash, setFormInitialCash] = useState<string>("0");
+  const [formInitialTransfer, setFormInitialTransfer] = useState<string>("0");
+  const [isSavingBalances, setIsSavingBalances] = useState(false);
+
+  // Auto-fill initial balance form fields when database changes
+  useEffect(() => {
+    setFormInitialCash(String(initialCashBalance));
+    setFormInitialTransfer(String(initialTransferBalance));
+  }, [initialCashBalance, initialTransferBalance]);
+
   // Load user-specific data from Firestore in real-time
   useEffect(() => {
     if (!user?.id) return;
 
-    // 1. Listen to user profile doc for budget limits & custom categories
+    // 1. Listen to user profile doc for budget limits, custom categories & initial balances
     const userDocRef = doc(db, "users", user.id);
     const unsubUser = onSnapshot(userDocRef, (docSnap) => {
       if (docSnap.exists()) {
@@ -111,6 +124,11 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
         if (data.incomeCategories) setIncomeCategories(data.incomeCategories);
         if (data.expenseCategories) setExpenseCategories(data.expenseCategories);
         if (data.budgetLimits) setBudgetLimits(data.budgetLimits);
+
+        const cashVal = Number(data.initialCashBalance) || 0;
+        const transVal = Number(data.initialTransferBalance) || 0;
+        setInitialCashBalance(cashVal);
+        setInitialTransferBalance(transVal);
       } else {
         // Automatically initialize user doc with fallback settings if it doesn't exist
         const defaultDoc = {
@@ -121,7 +139,9 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
           password: "",
           incomeCategories: INCOME_CATEGORIES,
           expenseCategories: EXPENSE_CATEGORIES,
-          budgetLimits: budgetLimits
+          budgetLimits: budgetLimits,
+          initialCashBalance: 0,
+          initialTransferBalance: 0
         };
         setDoc(userDocRef, defaultDoc).catch(err => {
           console.error("Gagal melakukan inisialisasi dokumen pengguna:", err);
@@ -216,8 +236,8 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
   const metrics = useMemo(() => {
     let totalPemasukan = 0;
     let totalPengeluaran = 0;
-    let cashBalance = 0;
-    let transferBalance = 0;
+    let cashBalance = initialCashBalance;
+    let transferBalance = initialTransferBalance;
     let pemasukanTunai = 0;
     let pemasukanTransfer = 0;
     let pengeluaranTunai = 0;
@@ -260,7 +280,7 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
       pengeluaranTunai,
       pengeluaranTransfer
     };
-  }, [transactions]);
+  }, [transactions, initialCashBalance, initialTransferBalance]);
 
   // Trigger adding Smart / automatic transaction
   const handleSmartSubmit = async (e: FormEvent) => {
@@ -837,6 +857,31 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
     }
   };
 
+  const handleSaveInitialBalances = async (e: FormEvent) => {
+    e.preventDefault();
+    const cash = Number(formInitialCash) || 0;
+    const trans = Number(formInitialTransfer) || 0;
+    if (cash < 0 || trans < 0) {
+      triggerToast("Saldo awal tidak boleh negatif!");
+      return;
+    }
+
+    setIsSavingBalances(true);
+    try {
+      const userDocRef = doc(db, "users", user.id);
+      await setDoc(userDocRef, {
+        initialCashBalance: cash,
+        initialTransferBalance: trans
+      }, { merge: true });
+      triggerToast("Saldo awal berhasil diperbarui!");
+    } catch (error: any) {
+      console.error("Gagal menyimpan saldo awal:", error);
+      triggerToast("Gagal menyimpan saldo: " + error.message);
+    } finally {
+      setIsSavingBalances(false);
+    }
+  };
+
   // Compute spending over budget limits for the current month
   const budgetAlerts = useMemo(() => {
     const alerts: { category: string; spent: number; limit: number; pct: number }[] = [];
@@ -1366,7 +1411,7 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
                           type="button"
                           onClick={() => {
                             setFormType("pemasukan");
-                            setFormCategory("Gaji");
+                            setFormCategory("Pendapatan");
                           }}
                           className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-colors cursor-pointer ${
                             formType === "pemasukan" ? "bg-emerald-600 text-white" : "text-slate-600 hover:bg-slate-100"
@@ -1953,6 +1998,69 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
                       ))
                     )}
                   </div>
+                </div>
+
+                {/* Initial Balances Card */}
+                <div id="settings-initial-balances" className="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm space-y-4">
+                  <div>
+                    <h3 className="text-sm font-bold text-slate-800 flex items-center gap-1.5">
+                      <Wallet className="w-4 h-4 text-indigo-600 shrink-0" />
+                      <span>Input Saldo Awal Utama</span>
+                    </h3>
+                    <p className="text-[10px] text-slate-400 mt-0.5">Atur jumlah modal/saldo dasar Anda sebelum ditambahkan transaksi masuk dan keluar.</p>
+                  </div>
+
+                  <form onSubmit={handleSaveInitialBalances} className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {/* Cash Balance */}
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-bold text-slate-500 uppercase flex items-center gap-1">
+                          <Wallet className="w-3.5 h-3.5 text-slate-400" />
+                          <span>Saldo Awal Tunai (Cash/Saku)</span>
+                        </label>
+                        <div className="relative">
+                          <span className="absolute left-3.5 top-2.5 text-xs font-bold text-slate-400">Rp</span>
+                          <input
+                            type="number"
+                            min="0"
+                            className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-indigo-500 text-slate-800"
+                            placeholder="0"
+                            value={formInitialCash}
+                            onChange={(e) => setFormInitialCash(e.target.value)}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Bank Balance */}
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-bold text-slate-500 uppercase flex items-center gap-1">
+                          <CreditCard className="w-3.5 h-3.5 text-slate-400" />
+                          <span>Saldo Awal Rekening (Transfer)</span>
+                        </label>
+                        <div className="relative">
+                          <span className="absolute left-3.5 top-2.5 text-xs font-bold text-slate-400">Rp</span>
+                          <input
+                            type="number"
+                            min="0"
+                            className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-indigo-500 text-slate-800"
+                            placeholder="0"
+                            value={formInitialTransfer}
+                            onChange={(e) => setFormInitialTransfer(e.target.value)}
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex justify-end pt-2.5 border-t border-slate-100">
+                      <button
+                        type="submit"
+                        disabled={isSavingBalances}
+                        className="px-4.5 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white rounded-xl text-xs font-bold cursor-pointer flex items-center gap-1 transition-colors shadow-sm"
+                      >
+                        {isSavingBalances ? "Menyimpan..." : "Simpan Saldo Awal"}
+                      </button>
+                    </div>
+                  </form>
                 </div>
               </div>
             )}

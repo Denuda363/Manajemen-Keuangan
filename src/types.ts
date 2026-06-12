@@ -50,7 +50,7 @@ export interface CategorySummary {
 }
 
 export const INCOME_CATEGORIES = [
-  "Gaji",
+  "Pendapatan",
   "Investasi",
   "Bisnis/Penjualan",
   "Hadiah/Bonus",
@@ -70,7 +70,8 @@ export const EXPENSE_CATEGORIES = [
 
 export const CATEGORY_COLORS: Record<string, string> = {
   // Income
-  "Gaji": "#10B981", // Emerald
+  "Pendapatan": "#10B981", // Emerald
+  "Gaji": "#10B981", // Emerald (fallback)
   "Investasi": "#3B82F6", // Blue
   "Bisnis/Penjualan": "#F59E0B", // Amber
   "Hadiah/Bonus": "#8B5CF6", // Purple
