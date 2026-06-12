@@ -58,6 +58,7 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
   // Savings ("Nabung") states
   const [savingsAmount, setSavingsAmount] = useState("");
   const [savingsDescription, setSavingsDescription] = useState("Setor tunai ke rekening bank");
+  const [savingsDate, setSavingsDate] = useState(new Date().toISOString().split("T")[0]);
 
   // Dynamic Categories states
   const [incomeCategories, setIncomeCategories] = useState<string[]>(INCOME_CATEGORIES);
@@ -442,7 +443,7 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
       amount: amt,
       category: "Tabungan",
       description: savingsDescription.trim() || "Setor tunai ke rekening bank",
-      date: new Date().toISOString().split("T")[0],
+      date: savingsDate || new Date().toISOString().split("T")[0],
       createdAt: new Date().toISOString()
     };
 
@@ -451,6 +452,7 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
       triggerToast(`Berhasil menabung Rp ${amt.toLocaleString("id-ID")} ke rekening!`);
       setSavingsAmount("");
       setSavingsDescription("Setor tunai ke rekening bank");
+      setSavingsDate(new Date().toISOString().split("T")[0]);
     } catch (error) {
       handleFirestoreError(error, OperationType.CREATE, `transactions/${newTx.id}`);
     }
@@ -1755,6 +1757,16 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
                     onChange={(e) => setSavingsAmount(e.target.value)}
                     placeholder="Contoh: 50000"
                     className="w-full mt-1.5 p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-extrabold font-mono focus:outline-indigo-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-[9px] uppercase font-extrabold text-slate-400 tracking-wider">Tanggal Nabung</label>
+                  <input
+                    type="date"
+                    value={savingsDate}
+                    onChange={(e) => setSavingsDate(e.target.value)}
+                    className="w-full mt-1.5 p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-extrabold focus:outline-indigo-500"
                   />
                 </div>
 
