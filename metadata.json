@@ -1,0 +1,6 @@
+{
+  "name": "Manajemen Keuangan",
+  "description": "Aplikasi manajemen keuangan praktis untuk kelola pemasukan dan pengeluaran harian (tunai/transfer) secara otomatis dengan rekap laporan harian, mingguan, bulanan, dan fitur login.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

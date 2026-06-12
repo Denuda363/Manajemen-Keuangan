@@ -1,0 +1,103 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: #f8fafc;
+}
+
+/* Customized scrollbar for reports and lists */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* ================= CUSTOM PRINT STYLES ================= */
+@media print {
+  /* Hide standard components entirely on print output */
+  header, 
+  nav, 
+  button, 
+  form, 
+  footer,
+  #toast-notification,
+  .no-print,
+  .print\:hidden {
+    display: none !important;
+  }
+
+  body {
+    background: white !important;
+    background-color: white !important;
+    color: black !important;
+  }
+
+  /* Force display of elements specially formatted for official printing */
+  .only-print {
+    display: block !important;
+  }
+
+  /* Style sheets for professional layout */
+  .print-container {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-shadow: none !important;
+    border: none !important;
+    background: white !important;
+    color: black !important;
+    padding: 0px !important;
+    margin: 0px !important;
+  }
+
+  /* High fidelity print table borders */
+  .print-table {
+    border-collapse: collapse !important;
+    width: 100% !important;
+    background: white !important;
+  }
+  
+  .print-table th {
+    border: 1px solid #1e293b !important;
+    background-color: #f1f5f9 !important;
+    color: #0f172a !important;
+    padding: 6px 8px !important;
+    font-weight: 700 !important;
+    font-size: 10px !important;
+    text-transform: uppercase !important;
+  }
+  
+  .print-table td {
+    border: 1px solid #cbd5e1 !important;
+    padding: 6px 8px !important;
+    color: #1e293b !important;
+    font-size: 10px !important;
+  }
+
+  .print-badge {
+    border: 1px solid #475569 !important;
+    color: #0f172a !important;
+    padding: 1px 4px !important;
+    font-weight: 600 !important;
+    font-size: 8px !important;
+    border-radius: 4px !important;
+    text-transform: uppercase !important;
+    background: transparent !important;
+  }
+}
+

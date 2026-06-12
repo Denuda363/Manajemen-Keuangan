@@ -1,0 +1,53 @@
+{
+  "entities": {
+    "User": {
+      "title": "User Profile",
+      "description": "User account details, preferences, custom categories, and budget limits.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "username": { "type": "string" },
+        "name": { "type": "string" },
+        "email": { "type": "string" },
+        "password": { "type": "string" },
+        "incomeCategories": {
+          "type": "array"
+        },
+        "expenseCategories": {
+          "type": "array"
+        },
+        "budgetLimits": {
+          "type": "object"
+        }
+      },
+      "required": ["id", "username", "name", "email", "password"]
+    },
+    "Transaction": {
+      "title": "Transaction",
+      "description": "Individual transaction detail containing cash flows.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "type": { "type": "string" },
+        "method": { "type": "string" },
+        "amount": { "type": "number" },
+        "category": { "type": "string" },
+        "description": { "type": "string" },
+        "date": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "userId", "type", "method", "amount", "category", "description", "date", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User identity and custom categories or budgets."
+    },
+    "/transactions/{transactionId}": {
+      "schema": "Transaction",
+      "description": "Financial transaction cash flows."
+    }
+  }
+}
