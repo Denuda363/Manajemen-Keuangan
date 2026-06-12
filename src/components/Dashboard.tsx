@@ -186,11 +186,11 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
       } else {
         const defaultCompany: CompanyProfile = {
           id: "profile",
-          name: "DN MANAJEMEN KEUANGAN",
-          address: "Gedung DN Biz Center, Lt. 5, Jl. Asia Afrika No. 120, Bandung, Jawa Barat",
+          name: "Apotek Assyifa Farma Cideres",
+          address: "Jl Raya Cideres Ds Cipaku Kec Kadipaten - Majalengka",
           phone: "+62 22 4567 890",
           email: "support@dn-manajemen.co.id",
-          businessType: "Penyedia Jasa Solusi Keuangan & Operasional Usaha Mikro, Kecil, dan Menengah (UMKM)",
+          businessType: "Apotek",
           npwp: "31.456.789.2-401.000",
           description: "Perusahaan finansial terpadu yang membantu bisnis Anda mencatat kas, setoran, serta mengawasi likuiditas perusahaan.",
           updatedAt: new Date().toISOString()
@@ -822,11 +822,11 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
       setCompanyFormNpwp(companyProfile.npwp || "");
       setCompanyFormDescription(companyProfile.description || "");
     } else {
-      setCompanyFormName("DN MANAJEMEN KEUANGAN");
-      setCompanyFormAddress("");
+      setCompanyFormName("Apotek Assyifa Farma Cideres");
+      setCompanyFormAddress("Jl Raya Cideres Ds Cipaku Kec Kadipaten - Majalengka");
       setCompanyFormPhone("");
       setCompanyFormEmail("");
-      setCompanyFormBusinessType("");
+      setCompanyFormBusinessType("Apotek");
       setCompanyFormNpwp("");
       setCompanyFormDescription("");
     }
@@ -2118,7 +2118,7 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
                           <Building className="w-4 h-4 text-slate-400 mt-0.5 shrink-0" />
                           <div>
                             <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wide block">Nama Perusahaan</span>
-                            <span className="text-sm font-semibold text-slate-800">{companyProfile?.name || "DN MANAJEMEN KEUANGAN"}</span>
+                            <span className="text-sm font-semibold text-slate-800">{companyProfile?.name || "Apotek Assyifa Farma Cideres"}</span>
                           </div>
                         </div>
 
@@ -2126,7 +2126,7 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
                           <Cpu className="w-4 h-4 text-slate-400 mt-0.5 shrink-0" />
                           <div>
                             <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wide block">Jenis Sektor Usaha</span>
-                            <span className="text-xs font-medium text-slate-700">{companyProfile?.businessType || "Penyedia Jasa Keuangan & Solusi Finansial UMKM"}</span>
+                            <span className="text-xs font-medium text-slate-700">{companyProfile?.businessType || "Apotek"}</span>
                           </div>
                         </div>
 
@@ -2162,7 +2162,7 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
                           <MapPin className="w-4 h-4 text-slate-400 mt-0.5 shrink-0" />
                           <div>
                             <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wide block">Lokasi Alamat Kantor</span>
-                            <span className="text-xs font-semibold text-slate-700 leading-relaxed">{companyProfile?.address || "Gedung DN Biz Center, Lt. 5, Jl. Asia Afrika No. 120, Bandung, Jawa Barat"}</span>
+                            <span className="text-xs font-semibold text-slate-700 leading-relaxed">{companyProfile?.address || "Jl Raya Cideres Ds Cipaku Kec Kadipaten - Majalengka"}</span>
                           </div>
                         </div>
                       </div>
