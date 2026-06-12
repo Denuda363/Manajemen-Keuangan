@@ -1200,7 +1200,7 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
                   <input
                     type="text"
                     className="w-full pl-4 pr-24 py-3.5 bg-slate-50 border-2 border-slate-100 rounded-2xl text-slate-800 text-sm focus:outline-none focus:border-indigo-500 focus:bg-white transition-all shadow-inner font-medium"
-                    placeholder="Contoh: 'beli bakso mami 25 ribu tunai' atau 'gaji bulanan bonus 5.5 jt transfer'"
+                    placeholder="Contoh: 'beli bakso mami 25 ribu tunai' atau 'pendapatan bulanan bonus 5.5 jt transfer'"
                     value={smartInput}
                     onChange={(e) => setSmartInput(e.target.value)}
                   />
@@ -1541,7 +1541,13 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
             exit={{ opacity: 0, y: -12 }}
             className="space-y-6"
           >
-            <ReportView transactions={transactions} user={user} companyProfile={companyProfile} />
+            <ReportView 
+              transactions={transactions} 
+              user={user} 
+              companyProfile={companyProfile} 
+              initialCashBalance={initialCashBalance}
+              initialTransferBalance={initialTransferBalance}
+            />
           </motion.div>
         )}
 

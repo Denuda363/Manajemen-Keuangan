@@ -66,7 +66,7 @@ export default function LoginForm({ onLoginSuccess }: LoginFormProps) {
             method: "transfer",
             amount: 7500000,
             category: "Pendapatan",
-            description: "Gaji Bulanan Utama",
+            description: "Pendapatan Bulanan Utama",
             date: lastMonth,
             createdAt: new Date(lastMonth).toISOString()
           },

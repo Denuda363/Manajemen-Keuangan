@@ -21,6 +21,8 @@ interface ReportViewProps {
     email: string;
   };
   companyProfile?: CompanyProfile | null;
+  initialCashBalance?: number;
+  initialTransferBalance?: number;
 }
 
 const MONTH_NAMES = [
@@ -33,7 +35,13 @@ const MONTH_SHORT = [
   "Jul", "Agu", "Sep", "Okt", "Nov", "Des"
 ];
 
-export default function ReportView({ transactions, user, companyProfile }: ReportViewProps) {
+export default function ReportView({ 
+  transactions, 
+  user, 
+  companyProfile,
+  initialCashBalance = 0,
+  initialTransferBalance = 0
+}: ReportViewProps) {
   // Filter types: "harian" (Tanggal), "mingguan" (Mingguan), "bulanan" (Bulan), "tahunan" (Tahun)
   const [filterType, setFilterType] = useState<"harian" | "mingguan" | "bulanan" | "tahunan">("bulanan");
   const [showPdfGuide, setShowPdfGuide] = useState(false);
@@ -258,8 +266,8 @@ export default function ReportView({ transactions, user, companyProfile }: Repor
     };
 
     // calculate starting balances based on ALL transactions prior to selected period
-    let cashSaldoAwal = 0;
-    let rekeningSaldoAwal = 0;
+    let cashSaldoAwal = initialCashBalance;
+    let rekeningSaldoAwal = initialTransferBalance;
 
     transactions.forEach((tx) => {
       if (isBeforePeriod(tx.date)) {
@@ -404,6 +412,10 @@ export default function ReportView({ transactions, user, companyProfile }: Repor
             <!-- PENDAPATAN TUNAI -->
             <tr style="background-color: #f1f5f9; font-weight: bold;">
               <td colspan="2" style="font-weight: bold; color: #0f172a;">PENDAPATAN TUNAI</td>
+            </tr>
+            <tr>
+              <td style="padding-left: 20px; font-weight: 500; color: #475569;">SALDO AWAL TUNAI</td>
+              <td class="num" style="color: #475569;">Rp ${pdfMetrics.cashSaldoAwal.toLocaleString("id-ID")}</td>
             </tr>
             ${pdfMetrics.incomeTunaiList.length === 0 
               ? `<tr><td style="padding-left: 20px; font-style: italic; color: #64748b;">NIHIL</td><td class="num">Rp 0</td></tr>`
@@ -1253,6 +1265,17 @@ export default function ReportView({ transactions, user, companyProfile }: Repor
                 
                 {/* Column 1: Pendapatan Tunai, Pengeluaran Tunai & Sisa */}
                 <div className="space-y-4">
+                  <div className="bg-white p-4 rounded-xl border border-slate-200/60 shadow-2xs space-y-1.5">
+                    <div className="font-extrabold text-indigo-950 uppercase tracking-wider text-[11px] border-b pb-1 border-slate-100 flex items-center justify-between">
+                      <span>SALDO AWAL KAS TUNAI</span>
+                      <Wallet className="w-3.5 h-3.5 text-slate-400" />
+                    </div>
+                    <div className="flex justify-between text-[11px]">
+                      <span className="text-slate-600">RP</span>
+                      <span className="font-bold text-slate-900">{pdfMetrics.cashSaldoAwal.toLocaleString("id-ID")}</span>
+                    </div>
+                  </div>
+
                   <div className="bg-white p-4 rounded-xl border border-slate-200/60 shadow-2xs space-y-2">
                     <div className="font-extrabold text-indigo-950 uppercase tracking-wider text-[11px] border-b pb-1 border-slate-100">
                       PENDAPATAN TUNAI
@@ -1644,6 +1667,10 @@ export default function ReportView({ transactions, user, companyProfile }: Repor
           {/* PENDAPATAN TUNAI */}
           <div className="space-y-1">
             <div className="font-extrabold">PENDAPATAN TUNAI</div>
+            <div className="flex justify-between pl-6 font-medium text-slate-600 italic">
+              <span>SALDO AWAL KAS TUNAI</span>
+              <span>Rp {pdfMetrics.cashSaldoAwal.toLocaleString("id-ID")}</span>
+            </div>
             {pdfMetrics.incomeTunaiList.length === 0 ? (
               <div className="pl-6 text-slate-500">NIHIL Rp 0</div>
             ) : (
