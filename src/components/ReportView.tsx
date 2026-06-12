@@ -351,7 +351,8 @@ export default function ReportView({
       expenseTransferTotal,
       sisaUangTunai,
       rekeningSaldoAkhir,
-      totalIncomeCombine: incomeTunaiTotal + incomeTransferTotal
+      totalIncomeCombine: incomeTunaiTotal + incomeTransferTotal,
+      totalIncomePlusMetko: incomeTunaiTotal + incomeTransferTotal + cashSaldoAwal
     };
   }, [transactions, displayFilteredTransactions, filterType, selectedDate, selectedMonth, selectedYear, weekRange]);
 
@@ -425,7 +426,7 @@ export default function ReportView({
               <td colspan="2" style="font-weight: bold; color: #0f172a;">PENDAPATAN TUNAI</td>
             </tr>
             <tr>
-              <td style="padding-left: 20px; font-weight: 500; color: #475569;">SALDO AWAL TUNAI/METKO KEMARIN</td>
+              <td style="padding-left: 20px; font-weight: 500; color: #475569;">SALDO AWAL KAS TUNAI / METKO KEMARIN</td>
               <td class="num" style="color: #475569;">Rp ${pdfMetrics.cashSaldoAwal.toLocaleString("id-ID")}</td>
             </tr>
             ${pdfMetrics.incomeTunaiList.length === 0 
@@ -464,6 +465,12 @@ export default function ReportView({
             <tr class="bg-total" style="background-color: #cbd5e1; font-weight: bold;">
               <td class="bold" style="font-weight: bold;">TOTAL PENDAPATAN</td>
               <td class="num" style="font-weight: bold;">Rp ${pdfMetrics.totalIncomeCombine.toLocaleString("id-ID")}</td>
+            </tr>
+
+            <!-- TOTAL PENDAPATAN + METKO KEMARIN -->
+            <tr class="bg-total" style="background-color: #94a3b8; font-weight: bold; color: #fff;">
+              <td class="bold" style="font-weight: bold;">TOTAL PENDAPATAN + METKO KEMARIN</td>
+              <td class="num" style="font-weight: bold;">Rp ${pdfMetrics.totalIncomePlusMetko.toLocaleString("id-ID")}</td>
             </tr>
 
             <!-- NABUNG -->
@@ -1283,7 +1290,7 @@ export default function ReportView({
                 <div className="space-y-4">
                   <div className="bg-white p-4 rounded-xl border border-slate-200/60 shadow-2xs space-y-1.5">
                     <div className="font-extrabold text-indigo-950 uppercase tracking-wider text-[11px] border-b pb-1 border-slate-100 flex items-center justify-between">
-                      <span>SALDO AWAL KAS TUNAI/METKO KEMARIN</span>
+                      <span>SALDO AWAL KAS TUNAI / METKO KEMARIN</span>
                       <Wallet className="w-3.5 h-3.5 text-slate-400" />
                     </div>
                     <div className="flex justify-between text-[11px]">
@@ -1348,6 +1355,10 @@ export default function ReportView({
                     <div className="flex justify-between font-extrabold text-slate-900 border-t border-slate-100 pt-1.5 mt-1 text-[11px]">
                       <span>TOTAL PENDAPATAN</span>
                       <span className="text-indigo-700">Rp {pdfMetrics.totalIncomeCombine.toLocaleString("id-ID")}</span>
+                    </div>
+                    <div className="flex justify-between font-extrabold text-slate-900 border-t border-slate-100 pt-1.5 mt-1 text-[11px]">
+                      <span>TOTAL PENDAPATAN + METKO KEMARIN</span>
+                      <span className="text-indigo-700">Rp {pdfMetrics.totalIncomePlusMetko.toLocaleString("id-ID")}</span>
                     </div>
                   </div>
 
@@ -1684,7 +1695,7 @@ export default function ReportView({
           <div className="space-y-1">
             <div className="font-extrabold">PENDAPATAN TUNAI</div>
             <div className="flex justify-between pl-6 font-medium text-slate-600 italic">
-              <span>SALDO AWAL KAS TUNAI/METKO KEMARIN</span>
+              <span>SALDO AWAL KAS TUNAI / METKO KEMARIN</span>
               <span>Rp {pdfMetrics.cashSaldoAwal.toLocaleString("id-ID")}</span>
             </div>
             {pdfMetrics.incomeTunaiList.length === 0 ? (
@@ -1731,6 +1742,10 @@ export default function ReportView({
             <div className="flex justify-between font-extrabold border-t border-slate-900 pt-1 mt-1 pl-6">
               <span>TOTAL PENDAPATAN</span>
               <span>Rp {pdfMetrics.totalIncomeCombine.toLocaleString("id-ID")}</span>
+            </div>
+            <div className="flex justify-between font-black border-t border-slate-900 pt-1 mt-1 pl-6">
+              <span>TOTAL PENDAPATAN + METKO KEMARIN</span>
+              <span>Rp {pdfMetrics.totalIncomePlusMetko.toLocaleString("id-ID")}</span>
             </div>
           </div>
 
@@ -1834,9 +1849,8 @@ export default function ReportView({
           </div>
           <div className="text-center h-20 flex flex-col justify-between">
             <span className="text-slate-600">Penanggung Jawab Laporan,</span>
-            <div className="border-t border-slate-800 w-36 mx-auto pt-1">
-              <span className="font-bold block text-slate-900">{user?.name || "Staf Keuangan"}</span>
-              <span className="text-[7px] text-slate-400 font-mono">ID: @{user?.username || "user"}</span>
+            <div className="border-t border-slate-800 w-32 mx-auto pt-1 font-bold">
+              (................................)
             </div>
           </div>
         </div>

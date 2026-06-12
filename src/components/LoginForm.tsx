@@ -164,8 +164,8 @@ export default function LoginForm({ onLoginSuccess }: LoginFormProps) {
       return;
     }
 
-    if (!isLogin && (!name || !email)) {
-      setError("Semua kolom registrasi wajib diisi");
+    if (!isLogin && !name) {
+      setError("Nama lengkap wajib diisi untuk registrasi");
       return;
     }
 
@@ -208,12 +208,14 @@ export default function LoginForm({ onLoginSuccess }: LoginFormProps) {
           return;
         }
 
-        const qEmail = query(usersRef, where("email", "==", email.trim()));
-        const emailSnap = await getDocs(qEmail);
-        if (!emailSnap.empty) {
-          setError("Email sudah terdaftar");
-          setLoading(false);
-          return;
+        if (email.trim() !== "") {
+          const qEmail = query(usersRef, where("email", "==", email.trim()));
+          const emailSnap = await getDocs(qEmail);
+          if (!emailSnap.empty) {
+            setError("Email sudah terdaftar");
+            setLoading(false);
+            return;
+          }
         }
 
         const userId = `user-${Date.now()}`;
@@ -339,7 +341,7 @@ export default function LoginForm({ onLoginSuccess }: LoginFormProps) {
                   exit={{ opacity: 0, x: 10 }}
                   className="space-y-1"
                 >
-                  <label className="text-xs font-semibold text-slate-700">Alamat Email</label>
+                  <label className="text-xs font-semibold text-slate-700">Alamat Email (Opsional)</label>
                   <div className="relative">
                     <Mail className="absolute left-3 top-3.5 w-4 h-4 text-slate-400" />
                     <input

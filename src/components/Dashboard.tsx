@@ -468,8 +468,8 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
     e.preventDefault();
     setUserFormError("");
 
-    if (!userFormName.trim() || !userFormUsername.trim() || !userFormEmail.trim() || !userFormPassword.trim()) {
-      setUserFormError("Semua kolom isian wajib diisi!");
+    if (!userFormName.trim() || !userFormUsername.trim() || !userFormPassword.trim()) {
+      setUserFormError("Kolom Nama Lengkap, Username, dan Kata Sandi wajib diisi!");
       return;
     }
 
@@ -477,7 +477,8 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
       if (userFormMode === "tambah") {
         // Check duplicate username/email
         const exists = usersList.some(
-          (u: any) => u.username.toLowerCase() === userFormUsername.toLowerCase().trim() || u.email.toLowerCase() === userFormEmail.toLowerCase().trim()
+          (u: any) => u.username.toLowerCase() === userFormUsername.toLowerCase().trim() || 
+                      (userFormEmail.trim() !== "" && u.email && u.email.toLowerCase() === userFormEmail.toLowerCase().trim())
         );
         if (exists) {
           setUserFormError("Username atau email sudah digunakan oleh akun lain.");
@@ -511,7 +512,9 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
       } else {
         // Editing
         const exists = usersList.some(
-          (u: any) => u.id !== selectedUserId && (u.username.toLowerCase() === userFormUsername.toLowerCase().trim() || u.email.toLowerCase() === userFormEmail.toLowerCase().trim())
+          (u: any) => u.id !== selectedUserId && 
+                      (u.username.toLowerCase() === userFormUsername.toLowerCase().trim() || 
+                      (userFormEmail.trim() !== "" && u.email && u.email.toLowerCase() === userFormEmail.toLowerCase().trim()))
         );
         if (exists) {
           setUserFormError("Username atau email sudah digunakan oleh akun lain.");
@@ -1919,7 +1922,7 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
                         </div>
 
                         <div className="space-y-1">
-                          <label className="text-[10px] font-bold text-slate-500 uppercase">Alamat Email</label>
+                          <label className="text-[10px] font-bold text-slate-500 uppercase">Alamat Email (Opsional)</label>
                           <input
                             type="email"
                             placeholder="marni@domain.com"
@@ -1981,7 +1984,7 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
                                 </span>
                               )}
                             </div>
-                            <p className="text-[10px] text-slate-400 font-mono truncate">@{u.username} • {u.email}</p>
+                            <p className="text-[10px] text-slate-400 font-mono truncate">@{u.username}{u.email ? ` • ${u.email}` : ''}</p>
                           </div>
 
                           <div className="flex items-center gap-1 shrink-0">
