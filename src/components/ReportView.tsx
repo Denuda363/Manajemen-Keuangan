@@ -61,6 +61,9 @@ export default function ReportView({
   // Track hovered item on trend charts
   const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
 
+  // Split report type selector
+  const [reportViewType, setReportViewType] = useState<"semua" | "tunai" | "rekening">("semua");
+
   // Compute Monday-to-Sunday range boundary for a given pivot date (locally adjusted)
   const weekRange = useMemo(() => {
     const pivot = new Date(selectedDate);
@@ -471,6 +474,7 @@ export default function ReportView({
             </tr>
           </thead>
           <tbody>
+            ${reportViewType === "semua" || reportViewType === "tunai" ? `
             <!-- PENDAPATAN TUNAI -->
             <tr style="background-color: #f1f5f9; font-weight: bold;">
               <td colspan="2" style="font-weight: bold; color: #0f172a;">PENDAPATAN TUNAI</td>
@@ -558,7 +562,9 @@ export default function ReportView({
               <td class="bold" style="font-weight: bold; padding-left: 10px;">SISA UANG TUNAI</td>
               <td class="num" style="font-weight: bold;">Rp ${pdfMetrics.sisaUangTunai.toLocaleString("id-ID")}</td>
             </tr>
+            ` : ""}
 
+            ${reportViewType === "semua" || reportViewType === "rekening" ? `
             <!-- SALDO REKENING -->
             <tr style="background-color: #f1f5f9; font-weight: bold;">
               <td colspan="2" style="font-weight: bold; color: #0f172a;">SALDO REKENING</td>
@@ -619,6 +625,7 @@ export default function ReportView({
               <td style="font-weight: bold; padding-left: 20px;">SALDO AKHIR REKENING</td>
               <td class="num" style="font-weight: bold; color: #22c55e;">Rp ${pdfMetrics.rekeningSaldoAkhir.toLocaleString("id-ID")}</td>
             </tr>
+            ` : ""}
           </tbody>
         </table>
 
@@ -1345,6 +1352,19 @@ export default function ReportView({
               </div>
             )}
 
+            <div className="flex-1 min-w-[150px]">
+              <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block mb-1">Jenis Laporan</label>
+              <select
+                value={reportViewType}
+                onChange={(e) => setReportViewType(e.target.value as "semua" | "tunai" | "rekening")}
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs font-bold text-slate-800 focus:outline-indigo-500 cursor-pointer"
+              >
+                <option value="semua">Gabungan (Tunai & Rekening)</option>
+                <option value="tunai">Hanya Kas Tunai</option>
+                <option value="rekening">Hanya Rekening / Bank</option>
+              </select>
+            </div>
+
             {/* Quick reset button */}
             <button 
               type="button"
@@ -1391,131 +1411,136 @@ export default function ReportView({
               </div>
 
               {/* Exact format layout requested by user */}
-              <div className="bg-slate-50 border border-slate-150 p-5 rounded-2xl grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 font-mono text-xs text-slate-800 leading-relaxed">
+              <div className={`bg-slate-50 border border-slate-150 p-5 rounded-2xl grid grid-cols-1 md:grid-cols-2 ${reportViewType === "semua" ? "lg:grid-cols-3" : "lg:grid-cols-2"} gap-6 font-mono text-xs text-slate-800 leading-relaxed`}>
                 
                 {/* Column 1: Pendapatan Tunai, Pengeluaran Tunai & Sisa */}
-                <div className="space-y-4">
-                  <div className="bg-white p-4 rounded-xl border border-slate-200/60 shadow-2xs space-y-1.5">
-                    <div className="font-extrabold text-indigo-950 uppercase tracking-wider text-[11px] border-b pb-1 border-slate-100 flex items-center justify-between">
-                      <span>SALDO AWAL KAS TUNAI / METKO KEMARIN</span>
-                      <Wallet className="w-3.5 h-3.5 text-slate-400" />
-                    </div>
-                    <div className="flex justify-between text-[11px]">
-                      <span className="text-slate-600">RP</span>
-                      <span className="font-bold text-slate-900">{pdfMetrics.cashSaldoAwal.toLocaleString("id-ID")}</span>
-                    </div>
-                  </div>
-
-                  <div className="bg-white p-4 rounded-xl border border-slate-200/60 shadow-2xs space-y-2">
-                    <div className="font-extrabold text-indigo-950 uppercase tracking-wider text-[11px] border-b pb-1 border-slate-100">
-                      PENDAPATAN TUNAI
-                    </div>
-                    {pdfMetrics.incomeTunaiList.length === 0 ? (
-                      <div className="text-slate-400 italic text-[11px] py-1">NIHIL</div>
-                    ) : (
-                      <div className="space-y-1">
-                        {pdfMetrics.incomeTunaiList.map((item, idx) => (
-                          <div key={idx} className="flex justify-between text-[11px]">
-                            <span className="text-slate-600">{item.category}</span>
-                            <span className="font-bold">Rp {item.amount.toLocaleString("id-ID")}</span>
-                          </div>
-                        ))}
+                {(reportViewType === "semua" || reportViewType === "tunai") && (
+                  <div className="space-y-4">
+                    <div className="bg-white p-4 rounded-xl border border-slate-200/60 shadow-2xs space-y-1.5">
+                      <div className="font-extrabold text-indigo-950 uppercase tracking-wider text-[11px] border-b pb-1 border-slate-100 flex items-center justify-between">
+                        <span>SALDO AWAL KAS TUNAI / METKO KEMARIN</span>
+                        <Wallet className="w-3.5 h-3.5 text-slate-400" />
                       </div>
-                    )}
-                    <div className="flex justify-between font-extrabold text-[#000] border-t border-slate-100 pt-1.5 mt-1 text-[11px]">
-                      <span>TOTAL</span>
-                      <span>Rp {pdfMetrics.incomeTunaiTotal.toLocaleString("id-ID")}</span>
-                    </div>
-                  </div>
-
-                  <div className="bg-white p-4 rounded-xl border border-slate-200/60 shadow-2xs space-y-1.5">
-                    <div className="font-extrabold text-indigo-950 uppercase tracking-wider text-[11px] border-b pb-1 border-slate-100">
-                      PENGELUARAN TUNAI
-                    </div>
-                    {pdfMetrics.expenseTunaiList.length === 0 ? (
-                      <div className="text-slate-400 italic text-[11px] py-1">NIHIL</div>
-                    ) : (
-                      <div className="space-y-1">
-                        {pdfMetrics.expenseTunaiList.map((item, idx) => (
-                          <div key={idx} className="flex justify-between text-[11px]">
-                            <span className="text-slate-600">{item.category}</span>
-                            <span className="font-bold text-red-650">Rp {item.amount.toLocaleString("id-ID")}</span>
-                          </div>
-                        ))}
+                      <div className="flex justify-between text-[11px]">
+                        <span className="text-slate-600">RP</span>
+                        <span className="font-bold text-slate-900">{pdfMetrics.cashSaldoAwal.toLocaleString("id-ID")}</span>
                       </div>
-                    )}
-                    <div className="flex justify-between text-red-650 text-[11px] font-bold border-t border-slate-100 pt-1.5 mt-1">
-                      <span className="text-slate-650">TOTAL PENGELUARAN</span>
-                      <span>Rp {pdfMetrics.expenseTunaiTotal.toLocaleString("id-ID")}</span>
                     </div>
-                  </div>
 
-                  <div className="bg-indigo-50/50 p-4 rounded-xl border border-indigo-150 shadow-2xs space-y-1.5">
-                    <div className="font-extrabold text-indigo-950 uppercase tracking-wider text-[11px] border-b pb-1 border-indigo-250/20">
-                      SISA
+                    <div className="bg-white p-4 rounded-xl border border-slate-200/60 shadow-2xs space-y-2">
+                      <div className="font-extrabold text-indigo-950 uppercase tracking-wider text-[11px] border-b pb-1 border-slate-100">
+                        PENDAPATAN TUNAI
+                      </div>
+                      {pdfMetrics.incomeTunaiList.length === 0 ? (
+                        <div className="text-slate-400 italic text-[11px] py-1">NIHIL</div>
+                      ) : (
+                        <div className="space-y-1">
+                          {pdfMetrics.incomeTunaiList.map((item, idx) => (
+                            <div key={idx} className="flex justify-between text-[11px]">
+                              <span className="text-slate-600">{item.category}</span>
+                              <span className="font-bold">Rp {item.amount.toLocaleString("id-ID")}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      <div className="flex justify-between font-extrabold text-[#000] border-t border-slate-100 pt-1.5 mt-1 text-[11px]">
+                        <span>TOTAL</span>
+                        <span>Rp {pdfMetrics.incomeTunaiTotal.toLocaleString("id-ID")}</span>
+                      </div>
                     </div>
-                    <div className="flex justify-between text-indigo-900 text-[11px] font-black">
-                      <span className="text-slate-650">Sisa Kas Tunai</span>
-                      <span>Rp {pdfMetrics.sisaSebelumNabung.toLocaleString("id-ID")}</span>
+
+                    <div className="bg-white p-4 rounded-xl border border-slate-200/60 shadow-2xs space-y-1.5">
+                      <div className="font-extrabold text-indigo-950 uppercase tracking-wider text-[11px] border-b pb-1 border-slate-100">
+                        PENGELUARAN TUNAI
+                      </div>
+                      {pdfMetrics.expenseTunaiList.length === 0 ? (
+                        <div className="text-slate-400 italic text-[11px] py-1">NIHIL</div>
+                      ) : (
+                        <div className="space-y-1">
+                          {pdfMetrics.expenseTunaiList.map((item, idx) => (
+                            <div key={idx} className="flex justify-between text-[11px]">
+                              <span className="text-slate-600">{item.category}</span>
+                              <span className="font-bold text-red-650">Rp {item.amount.toLocaleString("id-ID")}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      <div className="flex justify-between text-red-650 text-[11px] font-bold border-t border-slate-100 pt-1.5 mt-1">
+                        <span className="text-slate-650">TOTAL PENGELUARAN</span>
+                        <span>Rp {pdfMetrics.expenseTunaiTotal.toLocaleString("id-ID")}</span>
+                      </div>
+                    </div>
+
+                    <div className="bg-indigo-50/50 p-4 rounded-xl border border-indigo-150 shadow-2xs space-y-1.5">
+                      <div className="font-extrabold text-indigo-950 uppercase tracking-wider text-[11px] border-b pb-1 border-indigo-250/20">
+                        SISA
+                      </div>
+                      <div className="flex justify-between text-indigo-900 text-[11px] font-black">
+                        <span className="text-slate-650">Sisa Kas Tunai</span>
+                        <span>Rp {pdfMetrics.sisaSebelumNabung.toLocaleString("id-ID")}</span>
+                      </div>
                     </div>
                   </div>
-                </div>
+                )}
 
                 {/* Column 2: Nabung & Sisa Uang Tunai */}
-                <div className="space-y-4">
-                  <div className="bg-white p-4 rounded-xl border border-slate-200/60 shadow-2xs space-y-1.5">
-                    <div className="font-extrabold text-indigo-950 uppercase tracking-wider text-[11px] border-b pb-1 border-slate-100">
-                      PENDAPATAN TRANSFER
-                    </div>
-                    {pdfMetrics.incomeTransferList.length === 0 ? (
-                      <div className="text-slate-400 italic text-[11px] py-1">NIHIL</div>
-                    ) : (
-                      <div className="space-y-1">
-                        {pdfMetrics.incomeTransferList.map((item, idx) => (
-                          <div key={idx} className="flex justify-between text-[11px]">
-                            <span className="text-slate-600">{item.category}</span>
-                            <span className="font-bold">Rp {item.amount.toLocaleString("id-ID")}</span>
-                          </div>
-                        ))}
+                {(reportViewType === "semua" || reportViewType === "tunai") && (
+                  <div className="space-y-4">
+                    <div className="bg-white p-4 rounded-xl border border-slate-200/60 shadow-2xs space-y-1.5">
+                      <div className="font-extrabold text-indigo-950 uppercase tracking-wider text-[11px] border-b pb-1 border-slate-100">
+                        PENDAPATAN TRANSFER
                       </div>
-                    )}
-                    <div className="flex justify-between text-[11px] border-t border-slate-100 pt-1.5 mt-1">
-                      <span className="text-slate-600 font-bold">TOTAL PENDAPATAN TF</span>
-                      <span className="font-bold">Rp {pdfMetrics.incomeTransferTotal.toLocaleString("id-ID")}</span>
+                      {pdfMetrics.incomeTransferList.length === 0 ? (
+                        <div className="text-slate-400 italic text-[11px] py-1">NIHIL</div>
+                      ) : (
+                        <div className="space-y-1">
+                          {pdfMetrics.incomeTransferList.map((item, idx) => (
+                            <div key={idx} className="flex justify-between text-[11px]">
+                              <span className="text-slate-600">{item.category}</span>
+                              <span className="font-bold">Rp {item.amount.toLocaleString("id-ID")}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      <div className="flex justify-between text-[11px] border-t border-slate-100 pt-1.5 mt-1">
+                        <span className="text-slate-600 font-bold">TOTAL PENDAPATAN TF</span>
+                        <span className="font-bold">Rp {pdfMetrics.incomeTransferTotal.toLocaleString("id-ID")}</span>
+                      </div>
+                      <div className="flex justify-between font-extrabold text-slate-900 border-t border-slate-100 pt-1.5 mt-1 text-[11px]">
+                        <span>TOTAL PENDAPATAN</span>
+                        <span className="text-indigo-700">Rp {pdfMetrics.totalIncomeCombine.toLocaleString("id-ID")}</span>
+                      </div>
+                      <div className="flex justify-between font-extrabold text-slate-900 border-t border-slate-100 pt-1.5 mt-1 text-[11px]">
+                        <span>TOTAL PENDAPATAN + METKO KEMARIN</span>
+                        <span className="text-indigo-700">Rp {pdfMetrics.totalIncomePlusMetko.toLocaleString("id-ID")}</span>
+                      </div>
                     </div>
-                    <div className="flex justify-between font-extrabold text-slate-900 border-t border-slate-100 pt-1.5 mt-1 text-[11px]">
-                      <span>TOTAL PENDAPATAN</span>
-                      <span className="text-indigo-700">Rp {pdfMetrics.totalIncomeCombine.toLocaleString("id-ID")}</span>
-                    </div>
-                    <div className="flex justify-between font-extrabold text-slate-900 border-t border-slate-100 pt-1.5 mt-1 text-[11px]">
-                      <span>TOTAL PENDAPATAN + METKO KEMARIN</span>
-                      <span className="text-indigo-700">Rp {pdfMetrics.totalIncomePlusMetko.toLocaleString("id-ID")}</span>
-                    </div>
-                  </div>
 
-                  <div className="bg-white p-4 rounded-xl border border-slate-200/60 shadow-2xs space-y-1.5">
-                    <div className="font-extrabold text-indigo-950 uppercase tracking-wider text-[11px] border-b pb-1 border-slate-100">
-                      NABUNG
+                    <div className="bg-white p-4 rounded-xl border border-slate-200/60 shadow-2xs space-y-1.5">
+                      <div className="font-extrabold text-indigo-950 uppercase tracking-wider text-[11px] border-b pb-1 border-slate-100">
+                        NABUNG
+                      </div>
+                      <div className="flex justify-between text-amber-700 text-[11px]">
+                        <span className="text-slate-600">Rp</span>
+                        <span className="font-black">Rp {pdfMetrics.nabungTotal.toLocaleString("id-ID")}</span>
+                      </div>
                     </div>
-                    <div className="flex justify-between text-amber-700 text-[11px]">
-                      <span className="text-slate-600">Rp</span>
-                      <span className="font-black">Rp {pdfMetrics.nabungTotal.toLocaleString("id-ID")}</span>
-                    </div>
-                  </div>
 
-                  <div className="bg-[#ecfdf5] p-4 rounded-xl border border-emerald-250 shadow-2xs space-y-1.5">
-                    <div className="font-extrabold text-emerald-950 uppercase tracking-wider text-[11px] border-b pb-1 border-emerald-150">
-                      SISA UANG TUNAI
-                    </div>
-                    <div className="flex justify-between text-emerald-800 text-[11px]">
-                      <span className="text-emerald-700 font-bold">Rp.</span>
-                      <span className="font-black">Rp {pdfMetrics.sisaUangTunai.toLocaleString("id-ID")}</span>
+                    <div className="bg-[#ecfdf5] p-4 rounded-xl border border-emerald-250 shadow-2xs space-y-1.5">
+                      <div className="font-extrabold text-emerald-950 uppercase tracking-wider text-[11px] border-b pb-1 border-emerald-150">
+                        SISA UANG TUNAI
+                      </div>
+                      <div className="flex justify-between text-emerald-800 text-[11px]">
+                        <span className="text-emerald-700 font-bold">Rp.</span>
+                        <span className="font-black">Rp {pdfMetrics.sisaUangTunai.toLocaleString("id-ID")}</span>
+                      </div>
                     </div>
                   </div>
-                </div>
+                )}
 
                 {/* Column 3: Saldo Rekening */}
-                <div className="md:col-span-2 lg:col-span-1">
+                {(reportViewType === "semua" || reportViewType === "rekening") && (
+                  <div className={reportViewType === "rekening" ? "md:col-span-2" : "md:col-span-2 lg:col-span-1"}>
                   <div className="bg-slate-900 text-slate-100 p-4 rounded-xl border border-slate-800 shadow-2xs space-y-2 h-full flex flex-col justify-between">
                     <div>
                       <div className="font-extrabold text-indigo-300 uppercase tracking-wider text-[11px] border-b pb-1 border-slate-800">
@@ -1590,6 +1615,7 @@ export default function ReportView({
                     </div>
                   </div>
                 </div>
+                )}
 
               </div>
             </div>
@@ -1864,6 +1890,7 @@ export default function ReportView({
         <div className="border-2 border-slate-900 p-8 rounded-lg font-mono text-xs text-slate-900 space-y-6 max-w-2xl mx-auto tracking-wide" style={{ lineHeight: "1.6" }}>
           
           {/* PENDAPATAN TUNAI */}
+          {(reportViewType === "semua" || reportViewType === "tunai") && (
           <div className="space-y-1">
             <div className="font-extrabold">PENDAPATAN TUNAI</div>
             <div className="flex justify-between pl-6 font-medium text-slate-600 italic">
@@ -1885,8 +1912,10 @@ export default function ReportView({
               <span>Rp {pdfMetrics.incomeTunaiTotal.toLocaleString("id-ID")}</span>
             </div>
           </div>
+          )}
 
           {/* PENGELUARAN TUNAI */}
+          {(reportViewType === "semua" || reportViewType === "tunai") && (
           <div className="space-y-1 pt-1">
             <div className="font-extrabold">PENGELUARAN TUNAI</div>
             {pdfMetrics.expenseTunaiList.length === 0 ? (
@@ -1904,8 +1933,10 @@ export default function ReportView({
               <span>Rp {pdfMetrics.expenseTunaiTotal.toLocaleString("id-ID")}</span>
             </div>
           </div>
+          )}
 
           {/* SISA */}
+          {(reportViewType === "semua" || reportViewType === "tunai") && (
           <div className="space-y-1 pt-1">
             <div className="font-extrabold pb-0.5 border-b border-dashed border-slate-300">SISA</div>
             <div className="flex justify-between pl-6 font-extrabold pt-0.5">
@@ -1913,8 +1944,10 @@ export default function ReportView({
               <span>Rp {pdfMetrics.sisaSebelumNabung.toLocaleString("id-ID")}</span>
             </div>
           </div>
+          )}
 
           {/* PENDAPATAN TRANSFER */}
+          {(reportViewType === "semua" || reportViewType === "tunai") && (
           <div className="space-y-1 pt-1">
             <div className="font-extrabold">PENDAPATAN TRANSFER</div>
             {pdfMetrics.incomeTransferList.length === 0 ? (
@@ -1940,8 +1973,10 @@ export default function ReportView({
               <span>Rp {pdfMetrics.totalIncomePlusMetko.toLocaleString("id-ID")}</span>
             </div>
           </div>
+          )}
 
           {/* NABUNG */}
+          {(reportViewType === "semua" || reportViewType === "tunai") && (
           <div className="space-y-1 pt-1">
             <div className="font-extrabold">NABUNG</div>
             <div className="flex justify-between pl-6 font-extrabold">
@@ -1949,8 +1984,10 @@ export default function ReportView({
               <span>Rp {pdfMetrics.nabungTotal.toLocaleString("id-ID")}</span>
             </div>
           </div>
+          )}
 
           {/* SISA UANG TUNAI */}
+          {(reportViewType === "semua" || reportViewType === "tunai") && (
           <div className="space-y-1 pt-1">
             <div className="font-extrabold">SISA UANG TUNAI</div>
             <div className="flex justify-between pl-6 font-extrabold">
@@ -1958,8 +1995,10 @@ export default function ReportView({
               <span>Rp {pdfMetrics.sisaUangTunai.toLocaleString("id-ID")}</span>
             </div>
           </div>
+          )}
 
           {/* SALDO REKENING */}
+          {(reportViewType === "semua" || reportViewType === "rekening") && (
           <div className="space-y-1 pt-1">
             <div className="font-extrabold">SALDO REKENING</div>
             <div className="space-y-1 pl-6">
@@ -2028,6 +2067,7 @@ export default function ReportView({
               </div>
             </div>
           </div>
+          )}
         </div>
 
         {/* Detailed ledger table in PDF */}
