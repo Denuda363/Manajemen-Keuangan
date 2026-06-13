@@ -180,21 +180,33 @@ export default function ReportView({
 
   // Sort chronologically for printing ledgers cleanly
   const chronologicalTransactions = useMemo(() => {
-    return [...filteredTransactions].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()).map(tx => ({
+    let list = [...filteredTransactions];
+    if (reportViewType === "tunai") {
+      list = list.filter(tx => tx.method === "tunai" || tx.type === "nabung");
+    } else if (reportViewType === "rekening") {
+      list = list.filter(tx => tx.method === "transfer" || tx.type === "nabung");
+    }
+    return list.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()).map(tx => ({
       ...tx,
       category: tx.category.replace(/\bGaji\b/gi, "Pendapatan / Omzet"),
       description: tx.description ? tx.description.replace(/\bGaji\b/gi, "Pendapatan / Omzet") : tx.description
     }));
-  }, [filteredTransactions]);
+  }, [filteredTransactions, reportViewType]);
 
   // To cover calculations as well without altering state upstream
   const displayFilteredTransactions = useMemo(() => {
-    return filteredTransactions.map(tx => ({
+    let list = [...filteredTransactions];
+    if (reportViewType === "tunai") {
+      list = list.filter(tx => tx.method === "tunai" || tx.type === "nabung");
+    } else if (reportViewType === "rekening") {
+      list = list.filter(tx => tx.method === "transfer" || tx.type === "nabung");
+    }
+    return list.map(tx => ({
       ...tx,
       category: tx.category.replace(/\bGaji\b/gi, "Pendapatan / Omzet"),
       description: tx.description ? tx.description.replace(/\bGaji\b/gi, "Pendapatan / Omzet") : tx.description
     }));
-  }, [filteredTransactions]);
+  }, [filteredTransactions, reportViewType]);
 
   // Calculations: core totals, splits, category weights
   const stats = useMemo(() => {
@@ -463,7 +475,9 @@ export default function ReportView({
             <td colspan="7" class="title" style="font-size: 18px; font-weight: 900; color: #1e293b;">LAPORAN REKONSILIASI KEUANGAN</td>
           </tr>
           <tr>
-            <td colspan="7" class="subtitle" style="font-weight: 600; color: #64748b;">Dompet Pintar - ${user?.name || "User"} | Periode: ${filterText}</td>
+            <td colspan="7" class="subtitle" style="font-weight: 600; color: #64748b;">Dompet Pintar - ${user?.name || "User"} | Periode: ${filterText} | Jenis Laporan: ${
+              reportViewType === "semua" ? "Gabungan (Tunai & Rekening)" : reportViewType === "tunai" ? "Hanya Kas Tunai" : "Hanya Rekening / Bank"
+            }</td>
           </tr>
         </table>
 
@@ -1906,7 +1920,8 @@ export default function ReportView({
             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Periode Laporan:</span>
             <p className="font-extrabold text-indigo-900 text-sm mt-0.5 uppercase tracking-wide">{formattedPeriodLabel}</p>
             <p className="text-slate-500 text-[10px] mt-0.5">Filter Jenis: {filterType === 'harian' ? 'Harian' : filterType === 'mingguan' ? 'Mingguan (7 Hari)' : filterType === 'bulanan' ? 'Bulanan' : 'Tahunan'}</p>
-            <p className="text-slate-500 text-[10px]">Jumlah Ledger: {filteredTransactions.length} transaksi</p>
+            <p className="text-slate-500 text-[10px]">Aliran Dana: {reportViewType === "semua" ? "Gabungan (Tunai & Rekening)" : reportViewType === "tunai" ? "Hanya Kas Tunai" : "Hanya Rekening / Bank"}</p>
+            <p className="text-slate-500 text-[10px]">Jumlah Ledger: {chronologicalTransactions.length} transaksi</p>
           </div>
         </div>
 
