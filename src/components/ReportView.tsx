@@ -552,9 +552,21 @@ export default function ReportView({
             </tr>
 
             <!-- NABUNG -->
-            <tr>
-              <td class="bold" style="font-weight: bold; color: #4338ca; padding-left: 10px;">NABUNG</td>
-              <td class="num" style="font-weight: bold; color: #4338ca;">Rp ${pdfMetrics.nabungTotal.toLocaleString("id-ID")}</td>
+            <tr style="background-color: #f1f5f9; font-weight: bold;">
+              <td colspan="2" style="font-weight: bold; color: #0f172a; padding-left: 10px;">NABUNG</td>
+            </tr>
+            ${pdfMetrics.nabungList.length === 0
+              ? `<tr><td style="padding-left: 20px; font-style: italic; color: #64748b;">NIHIL</td><td class="num">Rp 0</td></tr>`
+              : pdfMetrics.nabungList.map(item => `
+                <tr>
+                  <td style="padding-left: 20px; font-weight: 500; font-style: italic; color: #475569;">${item.category}</td>
+                  <td class="num" style="color: #4338ca;">Rp ${item.amount.toLocaleString("id-ID")}</td>
+                </tr>
+              `).join("")
+            }
+            <tr style="font-weight: bold; color: #4338ca;">
+              <td style="padding-left: 20px; font-weight: bold;">TOTAL NABUNG</td>
+              <td class="num">Rp ${pdfMetrics.nabungTotal.toLocaleString("id-ID")}</td>
             </tr>
 
             <!-- SISA UANG TUNAI -->
@@ -1520,9 +1532,21 @@ export default function ReportView({
                       <div className="font-extrabold text-indigo-950 uppercase tracking-wider text-[11px] border-b pb-1 border-slate-100">
                         NABUNG
                       </div>
-                      <div className="flex justify-between text-amber-700 text-[11px]">
-                        <span className="text-slate-600">Rp</span>
-                        <span className="font-black">Rp {pdfMetrics.nabungTotal.toLocaleString("id-ID")}</span>
+                      {pdfMetrics.nabungList.length === 0 ? (
+                        <div className="text-slate-400 italic text-[11px] py-1">NIHIL</div>
+                      ) : (
+                        <div className="space-y-1">
+                          {pdfMetrics.nabungList.map((item, idx) => (
+                            <div key={idx} className="flex justify-between text-[11px]">
+                              <span className="text-slate-600">{item.category}</span>
+                              <span className="font-bold text-amber-700">Rp {item.amount.toLocaleString("id-ID")}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      <div className="flex justify-between font-extrabold text-[#000] border-t border-slate-100 pt-1.5 mt-1 text-[11px]">
+                        <span>TOTAL NABUNG</span>
+                        <span className="text-amber-700">Rp {pdfMetrics.nabungTotal.toLocaleString("id-ID")}</span>
                       </div>
                     </div>
 
@@ -1979,8 +2003,18 @@ export default function ReportView({
           {(reportViewType === "semua" || reportViewType === "tunai") && (
           <div className="space-y-1 pt-1">
             <div className="font-extrabold">NABUNG</div>
-            <div className="flex justify-between pl-6 font-extrabold">
-              <span>Rp</span>
+            {pdfMetrics.nabungList.length === 0 ? (
+              <div className="pl-6 text-slate-500">NIHIL Rp 0</div>
+            ) : (
+              pdfMetrics.nabungList.map((item, idx) => (
+                <div key={idx} className="flex justify-between pl-6 font-medium text-slate-600 italic">
+                  <span>{item.category}</span>
+                  <span>Rp {item.amount.toLocaleString("id-ID")}</span>
+                </div>
+              ))
+            )}
+            <div className="flex justify-between pl-6 font-extrabold border-t border-slate-900 pt-1 mt-1">
+              <span>TOTAL NABUNG</span>
               <span>Rp {pdfMetrics.nabungTotal.toLocaleString("id-ID")}</span>
             </div>
           </div>
