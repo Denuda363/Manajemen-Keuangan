@@ -12,7 +12,7 @@ import {
   LogOut, Sparkles, Plus, Wallet, CreditCard, ChevronRight,
   TrendingUp, TrendingDown, DollarSign, Calendar, ListTodo, AlertTriangle, Check, BookOpen, PiggyBank,
   LayoutDashboard, History, BarChart3, Target, Settings, Users, FolderTree, RefreshCw, Trash2, Edit2, ShieldAlert,
-  Building, MapPin, Phone, Mail, FileText, Cpu, Monitor
+  Building, MapPin, Phone, Mail, FileText, Cpu, Monitor, Info
 } from "lucide-react";
 import { motion } from "motion/react";
 import { collection, doc, setDoc, getDoc, getDocs, deleteDoc, updateDoc, query, where, onSnapshot, writeBatch } from "firebase/firestore";
@@ -65,7 +65,7 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
   const [expenseCategories, setExpenseCategories] = useState<string[]>(EXPENSE_CATEGORIES);
 
   // Settings sub-tab state
-  const [settingsActiveTab, setSettingsActiveTab] = useState<"pengguna" | "kategori" | "reset" | "perusahaan">("pengguna");
+  const [settingsActiveTab, setSettingsActiveTab] = useState<"pengguna" | "kategori" | "reset" | "perusahaan" | "about" | "guide">("pengguna");
 
   // Company Profile states
   const [companyProfile, setCompanyProfile] = useState<CompanyProfile | null>(null);
@@ -1837,42 +1837,60 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
             </div>
 
             {/* Sub-navigation tabs block */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 bg-slate-100 p-1 rounded-2xl max-w-2xl gap-1.5">
+            <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 bg-slate-100 p-1 rounded-2xl max-w-full gap-1.5">
               <button
                 onClick={() => setSettingsActiveTab("pengguna")}
-                className={`py-2.5 px-3 text-center text-xs font-bold rounded-xl transition-all duration-200 flex items-center justify-center gap-1.5 cursor-pointer ${
+                className={`py-2.5 px-3 text-center text-[11px] lg:text-xs font-bold rounded-xl transition-all duration-200 flex items-center justify-center gap-1.5 cursor-pointer ${
                   settingsActiveTab === "pengguna" ? "bg-white text-indigo-700 shadow-sm" : "text-slate-500 hover:text-slate-800"
                 }`}
               >
                 <Users className="w-3.5 h-3.5 shrink-0" />
-                <span>Manajemen User</span>
+                <span className="truncate">Manajemen User</span>
               </button>
               <button
                 onClick={() => setSettingsActiveTab("perusahaan")}
-                className={`py-2.5 px-3 text-center text-xs font-bold rounded-xl transition-all duration-200 flex items-center justify-center gap-1.5 cursor-pointer ${
+                className={`py-2.5 px-3 text-center text-[11px] lg:text-xs font-bold rounded-xl transition-all duration-200 flex items-center justify-center gap-1.5 cursor-pointer ${
                   settingsActiveTab === "perusahaan" ? "bg-white text-indigo-700 shadow-sm" : "text-slate-500 hover:text-slate-800"
                 }`}
               >
                 <Building className="w-3.5 h-3.5 shrink-0" />
-                <span>Profil Perusahaan</span>
+                <span className="truncate">Profil Perusahaan</span>
               </button>
               <button
                 onClick={() => setSettingsActiveTab("kategori")}
-                className={`py-2.5 px-3 text-center text-xs font-bold rounded-xl transition-all duration-200 flex items-center justify-center gap-1.5 cursor-pointer ${
+                className={`py-2.5 px-3 text-center text-[11px] lg:text-xs font-bold rounded-xl transition-all duration-200 flex items-center justify-center gap-1.5 cursor-pointer ${
                   settingsActiveTab === "kategori" ? "bg-white text-indigo-700 shadow-sm" : "text-slate-500 hover:text-slate-800"
                 }`}
               >
                 <FolderTree className="w-3.5 h-3.5 shrink-0" />
-                <span>Kategori</span>
+                <span className="truncate">Kategori</span>
               </button>
               <button
                 onClick={() => setSettingsActiveTab("reset")}
-                className={`py-2.5 px-3 text-center text-xs font-bold rounded-xl transition-all duration-200 flex items-center justify-center gap-1.5 cursor-pointer ${
+                className={`py-2.5 px-3 text-center text-[11px] lg:text-xs font-bold rounded-xl transition-all duration-200 flex items-center justify-center gap-1.5 cursor-pointer ${
                   settingsActiveTab === "reset" ? "bg-white text-red-700 shadow-sm" : "text-slate-500 hover:text-slate-800"
                 }`}
               >
                 <RefreshCw className="w-3.5 h-3.5 shrink-0" />
-                <span>Reset Data</span>
+                <span className="truncate">Reset Data</span>
+              </button>
+              <button
+                onClick={() => setSettingsActiveTab("about")}
+                className={`py-2.5 px-3 text-center text-[11px] lg:text-xs font-bold rounded-xl transition-all duration-200 flex items-center justify-center gap-1.5 cursor-pointer ${
+                  settingsActiveTab === "about" ? "bg-white text-emerald-700 shadow-sm" : "text-slate-500 hover:text-slate-800"
+                }`}
+              >
+                <Info className="w-3.5 h-3.5 shrink-0" />
+                <span className="truncate">Tentang Aplikasi</span>
+              </button>
+              <button
+                onClick={() => setSettingsActiveTab("guide")}
+                className={`py-2.5 px-3 text-center text-[11px] lg:text-xs font-bold rounded-xl transition-all duration-200 flex items-center justify-center gap-1.5 cursor-pointer ${
+                  settingsActiveTab === "guide" ? "bg-white text-blue-700 shadow-sm" : "text-slate-500 hover:text-slate-800"
+                }`}
+              >
+                <BookOpen className="w-3.5 h-3.5 shrink-0" />
+                <span className="truncate">Panduan</span>
               </button>
             </div>
 
@@ -2593,6 +2611,143 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
                     <span>Reset Data Sekarang</span>
                   </button>
                 </form>
+              </div>
+            )}
+
+            {/* Sub-tab 4: ABOUT / TENTANG APLIKASI */}
+            {settingsActiveTab === "about" && (
+              <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm space-y-6 max-w-3xl">
+                <div>
+                  <h3 className="text-base font-bold text-slate-800 flex items-center gap-1.5">
+                    <Info className="w-5 h-5 text-indigo-600 shrink-0" />
+                    <span>Tentang Aplikasi</span>
+                  </h3>
+                  <p className="text-[10px] text-slate-400 mt-0.5">Informasi sistem manajemen keuangan digital Anda.</p>
+                </div>
+                
+                <div className="space-y-4">
+                  <div className="bg-slate-50 border border-slate-150 p-5 rounded-2xl flex flex-col gap-3">
+                    <div className="flex items-center gap-4 border-b border-slate-200 pb-3">
+                      <div className="w-12 h-12 rounded-xl bg-indigo-100 flex items-center justify-center">
+                        <Wallet className="w-6 h-6 text-indigo-600" />
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-black text-slate-900 tracking-tight">{companyProfile?.appName || "DN Manajemen Keuangan"}</h4>
+                        <p className="text-xs text-slate-500 font-medium">Versi 1.0.0 (Cloud Edition)</p>
+                      </div>
+                    </div>
+                    
+                    <p className="text-[11px] text-slate-600 leading-relaxed font-medium">
+                      Sistem cerdas manajemen kas dan laporan keuangan. Aplikasi ini dirancang khusus untuk mempermudah monitoring arus kas tunai (uang fisik), kas di perbankan (transfer), pencatatan omzet harian/mingguan, hingga laporan cetak PDF dengan resolusi tinggi.
+                    </p>
+                    
+                    <ul className="text-[10px] text-slate-500 space-y-1.5 mt-2">
+                      <li className="flex items-start gap-1.5">
+                        <Check className="w-3.5 h-3.5 text-emerald-500 shrink-0 mt-0.5" />
+                        <span>Sistem Single Page Application (SPA) berbasis React yang cepat & responsif.</span>
+                      </li>
+                      <li className="flex items-start gap-1.5">
+                        <Check className="w-3.5 h-3.5 text-emerald-500 shrink-0 mt-0.5" />
+                        <span>Penyiapan mode offline dan multi-user untuk manajemen entitas kecil menengah.</span>
+                      </li>
+                      <li className="flex items-start gap-1.5">
+                        <Check className="w-3.5 h-3.5 text-emerald-500 shrink-0 mt-0.5" />
+                        <span>Keamanan enkripsi setara cloud standar dan database realtime Firebase.</span>
+                      </li>
+                    </ul>
+                    
+                    <div className="mt-4 pt-3 border-t border-slate-200 flex justify-between items-center text-[9px] font-mono text-slate-400">
+                      <span>Hak Cipta © {new Date().getFullYear()} {companyProfile?.appName || "DN Manajemen Keuangan"}.</span>
+                      <span>Dibuat dengan ❤️ untuk Indonesia.</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Sub-tab 5: GUIDE / PANDUAN PENGGUNAAN */}
+            {settingsActiveTab === "guide" && (
+              <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm space-y-6 max-w-4xl">
+                <div>
+                  <h3 className="text-base font-bold text-slate-800 flex items-center gap-1.5">
+                    <BookOpen className="w-5 h-5 text-indigo-600 shrink-0" />
+                    <span>Buku Panduan & Cara Penggunaan Lengkap</span>
+                  </h3>
+                  <p className="text-[10px] text-slate-400 mt-0.5">Pelajari cara terbaik untuk memaksimalkan seluruh fitur pada sistem manajemen keuangan Anda.</p>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Panduan 1: Pemasukan & Pengeluaran */}
+                  <div className="bg-slate-50 border border-slate-150 p-5 rounded-2xl space-y-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center shrink-0">
+                        <Plus className="w-5 h-5 text-blue-600" />
+                      </div>
+                      <h4 className="text-sm font-black text-slate-800 tracking-tight leading-tight">1. Mencatat Transaksi<br/><span className="text-[10px] text-blue-600 uppercase tracking-widest font-bold">Pemasukan & Pengeluaran</span></h4>
+                    </div>
+                    <ul className="text-[11px] text-slate-600 space-y-2 list-disc pl-4 font-medium leading-relaxed">
+                      <li>Buka menu <strong className="text-slate-800">Cacat Transaksi M/K</strong>.</li>
+                      <li>Pilih jenis arus: <strong className="text-emerald-600">Pemasukan (Uang Masuk)</strong> atau <strong className="text-rose-600">Pengeluaran (Uang Keluar)</strong>.</li>
+                      <li><strong className="text-indigo-600 bg-indigo-50 px-1 py-0.5 rounded">PENTING:</strong> Tentukan <strong>Jenis Dana</strong>. Apabila uang berupa fisik (di laci/dompet), pilih <strong>Tunai</strong>. Apabila uang ada di bank (BCA, Mandiri, dll), pilih <strong>Transfer / Bank</strong>.</li>
+                      <li>Pilih kategori transaksi yang relevan agar laporan keuangan Anda mudah dibaca.</li>
+                    </ul>
+                  </div>
+
+                  {/* Panduan 2: Dashboard & Menabung */}
+                  <div className="bg-slate-50 border border-slate-150 p-5 rounded-2xl space-y-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center shrink-0">
+                        <PiggyBank className="w-5 h-5 text-emerald-600" />
+                      </div>
+                      <h4 className="text-sm font-black text-slate-800 tracking-tight leading-tight">2. Membaca Saldo &<br/><span className="text-[10px] text-emerald-600 uppercase tracking-widest font-bold">Fitur "Nabung Tunai"</span></h4>
+                    </div>
+                    <ul className="text-[11px] text-slate-600 space-y-2 list-disc pl-4 font-medium leading-relaxed">
+                      <li>Di <strong className="text-slate-800">Dashboard Utama</strong>, Anda bisa melihat Ringkasan Omzet Hari Ini dan Minggu Ini (berjalan pada rentang hari Senin-Minggu).</li>
+                      <li>Sistem menampikan <strong className="text-slate-800">Uang Tunai</strong> terpisah dengan <strong className="text-slate-800">Uang di Rekening</strong> untuk memudahkan Anda mengaudit fisik uang.</li>
+                      <li>Gunakan fitur <strong className="text-emerald-700 bg-emerald-100 px-1 py-0.5 rounded">Nabung Tunai</strong> untuk menyetorkan fisik uang (Tunai) Anda ke Bank (Rekening). Saldo laci akan berkurang, dan saldo bank bertambah, <strong className="underline">tanpa</strong> mengaburkan total omzet Anda.</li>
+                    </ul>
+                  </div>
+
+                  {/* Panduan 3: Laporan & Cetak */}
+                  <div className="bg-slate-50 border border-slate-150 p-5 rounded-2xl space-y-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-orange-100 flex items-center justify-center shrink-0">
+                        <BookOpen className="w-5 h-5 text-orange-600" />
+                      </div>
+                      <h4 className="text-sm font-black text-slate-800 tracking-tight leading-tight">3. Laporan Keuangan<br/><span className="text-[10px] text-orange-600 uppercase tracking-widest font-bold">Filter & Ekspor PDF</span></h4>
+                    </div>
+                    <ul className="text-[11px] text-slate-600 space-y-2 list-disc pl-4 font-medium leading-relaxed">
+                      <li>Masuk ke halaman <strong className="text-slate-800">Laporan</strong>. Secara otomatis sistem akan merekap seluruh arus yang masuk dan keluar.</li>
+                      <li>Anda bisa menggunakan <strong className="text-slate-800">Pilih Rentang Tanggal</strong> untuk menampilkan data (misal: "1 Maret sampai 31 Maret").</li>
+                      <li>Anda juga dapat memfilter <strong>Asal Uang</strong> untuk mengecek "Hanya Transaksi Tunai" atau "Hanya Rekening Bank".</li>
+                      <li>Klik <strong className="text-orange-700 bg-orange-100 px-1 py-0.5 rounded">Cetak Laporan PDF</strong>. Pastikan pada menu pencetakan/print, Anda memilih <em>Destination = Save as PDF</em> atau <em>Print to PDF</em>.</li>
+                    </ul>
+                  </div>
+
+                  {/* Panduan 4: Customisasi & Perusahaan */}
+                  <div className="bg-slate-50 border border-slate-150 p-5 rounded-2xl space-y-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-purple-100 flex items-center justify-center shrink-0">
+                        <Building className="w-5 h-5 text-purple-600" />
+                      </div>
+                      <h4 className="text-sm font-black text-slate-800 tracking-tight leading-tight">4. Pengaturan Sistem<br/><span className="text-[10px] text-purple-600 uppercase tracking-widest font-bold">Profil Perusahaan & Kategori</span></h4>
+                    </div>
+                    <ul className="text-[11px] text-slate-600 space-y-2 list-disc pl-4 font-medium leading-relaxed">
+                      <li>Ke menu <strong className="text-slate-800">Pengaturan</strong> - Tab <strong>Profil Perusahaan</strong>. Kolom <strong>"Judul Aplikasi"</strong> akan mengubah nama utama aplikasi.</li>
+                      <li>Isi kolom <strong>"Judul Cetak Laporan"</strong> (cth: <em>KAS APOTEK SARI FARMA</em>). Kalimat ini akan menjadi Kop Surat (Letterhead) paling atas saat mencetak PDF.</li>
+                      <li>Tab <strong className="text-slate-800">Kategori</strong> memungkinkan Anda mengganti, menambah, atau menghapus label "Pemasukan / Pengeluaran" yang tersedia (Beli Obat, Gaji, Listrik, dll).</li>
+                      <li>Gunakan tab <strong className="text-slate-800">Manajemen User</strong> jika kasir/pencatat berganti shift, tambah <em>User Akun</em> agar di Laporan ada rekam "Siapa yang mencatat".</li>
+                    </ul>
+                  </div>
+                </div>
+
+                <div className="bg-indigo-50 border border-indigo-100 p-4 rounded-2xl flex items-start gap-4">
+                  <Mail className="w-6 h-6 text-indigo-500 shrink-0 mt-0.5" />
+                  <div>
+                    <h5 className="text-xs font-bold text-indigo-900 leading-tight">Perlu Bantuan Teknis?</h5>
+                    <p className="text-[11px] font-medium text-indigo-700 mt-1">Kami berusaha memberikan pengalaman terbaik. Jika Anda mengalami kesulitan dalam pengoperasian aplikasi atau ada bug/kesalahan sistem pencatat, jangan ragu untuk menghubungi dukungan kami.</p>
+                  </div>
+                </div>
               </div>
             )}
           </motion.div>
