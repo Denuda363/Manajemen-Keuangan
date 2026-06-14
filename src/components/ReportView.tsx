@@ -42,8 +42,8 @@ export default function ReportView({
   initialCashBalance = 0,
   initialTransferBalance = 0
 }: ReportViewProps) {
-  // Filter types: "harian" (Tanggal), "mingguan" (Mingguan), "bulanan" (Bulan), "tahunan" (Tahun)
-  const [filterType, setFilterType] = useState<"harian" | "mingguan" | "bulanan" | "tahunan">("bulanan");
+  // Filter types: "harian" (Tanggal), "mingguan" (Mingguan), "bulanan" (Bulan), "tahunan" (Tahun), "rentang" (Rentang Tanggal)
+  const [filterType, setFilterType] = useState<"harian" | "mingguan" | "bulanan" | "tahunan" | "rentang">("bulanan");
   const [showPdfGuide, setShowPdfGuide] = useState(false);
   
   // Pivot states for custom date and times
@@ -56,6 +56,14 @@ export default function ReportView({
   });
   const [selectedYear, setSelectedYear] = useState<number>(() => {
     return new Date().getFullYear();
+  });
+  const [startDate, setStartDate] = useState<string>(() => {
+    const today = new Date();
+    const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+    return startOfMonth.toISOString().split("T")[0];
+  });
+  const [endDate, setEndDate] = useState<string>(() => {
+    return new Date().toISOString().split("T")[0];
   });
 
   // Track hovered item on trend charts
@@ -128,6 +136,20 @@ export default function ReportView({
           setSelectedMonth(prev => prev + 1);
         }
       }
+    } else if (filterType === "rentang") {
+      const s = new Date(startDate);
+      const e = new Date(endDate);
+      const diffTime = Math.abs(e.getTime() - s.getTime());
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) || 1;
+      const shift = direction === "next" ? diffDays : -diffDays;
+      
+      const nextS = new Date(startDate);
+      nextS.setDate(nextS.getDate() + shift);
+      const nextE = new Date(endDate);
+      nextE.setDate(nextE.getDate() + shift);
+      
+      setStartDate(nextS.toISOString().split("T")[0]);
+      setEndDate(nextE.toISOString().split("T")[0]);
     } else {
       setSelectedYear(prev => prev + (direction === "next" ? 1 : -1));
     }
@@ -152,8 +174,15 @@ export default function ReportView({
     if (filterType === "bulanan") {
       return `${MONTH_NAMES[selectedMonth]} ${selectedYear}`;
     }
+    if (filterType === "rentang") {
+      const startD = new Date(startDate);
+      const endD = new Date(endDate);
+      const startLabel = startD.toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" });
+      const endLabel = endD.toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" });
+      return `${startLabel} - ${endLabel}`;
+    }
     return `Tahun ${selectedYear}`;
-  }, [filterType, selectedDate, selectedMonth, selectedYear, weekRange]);
+  }, [filterType, selectedDate, selectedMonth, selectedYear, weekRange, startDate, endDate]);
 
   // Filter transactions exactly matching selected period rules
   const filteredTransactions = useMemo(() => {
@@ -173,10 +202,13 @@ export default function ReportView({
       if (filterType === "bulanan") {
         return txYr === selectedYear && txMo === selectedMonth;
       }
+      if (filterType === "rentang") {
+        return tx.date >= startDate && tx.date <= endDate;
+      }
       // tahunan
       return txYr === selectedYear;
     });
-  }, [transactions, filterType, selectedDate, selectedMonth, selectedYear, weekRange]);
+  }, [transactions, filterType, selectedDate, selectedMonth, selectedYear, weekRange, startDate, endDate]);
 
   // Sort chronologically for printing ledgers cleanly
   const chronologicalTransactions = useMemo(() => {
@@ -288,6 +320,9 @@ export default function ReportView({
         const startOfYrStr = `${selectedYear}-01-01`;
         return dateStr < startOfYrStr;
       }
+      if (filterType === "rentang") {
+        return dateStr < startDate;
+      }
       return false;
     };
 
@@ -336,7 +371,7 @@ export default function ReportView({
       const amt = tx.amount;
       
       let dateLabel = "";
-      if (filterType === "mingguan" || filterType === "bulanan") {
+      if (filterType === "mingguan" || filterType === "bulanan" || filterType === "rentang") {
         dateLabel = new Date(tx.date).toLocaleDateString("id-ID", { day: "2-digit", month: "short" }) + " - ";
       } else if (filterType === "tahunan") {
         dateLabel = new Date(tx.date).toLocaleDateString("id-ID", { month: "long" }) + " - ";
@@ -419,7 +454,7 @@ export default function ReportView({
       totalIncomeCombine: incomeTunaiTotal + incomeTransferTotal,
       totalIncomePlusMetko: incomeTunaiTotal + incomeTransferTotal + cashSaldoAwal
     };
-  }, [transactions, displayFilteredTransactions, filterType, selectedDate, selectedMonth, selectedYear, weekRange]);
+  }, [transactions, displayFilteredTransactions, filterType, selectedDate, selectedMonth, selectedYear, weekRange, startDate, endDate]);
 
   // Export report to MS Excel compatible spreadsheet
   const exportToExcel = () => {
@@ -433,6 +468,12 @@ export default function ReportView({
       filterText = `Bulan: ${monthNames[selectedMonth]} ${selectedYear}`;
     } else if (filterType === "tahunan") {
       filterText = `Tahun: ${selectedYear}`;
+    } else if (filterType === "rentang") {
+      const startD = new Date(startDate);
+      const endD = new Date(endDate);
+      const startLabel = startD.toLocaleDateString("id-ID", { day: "numeric", month: "long" });
+      const endLabel = endD.toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" });
+      filterText = `Rentang: ${startLabel} s.d. ${endLabel}`;
     }
 
     const htmlContent = `
@@ -722,6 +763,7 @@ export default function ReportView({
     if (filterType === "harian") periodName = `Harian_${selectedDate}`;
     else if (filterType === "mingguan") periodName = `Mingguan_${weekRange.startStr}_ke_${weekRange.endStr}`;
     else if (filterType === "bulanan") periodName = `Bulanan_${selectedYear}_${selectedMonth + 1}`;
+    else if (filterType === "rentang") periodName = `Rentang_${startDate}_ke_${endDate}`;
     else if (filterType === "tahunan") periodName = `Tahunan_${selectedYear}`;
 
     link.setAttribute("download", `Laporan_Keuangan_DompetPintar_${periodName}.xls`);
@@ -816,6 +858,76 @@ export default function ReportView({
       return segments;
     }
 
+    if (filterType === "rentang") {
+      const data: { key: string, label: string, income: number, componentIdx?: number, expense: number, savings: number, startStr?: string, endStr?: string }[] = [];
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+      const diffTime = Math.abs(end.getTime() - start.getTime());
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) || 1;
+      
+      if (diffDays <= 31) {
+        for (let i = 0; i < diffDays; i++) {
+          const d = new Date(start);
+          d.setDate(start.getDate() + i);
+          const dStr = d.toISOString().split("T")[0];
+          const label = d.toLocaleDateString("id-ID", { day: "numeric", month: "short" });
+          data.push({
+            key: dStr,
+            label,
+            income: 0,
+            expense: 0,
+            savings: 0
+          });
+        }
+        
+        transactions.forEach((tx) => {
+          const match = data.find(item => item.key === tx.date);
+          if (match) {
+            if (tx.type === "pemasukan") match.income += tx.amount;
+            else if (tx.type === "pengeluaran") match.expense += tx.amount;
+            else if (tx.type === "nabung") match.savings += tx.amount;
+          }
+        });
+      } else {
+        const segmentDays = Math.ceil(diffDays / 6);
+        for (let i = 0; i < 6; i++) {
+          const segStart = new Date(start);
+          segStart.setDate(start.getDate() + (i * segmentDays));
+          
+          const segEnd = new Date(start);
+          segEnd.setDate(start.getDate() + ((i + 1) * segmentDays - 1));
+          if (segEnd > end) {
+            segEnd.setTime(end.getTime());
+          }
+          
+          const labelStart = segStart.toLocaleDateString("id-ID", { day: "numeric", month: "short" });
+          const labelEnd = segEnd.toLocaleDateString("id-ID", { day: "numeric", month: "short" });
+          const label = `${labelStart} - ${labelEnd}`;
+          
+          data.push({
+            key: `seg-${i}`,
+            label,
+            startStr: segStart.toISOString().split("T")[0],
+            endStr: segEnd.toISOString().split("T")[0],
+            income: 0,
+            expense: 0,
+            savings: 0
+          });
+        }
+        
+        transactions.forEach((tx) => {
+          if (!tx.date) return;
+          const match = data.find(item => tx.date! >= item.startStr! && tx.date! <= item.endStr!);
+          if (match) {
+            if (tx.type === "pemasukan") match.income += tx.amount;
+            else if (tx.type === "pengeluaran") match.expense += tx.amount;
+            else if (tx.type === "nabung") match.savings += tx.amount;
+          }
+        });
+      }
+      return data;
+    }
+
     // tahunan
     // 12 months dataset for the selected year
     const monthsData = Array.from({ length: 12 }, (_, i) => ({
@@ -839,7 +951,7 @@ export default function ReportView({
       }
     });
     return monthsData;
-  }, [transactions, filterType, selectedDate, selectedMonth, selectedYear, weekRange]);
+  }, [transactions, filterType, selectedDate, selectedMonth, selectedYear, weekRange, startDate, endDate]);
 
   // Compute boundaries for drawing the modern custom chart
   const chartMetrics = useMemo(() => {
@@ -1230,6 +1342,14 @@ export default function ReportView({
               >
                 Tahunan
               </button>
+              <button
+                onClick={() => { setFilterType("rentang"); setHoveredIdx(null); }}
+                className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                  filterType === "rentang" ? "bg-white text-slate-800 shadow-xs" : "text-slate-500 hover:text-slate-800"
+                }`}
+              >
+                Rentang Tanggal
+              </button>
             </div>
 
             <div className="flex items-center gap-2">
@@ -1322,6 +1442,36 @@ export default function ReportView({
               </div>
             )}
 
+            {/* Input Date Picker for Rentang Tanggal */}
+            {filterType === "rentang" && (
+              <div className="flex flex-col sm:flex-row gap-3 flex-1 min-w-[260px]">
+                <div className="flex-1 min-w-[120px]">
+                  <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block mb-1">Mulai Tanggal</label>
+                  <div className="relative">
+                    <Calendar className="absolute left-3 top-2.5 w-4 h-4 text-indigo-500 pointer-events-none" />
+                    <input
+                      type="date"
+                      value={startDate}
+                      onChange={(e) => setStartDate(e.target.value)}
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-3 py-2 text-xs font-bold focus:outline-indigo-500 cursor-pointer text-slate-800"
+                    />
+                  </div>
+                </div>
+                <div className="flex-1 min-w-[120px]">
+                  <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block mb-1">Sampai Tanggal</label>
+                  <div className="relative">
+                    <Calendar className="absolute left-3 top-2.5 w-4 h-4 text-indigo-500 pointer-events-none" />
+                    <input
+                      type="date"
+                      value={endDate}
+                      onChange={(e) => setEndDate(e.target.value)}
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-3 py-2 text-xs font-bold focus:outline-indigo-500 cursor-pointer text-slate-800"
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Dropdowns for Bulanan */}
             {filterType === "bulanan" && (
               <>
@@ -1396,9 +1546,13 @@ export default function ReportView({
               type="button"
               onClick={() => {
                 const today = new Date();
-                setSelectedDate(today.toISOString().split("T")[0]);
+                const todayStr = today.toISOString().split("T")[0];
+                const startOfMonthStr = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split("T")[0];
+                setSelectedDate(todayStr);
                 setSelectedMonth(today.getMonth());
                 setSelectedYear(today.getFullYear());
+                setStartDate(startOfMonthStr);
+                setEndDate(todayStr);
                 setHoveredIdx(null);
               }}
               title="Reset ke Sekarang"
@@ -1919,7 +2073,7 @@ export default function ReportView({
           <div className="text-right">
             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Periode Laporan:</span>
             <p className="font-extrabold text-indigo-900 text-sm mt-0.5 uppercase tracking-wide">{formattedPeriodLabel}</p>
-            <p className="text-slate-500 text-[10px] mt-0.5">Filter Jenis: {filterType === 'harian' ? 'Harian' : filterType === 'mingguan' ? 'Mingguan (7 Hari)' : filterType === 'bulanan' ? 'Bulanan' : 'Tahunan'}</p>
+            <p className="text-slate-500 text-[10px] mt-0.5">Filter Jenis: {filterType === 'harian' ? 'Harian' : filterType === 'mingguan' ? 'Mingguan (7 Hari)' : filterType === 'bulanan' ? 'Bulanan' : filterType === 'rentang' ? 'Rentang Tanggal' : 'Tahunan'}</p>
             <p className="text-slate-500 text-[10px]">Aliran Dana: {reportViewType === "semua" ? "Gabungan (Tunai & Rekening)" : reportViewType === "tunai" ? "Hanya Kas Tunai" : "Hanya Rekening / Bank"}</p>
             <p className="text-slate-500 text-[10px]">Jumlah Ledger: {chronologicalTransactions.length} transaksi</p>
           </div>
