@@ -12,7 +12,7 @@ import {
   LogOut, Sparkles, Plus, Wallet, CreditCard, ChevronRight,
   TrendingUp, TrendingDown, DollarSign, Calendar, ListTodo, AlertTriangle, Check, BookOpen, PiggyBank,
   LayoutDashboard, History, BarChart3, Target, Settings, Users, FolderTree, RefreshCw, Trash2, Edit2, ShieldAlert,
-  Building, MapPin, Phone, Mail, FileText, Cpu
+  Building, MapPin, Phone, Mail, FileText, Cpu, Monitor
 } from "lucide-react";
 import { motion } from "motion/react";
 import { collection, doc, setDoc, getDoc, getDocs, deleteDoc, updateDoc, query, where, onSnapshot, writeBatch } from "firebase/firestore";
@@ -71,6 +71,8 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
   const [companyProfile, setCompanyProfile] = useState<CompanyProfile | null>(null);
   const [isEditingCompany, setIsEditingCompany] = useState(false);
   const [companyFormName, setCompanyFormName] = useState("");
+  const [companyFormAppName, setCompanyFormAppName] = useState("");
+  const [companyFormReportTitle, setCompanyFormReportTitle] = useState("");
   const [companyFormAddress, setCompanyFormAddress] = useState("");
   const [companyFormPhone, setCompanyFormPhone] = useState("");
   const [companyFormEmail, setCompanyFormEmail] = useState("");
@@ -815,6 +817,8 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
   const startEditingCompany = () => {
     if (companyProfile) {
       setCompanyFormName(companyProfile.name || "");
+      setCompanyFormAppName(companyProfile.appName || "");
+      setCompanyFormReportTitle(companyProfile.reportTitle || "");
       setCompanyFormAddress(companyProfile.address || "");
       setCompanyFormPhone(companyProfile.phone || "");
       setCompanyFormEmail(companyProfile.email || "");
@@ -823,6 +827,8 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
       setCompanyFormDescription(companyProfile.description || "");
     } else {
       setCompanyFormName("Apotek Assyifa Farma Cideres");
+      setCompanyFormAppName("DN Manajemen Keuangan");
+      setCompanyFormReportTitle("MANAJEMEN KEUANGAN APOTEK ASSYIFA FARMA CIDERES");
       setCompanyFormAddress("Jl Raya Cideres Ds Cipaku Kec Kadipaten - Majalengka");
       setCompanyFormPhone("");
       setCompanyFormEmail("");
@@ -845,6 +851,8 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
       const updatedProfile: CompanyProfile = {
         id: "profile",
         name: companyFormName || "",
+        appName: companyFormAppName || "",
+        reportTitle: companyFormReportTitle || "",
         address: companyFormAddress || "",
         phone: companyFormPhone || "",
         email: companyFormEmail || "",
@@ -955,7 +963,13 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
             </div>
             <div>
               <span className="text-xl font-black tracking-tight text-slate-900 uppercase">
-                DN <span className="text-indigo-600">Manajemen Keuangan</span>
+                {companyProfile?.appName ? (
+                  companyProfile.appName.split(' ').map((word, idx, arr) => (
+                    idx === arr.length - 1 ? <span key={idx} className="text-indigo-600">{word}</span> : <span key={idx}>{word} </span>
+                  ))
+                ) : (
+                  <>DN <span className="text-indigo-600">Manajemen Keuangan</span></>
+                )}
               </span>
               <span className="hidden leading-none sm:inline-block ml-4 px-3 py-1 bg-green-100/80 text-green-700 text-xs font-bold rounded-full border border-green-200/50">
                 Sistem Otomatis Aktif
@@ -2123,6 +2137,22 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
                         </div>
 
                         <div className="flex items-start gap-3">
+                          <Monitor className="w-4 h-4 text-slate-400 mt-0.5 shrink-0" />
+                          <div>
+                            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wide block">Judul Aplikasi</span>
+                            <span className="text-xs font-semibold text-slate-800">{companyProfile?.appName || "DN Manajemen Keuangan"}</span>
+                          </div>
+                        </div>
+
+                        <div className="flex items-start gap-3">
+                          <FileText className="w-4 h-4 text-slate-400 mt-0.5 shrink-0" />
+                          <div>
+                            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wide block">Judul Cetak Laporan</span>
+                            <span className="text-xs font-medium text-slate-700">{companyProfile?.reportTitle || "MANAJEMEN KEUANGAN APOTEK ASSYIFA FARMA CIDERES"}</span>
+                          </div>
+                        </div>
+
+                        <div className="flex items-start gap-3">
                           <Cpu className="w-4 h-4 text-slate-400 mt-0.5 shrink-0" />
                           <div>
                             <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wide block">Jenis Sektor Usaha</span>
@@ -2200,6 +2230,34 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
                           value={companyFormName}
                           onChange={(e) => setCompanyFormName(e.target.value)}
                           placeholder="Masukkan nama resmi perusahaan"
+                          className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-indigo-500 text-slate-800"
+                        />
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wide flex items-center gap-1">
+                          <Monitor className="w-3.5 h-3.5" />
+                          <span>Judul Aplikasi</span>
+                        </label>
+                        <input
+                          type="text"
+                          value={companyFormAppName}
+                          onChange={(e) => setCompanyFormAppName(e.target.value)}
+                          placeholder="Contoh: DN Manajemen Keuangan"
+                          className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-indigo-500 text-slate-800"
+                        />
+                      </div>
+
+                      <div className="space-y-1.5 md:col-span-2">
+                        <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wide flex items-center gap-1">
+                          <FileText className="w-3.5 h-3.5" />
+                          <span>Judul Cetak Laporan</span>
+                        </label>
+                        <input
+                          type="text"
+                          value={companyFormReportTitle}
+                          onChange={(e) => setCompanyFormReportTitle(e.target.value)}
+                          placeholder="Contoh: MANAJEMEN KEUANGAN APOTEK ASSYIFA FARMA"
                           className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-indigo-500 text-slate-800"
                         />
                       </div>

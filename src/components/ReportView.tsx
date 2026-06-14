@@ -475,7 +475,7 @@ export default function ReportView({
             <td colspan="7" class="title" style="font-size: 18px; font-weight: 900; color: #1e293b;">LAPORAN REKONSILIASI KEUANGAN</td>
           </tr>
           <tr>
-            <td colspan="7" class="subtitle" style="font-weight: 600; color: #64748b;">Dompet Pintar - ${user?.name || "User"} | Periode: ${filterText} | Jenis Laporan: ${
+            <td colspan="7" class="subtitle" style="font-weight: 600; color: #64748b;">${companyProfile?.appName || "DN Manajemen Keuangan"} - ${user?.name || "User"} | Periode: ${filterText} | Jenis Laporan: ${
               reportViewType === "semua" ? "Gabungan (Tunai & Rekening)" : reportViewType === "tunai" ? "Hanya Kas Tunai" : "Hanya Rekening / Bank"
             }</td>
           </tr>
@@ -696,7 +696,7 @@ export default function ReportView({
           <tr style="border: none !important;">
             <td style="border: none !important; width: 50%; text-align: center; font-size: 10px;">
               Petugas Audit Keuangan Digital,<br/><br/><br/><br/>
-              <strong>( ${user?.name || "Sistem Dompet Pintar"} )</strong>
+              <strong>( ${user?.name || `Sistem ${companyProfile?.appName || "DN Manajemen Keuangan"}`} )</strong>
             </td>
             <td style="border: none !important; width: 50%; text-align: center; font-size: 10px;">
               Mengetahui dan Disetujui,<br/><br/><br/><br/>
@@ -1890,7 +1890,7 @@ export default function ReportView({
         {/* Kop Surat / Letterhead */}
         <div className="border-b-4 border-double border-slate-900 pb-4 text-center">
           <h1 className="text-2xl font-black tracking-tight uppercase text-slate-900">
-            MANAJEMEN KEUANGAN APOTEK ASSYIFA FARMA CIDERES
+            {companyProfile?.reportTitle || "MANAJEMEN KEUANGAN APOTEK ASSYIFA FARMA CIDERES"}
           </h1>
           {companyProfile ? (
             <div className="text-[10px] text-slate-600 mt-1 space-y-0.5">

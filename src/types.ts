@@ -28,6 +28,8 @@ export interface User {
 export interface CompanyProfile {
   id: string;
   name: string;
+  appName?: string;
+  reportTitle?: string;
   address: string;
   phone: string;
   email: string;

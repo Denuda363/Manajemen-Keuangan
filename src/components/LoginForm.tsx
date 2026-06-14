@@ -3,11 +3,11 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { useState, FormEvent } from "react";
+import { useState, FormEvent, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { User } from "../types";
+import { User, CompanyProfile } from "../types";
 import { Lock, Mail, User as UserIcon, LogIn, ChevronRight, AlertCircle, Sparkles } from "lucide-react";
-import { collection, doc, setDoc, getDoc, getDocs, query, where, writeBatch } from "firebase/firestore";
+import { collection, doc, setDoc, getDoc, getDocs, query, where, writeBatch, onSnapshot } from "firebase/firestore";
 import { db, handleFirestoreError, OperationType } from "../firebase";
 
 interface LoginFormProps {
@@ -22,6 +22,14 @@ export default function LoginForm({ onLoginSuccess }: LoginFormProps) {
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [companyProfile, setCompanyProfile] = useState<CompanyProfile | null>(null);
+
+  useEffect(() => {
+    const unsub = onSnapshot(doc(db, "company", "profile"), (docSnap) => {
+      if (docSnap.exists()) setCompanyProfile(docSnap.data() as CompanyProfile);
+    });
+    return () => unsub();
+  }, []);
 
   const handleDemoLogin = async () => {
     setLoading(true);
@@ -259,10 +267,16 @@ export default function LoginForm({ onLoginSuccess }: LoginFormProps) {
         </motion.div>
         
         <h2 className="text-2xl font-black text-slate-900 tracking-tight uppercase">
-          DN <span className="text-indigo-600">Manajemen Keuangan</span>
+          {companyProfile?.appName ? (
+            companyProfile.appName.split(' ').map((word, idx, arr) => (
+              idx === arr.length - 1 ? <span key={idx} className="text-indigo-600">{word}</span> : <span key={idx}>{word} </span>
+            ))
+          ) : (
+            <>DN <span className="text-indigo-600">Manajemen Keuangan</span></>
+          )}
         </h2>
         <p className="mt-2 text-sm text-slate-600 max-w-sm mx-auto">
-          DN Manajemen Keuangan – Solusi cerdas atur pemasukan & pengeluaran usaha dan pribadi Anda.
+          {companyProfile?.appName || "DN Manajemen Keuangan"} – Solusi cerdas atur pemasukan & pengeluaran usaha dan pribadi Anda.
         </p>
       </div>
 
@@ -417,7 +431,7 @@ export default function LoginForm({ onLoginSuccess }: LoginFormProps) {
           </motion.div>
 
         <p className="mt-6 text-center text-xs text-slate-400">
-          Hak Cipta © 2026 DN Manajemen Keuangan. Berjalan aman pada peramban Anda.
+          Hak Cipta © {new Date().getFullYear()} {companyProfile?.appName || "DN Manajemen Keuangan"}. Berjalan aman pada peramban Anda.
         </p>
       </div>
     </div>
