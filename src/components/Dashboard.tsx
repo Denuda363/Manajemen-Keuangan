@@ -119,32 +119,17 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
   useEffect(() => {
     if (!user?.id) return;
 
-    // 1. Listen to user profile doc for budget limits, custom categories & initial balances
+    // 1. Listen to user profile doc
     const userDocRef = doc(db, "users", user.id);
     const unsubUser = onSnapshot(userDocRef, (docSnap) => {
-      if (docSnap.exists()) {
-        const data = docSnap.data();
-        if (data.incomeCategories) setIncomeCategories(data.incomeCategories);
-        if (data.expenseCategories) setExpenseCategories(data.expenseCategories);
-        if (data.budgetLimits) setBudgetLimits(data.budgetLimits);
-
-        const cashVal = Number(data.initialCashBalance) || 0;
-        const transVal = Number(data.initialTransferBalance) || 0;
-        setInitialCashBalance(cashVal);
-        setInitialTransferBalance(transVal);
-      } else {
+      if (!docSnap.exists()) {
         // Automatically initialize user doc with fallback settings if it doesn't exist
         const defaultDoc = {
           id: user.id,
           username: user.username,
           name: user.name,
           email: user.email,
-          password: "",
-          incomeCategories: INCOME_CATEGORIES,
-          expenseCategories: EXPENSE_CATEGORIES,
-          budgetLimits: budgetLimits,
-          initialCashBalance: 0,
-          initialTransferBalance: 0
+          password: ""
         };
         setDoc(userDocRef, defaultDoc).catch(err => {
           console.error("Gagal melakukan inisialisasi dokumen pengguna:", err);
@@ -185,6 +170,15 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
       if (docSnap.exists()) {
         const data = docSnap.data() as CompanyProfile;
         setCompanyProfile(data);
+        
+        const cashVal = Number(data.initialCashBalance) || 0;
+        const transVal = Number(data.initialTransferBalance) || 0;
+        setInitialCashBalance(cashVal);
+        setInitialTransferBalance(transVal);
+
+        if (data.incomeCategories) setIncomeCategories(data.incomeCategories);
+        if (data.expenseCategories) setExpenseCategories(data.expenseCategories);
+        if (data.budgetLimits) setBudgetLimits(data.budgetLimits);
       } else {
         const defaultCompany: CompanyProfile = {
           id: "profile",
@@ -195,7 +189,12 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
           businessType: "Apotek",
           npwp: "31.456.789.2-401.000",
           description: "Perusahaan finansial terpadu yang membantu bisnis Anda mencatat kas, setoran, serta mengawasi likuiditas perusahaan.",
-          updatedAt: new Date().toISOString()
+          updatedAt: new Date().toISOString(),
+          initialCashBalance: 0,
+          initialTransferBalance: 0,
+          incomeCategories: INCOME_CATEGORIES,
+          expenseCategories: EXPENSE_CATEGORIES,
+          budgetLimits: budgetLimits
         };
         setDoc(companyDocRef, defaultCompany).catch(err => {
           console.error("Gagal inisialisasi profil perusahaan:", err);
@@ -412,12 +411,12 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
     };
     
     try {
-      await setDoc(doc(db, "users", user.id), { budgetLimits: updated }, { merge: true });
+      await updateDoc(doc(db, "company", "profile"), { budgetLimits: updated });
       setBudgetLimits(updated);
       setBudgetLimitAmount("");
       triggerToast(`Budget ${budgetLimitCategory} berhasil diatur!`);
     } catch (error) {
-      handleFirestoreError(error, OperationType.UPDATE, `users/${user.id}`);
+      handleFirestoreError(error, OperationType.UPDATE, `company/profile`);
     }
   };
 
@@ -495,14 +494,7 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
           username: userFormUsername.trim(),
           name: userFormName.trim(),
           email: userFormEmail.trim(),
-          password: userFormPassword,
-          incomeCategories: INCOME_CATEGORIES,
-          expenseCategories: EXPENSE_CATEGORIES,
-          budgetLimits: {
-            "Makanan & Minuman": 1000000,
-            "Belanja Harian": 2000000,
-            "Transportasi": 500000
-          }
+          password: userFormPassword
         };
 
         await setDoc(doc(db, "users", newUserId), newUser);
@@ -609,18 +601,18 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
   const saveIncomeCategoriesList = async (newList: string[]) => {
     setIncomeCategories(newList);
     try {
-      await updateDoc(doc(db, "users", user.id), { incomeCategories: newList });
+      await updateDoc(doc(db, "company", "profile"), { incomeCategories: newList });
     } catch (err) {
-      handleFirestoreError(err, OperationType.UPDATE, `users/${user.id}`);
+      handleFirestoreError(err, OperationType.UPDATE, `company/profile`);
     }
   };
 
   const saveExpenseCategoriesList = async (newList: string[]) => {
     setExpenseCategories(newList);
     try {
-      await updateDoc(doc(db, "users", user.id), { expenseCategories: newList });
+      await updateDoc(doc(db, "company", "profile"), { expenseCategories: newList });
     } catch (err) {
-      handleFirestoreError(err, OperationType.UPDATE, `users/${user.id}`);
+      handleFirestoreError(err, OperationType.UPDATE, `company/profile`);
     }
   };
 
@@ -774,8 +766,8 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
 
     if (confirm("PERINGATAN KRITIS: Tindakan ini tidak dapat dibatalkan. Apakah Anda benar-benar yakin ingin menghapus semua rekam transaksi, batas anggaran, dan preferensi kategori Anda?")) {
       try {
-        // Delete all transactions of this user in Firestore
-        const q = query(collection(db, "transactions"), where("userId", "==", user.id));
+        // Delete all transactions in Firestore
+        const q = query(collection(db, "transactions"));
         const snap = await getDocs(q);
         const batch = writeBatch(db);
         snap.forEach((docSnap) => {
@@ -783,9 +775,9 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
         });
         await batch.commit();
 
-        // Overwrite user document with defaults
-        const userDocRef = doc(db, "users", user.id);
-        await updateDoc(userDocRef, {
+        // Overwrite company profile with defaults
+        const companyDocRef = doc(db, "company", "profile");
+        await updateDoc(companyDocRef, {
           incomeCategories: INCOME_CATEGORIES,
           expenseCategories: EXPENSE_CATEGORIES,
           budgetLimits: {
@@ -881,12 +873,12 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
 
     setIsSavingBalances(true);
     try {
-      const userDocRef = doc(db, "users", user.id);
-      await setDoc(userDocRef, {
+      const companyDocRef = doc(db, "company", "profile");
+      await setDoc(companyDocRef, {
         initialCashBalance: cash,
         initialTransferBalance: trans
       }, { merge: true });
-      triggerToast("Saldo awal berhasil diperbarui!");
+      triggerToast("Saldo awal global berhasil diperbarui!");
     } catch (error: any) {
       console.error("Gagal menyimpan saldo awal:", error);
       triggerToast("Gagal menyimpan saldo: " + error.message);

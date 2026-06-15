@@ -37,6 +37,11 @@ export interface CompanyProfile {
   npwp: string;
   description: string;
   updatedAt: string;
+  initialCashBalance?: number;
+  initialTransferBalance?: number;
+  incomeCategories?: string[];
+  expenseCategories?: string[];
+  budgetLimits?: Record<string, number>;
 }
 
 export interface BudgetLimit {
