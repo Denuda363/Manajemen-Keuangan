@@ -41,12 +41,6 @@ export interface CompanyProfile {
   initialTransferBalance?: number;
   incomeCategories?: string[];
   expenseCategories?: string[];
-  budgetLimits?: Record<string, number>;
-}
-
-export interface BudgetLimit {
-  category: string;
-  limitAmount: number;
 }
 
 export interface CategorySummary {

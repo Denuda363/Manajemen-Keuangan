@@ -2302,7 +2302,7 @@ export default function ReportView({
                     <td className="text-center lowercase text-slate-500 font-mono text-[8px]">{tx.method}</td>
                     <td className="text-center capitalize font-bold">
                       <span className="print-badge">
-                        {tx.type === "pemasukan" ? "Masuk" : tx.type === "pengeluaran" ? "Keluar" : "Celengan"}
+                        {tx.type === "pemasukan" ? "Masuk" : tx.type === "pengeluaran" ? "Keluar" : "Rekening"}
                       </span>
                     </td>
                     <td className={`text-right font-bold font-mono text-[10px] ${tx.type === "pemasukan" ? "text-emerald-700" : tx.type === "pengeluaran" ? "text-red-700" : "text-indigo-700"}`}>

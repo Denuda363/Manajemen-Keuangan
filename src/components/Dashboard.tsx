@@ -12,7 +12,7 @@ import {
   LogOut, Sparkles, Plus, Wallet, CreditCard, ChevronRight,
   TrendingUp, TrendingDown, DollarSign, Calendar, ListTodo, AlertTriangle, Check, BookOpen, PiggyBank,
   LayoutDashboard, History, BarChart3, Target, Settings, Users, FolderTree, RefreshCw, Trash2, Edit2, ShieldAlert,
-  Building, MapPin, Phone, Mail, FileText, Cpu, Monitor, Info
+  Building, MapPin, Phone, Mail, FileText, Cpu, Monitor, Info, Download, Upload, Database
 } from "lucide-react";
 import { motion } from "motion/react";
 import { collection, doc, setDoc, getDoc, getDocs, deleteDoc, updateDoc, query, where, onSnapshot, writeBatch } from "firebase/firestore";
@@ -25,7 +25,7 @@ interface DashboardProps {
 
 export default function Dashboard({ user, onLogout }: DashboardProps) {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [activeTab, setActiveTab] = useState<"ringkasan" | "transaksi" | "laporan" | "anggaran" | "tabungan" | "pengaturan">("ringkasan");
+  const [activeTab, setActiveTab] = useState<"ringkasan" | "transaksi" | "laporan" | "tabungan" | "pengaturan">("ringkasan");
   
   // Smart Quick Add state
   const [smartInput, setSmartInput] = useState("");
@@ -43,15 +43,6 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
   // Edit state
   const [editingTransactionId, setEditingTransactionId] = useState<string | null>(null);
 
-  // Budget Limits states
-  const [budgetLimitCategory, setBudgetLimitCategory] = useState("Makanan & Minuman");
-  const [budgetLimitAmount, setBudgetLimitAmount] = useState("");
-  const [budgetLimits, setBudgetLimits] = useState<Record<string, number>>({
-    "Makanan & Minuman": 1000000,
-    "Belanja Harian": 2000000,
-    "Transportasi": 500000
-  });
-
   // Success Notification banner
   const [toastMessage, setToastMessage] = useState("");
 
@@ -65,7 +56,7 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
   const [expenseCategories, setExpenseCategories] = useState<string[]>(EXPENSE_CATEGORIES);
 
   // Settings sub-tab state
-  const [settingsActiveTab, setSettingsActiveTab] = useState<"pengguna" | "kategori" | "reset" | "perusahaan" | "about" | "guide">("pengguna");
+  const [settingsActiveTab, setSettingsActiveTab] = useState<"pengguna" | "kategori" | "reset" | "perusahaan" | "about" | "guide" | "backup">("pengguna");
 
   // Company Profile states
   const [companyProfile, setCompanyProfile] = useState<CompanyProfile | null>(null);
@@ -178,7 +169,6 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
 
         if (data.incomeCategories) setIncomeCategories(data.incomeCategories);
         if (data.expenseCategories) setExpenseCategories(data.expenseCategories);
-        if (data.budgetLimits) setBudgetLimits(data.budgetLimits);
       } else {
         const defaultCompany: CompanyProfile = {
           id: "profile",
@@ -193,8 +183,7 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
           initialCashBalance: 0,
           initialTransferBalance: 0,
           incomeCategories: INCOME_CATEGORIES,
-          expenseCategories: EXPENSE_CATEGORIES,
-          budgetLimits: budgetLimits
+          expenseCategories: EXPENSE_CATEGORIES
         };
         setDoc(companyDocRef, defaultCompany).catch(err => {
           console.error("Gagal inisialisasi profil perusahaan:", err);
@@ -394,30 +383,6 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
     setFormDescription(tx.description);
     setFormDate(tx.date);
     setShowManualForm(true);
-  };
-
-  // Save budget limit changes
-  const handleSaveBudget = async (e: FormEvent) => {
-    e.preventDefault();
-    const limitAmt = parseFloat(budgetLimitAmount);
-    if (isNaN(limitAmt) || limitAmt <= 0) {
-      alert("Format budget tidak valid");
-      return;
-    }
-
-    const updated = {
-      ...budgetLimits,
-      [budgetLimitCategory]: limitAmt
-    };
-    
-    try {
-      await updateDoc(doc(db, "company", "profile"), { budgetLimits: updated });
-      setBudgetLimits(updated);
-      setBudgetLimitAmount("");
-      triggerToast(`Budget ${budgetLimitCategory} berhasil diatur!`);
-    } catch (error) {
-      handleFirestoreError(error, OperationType.UPDATE, `company/profile`);
-    }
   };
 
   // Submit Savings ("Nabung") transaction (Move Cash to Bank Account)
@@ -755,6 +720,87 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
   };
 
   // Reset and defaults handler
+  // Backup and Restore Data
+  const handleBackupData = () => {
+    try {
+      const data = {
+        transactions,
+        companyProfile
+      };
+      const jsonStr = JSON.stringify(data, null, 2);
+      const blob = new Blob([jsonStr], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `backup_kas_${new Date().toISOString().split("T")[0]}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      triggerToast("Backup data berhasil diunduh.");
+    } catch (err: any) {
+      console.error("Gagal backup data:", err);
+      alert("Gagal melakukan backup: " + err.message);
+    }
+  };
+
+  const handleRestoreData = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!confirm("PERINGATAN KRITIS: Apakah Anda yakin ingin memulihkan (restore) data dari file ini? Operasi ini akan menimpa dan menghapus semua catatan transaksi yang ada saat ini.")) {
+      e.target.value = '';
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      try {
+        const content = event.target?.result as string;
+        const data = JSON.parse(content);
+        
+        if (!data.transactions || !Array.isArray(data.transactions) || !data.companyProfile) {
+          alert("Format file backup tidak valid atau rusak.");
+          return;
+        }
+
+        // Delete all transactions in Firestore
+        const q = query(collection(db, "transactions"));
+        const snap = await getDocs(q);
+        const delBatch = writeBatch(db);
+        snap.forEach((docSnap) => {
+          delBatch.delete(doc(db, "transactions", docSnap.id));
+        });
+        await delBatch.commit();
+
+        // Restore transactions with batch chunks (Firestore limit is 500)
+        const firestoreTx = data.transactions;
+        const chunks = [];
+        for (let i = 0; i < firestoreTx.length; i += 400) {
+          chunks.push(firestoreTx.slice(i, i + 400));
+        }
+
+        for (const chunk of chunks) {
+          const txBatch = writeBatch(db);
+          chunk.forEach((tx: any) => {
+            const docRef = doc(db, "transactions", tx.id);
+            txBatch.set(docRef, tx);
+          });
+          await txBatch.commit();
+        }
+
+        // Update company profile
+        const companyDocRef = doc(db, "company", "profile");
+        await updateDoc(companyDocRef, data.companyProfile);
+
+        triggerToast("Restore data berhasil diselesaikan!");
+      } catch (err: any) {
+        console.error("Gagal memulihkan data:", err);
+        alert("Gagal memulihkan data: " + err.message);
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  };
+
   const handleResetData = async (e: FormEvent) => {
     e.preventDefault();
     setResetError("");
@@ -764,7 +810,7 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
       return;
     }
 
-    if (confirm("PERINGATAN KRITIS: Tindakan ini tidak dapat dibatalkan. Apakah Anda benar-benar yakin ingin menghapus semua rekam transaksi, batas anggaran, dan preferensi kategori Anda?")) {
+    if (confirm("PERINGATAN KRITIS: Tindakan ini tidak dapat dibatalkan. Apakah Anda benar-benar yakin ingin menghapus semua rekam transaksi, saldo kas, dan preferensi kategori Anda?")) {
       try {
         // Delete all transactions in Firestore
         const q = query(collection(db, "transactions"));
@@ -779,22 +825,12 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
         const companyDocRef = doc(db, "company", "profile");
         await updateDoc(companyDocRef, {
           incomeCategories: INCOME_CATEGORIES,
-          expenseCategories: EXPENSE_CATEGORIES,
-          budgetLimits: {
-            "Makanan & Minuman": 1000000,
-            "Belanja Harian": 2000000,
-            "Transportasi": 500000
-          }
+          expenseCategories: EXPENSE_CATEGORIES
         });
 
         // Reset states in memory
         setIncomeCategories(INCOME_CATEGORIES);
         setExpenseCategories(EXPENSE_CATEGORIES);
-        setBudgetLimits({
-          "Makanan & Minuman": 1000000,
-          "Belanja Harian": 2000000,
-          "Transportasi": 500000
-        });
 
         setResetPin("");
         triggerToast("Semua data transaksi dan konfigurasi Anda berhasil di-reset ke default pabrik!");
@@ -887,40 +923,12 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
     }
   };
 
-  // Compute spending over budget limits for the current month
-  const budgetAlerts = useMemo(() => {
-    const alerts: { category: string; spent: number; limit: number; pct: number }[] = [];
-    const currentMonth = new Date().getMonth();
-    const currentYear = new Date().getFullYear();
-
-    // Filter current month expenses
-    const thisMonthExpenses = transactions.filter((tx) => {
-      const d = new Date(tx.date);
-      return tx.type === "pengeluaran" && d.getMonth() === currentMonth && d.getFullYear() === currentYear;
-    });
-
-    Object.keys(budgetLimits).forEach((cat) => {
-      const limit = budgetLimits[cat];
-      const spent = thisMonthExpenses
-        .filter(t => t.category === cat)
-        .reduce((sum, t) => sum + t.amount, 0);
-
-      const pct = limit > 0 ? (spent / limit) * 100 : 0;
-      if (pct >= 80) { // Notify at 80% or higher
-        alerts.push({ category: cat, spent, limit, pct });
-      }
-    });
-
-    return alerts;
-  }, [transactions, budgetLimits]);
-
   // Navigation item configurations
   const NAV_ITEMS = [
     { id: "ringkasan", label: "Ringkasan", labelShort: "Home", icon: <LayoutDashboard className="w-4 h-4 shrink-0" /> },
     { id: "transaksi", label: "Catatan Transaksi", labelShort: "Histori", icon: <History className="w-4 h-4 shrink-0" /> },
     { id: "laporan", label: "Analitik Laporan", labelShort: "Laporan", icon: <BarChart3 className="w-4 h-4 shrink-0" /> },
-    { id: "anggaran", label: "Batas Anggaran", labelShort: "Anggaran", icon: <Target className="w-4 h-4 shrink-0" /> },
-    { id: "tabungan", label: "Celengan Pintar", labelShort: "Tabungan", icon: <PiggyBank className="w-4 h-4 shrink-0" /> },
+    { id: "tabungan", label: "Saldo Kas Rekening", labelShort: "Rekening", icon: <PiggyBank className="w-4 h-4 shrink-0" /> },
     { id: "pengaturan", label: "Pengaturan", labelShort: "Atur", icon: <Settings className="w-4 h-4 shrink-0" /> },
   ] as const;
 
@@ -1174,26 +1182,6 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
               </div>
             </div>
 
-            {/* Budget limit alerts on Homepage */}
-            {budgetAlerts.length > 0 && (
-              <section className="bg-amber-50 border border-amber-100 p-4.5 rounded-2xl flex flex-col sm:flex-row gap-3.5 items-start">
-                <AlertTriangle className="w-6 h-6 text-amber-500 shrink-0 mt-0.5 animate-pulse" />
-                <div>
-                  <h4 className="text-sm font-bold text-amber-800">Peringatan Kuota Anggaran Bulanan!</h4>
-                  <p className="text-xs text-amber-700 mt-0.5">
-                    Sejumlah pos belanja Anda telah terpakai melampaui limit 80% kuota bulan ini:
-                  </p>
-                  <div className="flex flex-wrap gap-2.5 mt-2.5">
-                    {budgetAlerts.map(alert => (
-                      <span key={alert.category} className="bg-amber-100/90 text-amber-900 px-2.5 py-1 rounded-lg text-[10px] font-bold border border-amber-200">
-                        {alert.category} ({alert.pct.toFixed(0)}% terpakai)
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              </section>
-            )}
-
             {/* Prompt Parser Input card */}
             <section className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm space-y-4">
               <div>
@@ -1267,20 +1255,20 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
                 <div>
                   <h4 className="text-xs font-bold uppercase text-slate-400 tracking-wider flex items-center gap-1.5">
                     <PiggyBank className="w-4 h-4 text-indigo-600" />
-                    <span>Dana Celengan Aktif</span>
+                    <span>Saldo Kas Rekening</span>
                   </h4>
-                  <p className="text-[10px] text-slate-400 mt-0.5 font-medium">Rekapitulasi sisa uang fisik yang aman dipindahtangankan ke digital.</p>
+                  <p className="text-[10px] text-slate-400 mt-0.5 font-medium">Rekapitulasi sisa uang fisik yang dipindahtangankan ke digital (rekening bank).</p>
                 </div>
 
                 <div className="bg-indigo-50/50 p-4 rounded-2xl border border-indigo-100/40 text-center space-y-1">
-                  <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wide block">Tabungan Mandiri Terkumpul</span>
+                  <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wide block">Saldo Kas Rekening Terkumpul</span>
                   <span className="text-xl font-black text-indigo-700 font-mono">Rp {totalSaved.toLocaleString("id-ID")}</span>
                 </div>
 
                 <div className="space-y-2">
                   <div className="flex justify-between text-[11px] font-semibold text-slate-600">
-                    <span>Kemajuan Tabungan</span>
-                    <span>{metrics.saldoTotal > 0 ? ((totalSaved / metrics.saldoTotal) * 100).toFixed(0) : 0}% Ambalan</span>
+                    <span>Proporsi Saldo</span>
+                    <span>{metrics.saldoTotal > 0 ? ((totalSaved / metrics.saldoTotal) * 100).toFixed(0) : 0}% dari Total</span>
                   </div>
                   <div className="w-full bg-slate-150 h-1.5 rounded-full overflow-hidden relative">
                     <div 
@@ -1292,58 +1280,9 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
                     onClick={() => setActiveTab("tabungan")}
                     className="w-full py-1.5 bg-slate-100 hover:bg-slate-200 text-indigo-700 font-bold rounded-lg text-[10px] cursor-pointer transition-colors block text-center uppercase"
                   >
-                    Masuk ke Halaman Tabungan
+                    Masuk ke Halaman Rekening
                   </button>
                 </div>
-              </div>
-
-              {/* Widget B: Anggaran Snapshot */}
-              <div className="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm flex flex-col justify-between space-y-4">
-                <div>
-                  <h4 className="text-xs font-bold uppercase text-slate-400 tracking-wider flex items-center gap-1.5">
-                    <Target className="w-4 h-4 text-emerald-600" />
-                    <span>Batas Anggaran Snapshot</span>
-                  </h4>
-                  <p className="text-[10px] text-slate-400 mt-0.5 font-medium">Batas limit kuota pengeluaran untuk 3 kategori teratas Anda.</p>
-                </div>
-
-                <div className="space-y-3">
-                  {Object.keys(budgetLimits).slice(0, 2).map((cat) => {
-                    const limit = budgetLimits[cat];
-                    const currentMonth = new Date().getMonth();
-                    const currentYear = new Date().getFullYear();
-                    const spent = transactions
-                      .filter(t => t.type === "pengeluaran" && t.category === cat && new Date(t.date).getMonth() === currentMonth && new Date(t.date).getFullYear() === currentYear)
-                      .reduce((sum, t) => sum + t.amount, 0);
-                    const pct = Math.min((spent / limit) * 100, 100);
-
-                    return (
-                      <div key={cat} className="space-y-1">
-                        <div className="flex justify-between items-center text-[11px] font-semibold">
-                          <span className="text-slate-600 truncate">{cat}</span>
-                          <span className="text-slate-500 text-[10px] font-mono">
-                            {pct.toFixed(0)}% terpakai
-                          </span>
-                        </div>
-                        <div className="w-full bg-slate-100 h-1 rounded-full overflow-hidden">
-                          <div 
-                            className={`h-full rounded-full ${
-                              pct >= 100 ? "bg-red-500" : pct >= 80 ? "bg-amber-500" : "bg-emerald-500"
-                            }`}
-                            style={{ width: `${pct}%` }}
-                          />
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-
-                <button 
-                  onClick={() => setActiveTab("anggaran")}
-                  className="w-full py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-lg text-[10px] cursor-pointer transition-colors block text-center uppercase mt-1"
-                >
-                  Kelola Kuota Anggaran
-                </button>
               </div>
 
             </div>
@@ -1562,122 +1501,7 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
           </motion.div>
         )}
 
-        {/* TAB 4: BATAS ANGGARAN (BUDGETING) */}
-        {activeTab === "anggaran" && (
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -12 }}
-            className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start animate-fade-in"
-          >
-            {/* Limit Configuration Block */}
-            <div className="lg:col-span-5 bg-white p-5 rounded-3xl border border-slate-100 shadow-sm space-y-4">
-              <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-700 flex items-center justify-center">
-                  <Target className="w-5 h-5" />
-                </div>
-                <div>
-                  <h3 className="text-sm font-black text-slate-800">Atur Batas Anggaran (Budget)</h3>
-                  <p className="text-[10px] text-slate-400 font-medium">Batas porsi maksimal biaya bulanan</p>
-                </div>
-              </div>
-
-              <p className="text-[11px] text-slate-500 leading-relaxed pt-1">
-                Batasi pengeluaran bulanan Anda demi melestarikan sisa kas. Ketika pengeluaran Anda pada satu kategori telah mencapai 80%, sistem akan memberikan notifikasi instan.
-              </p>
-
-              <form onSubmit={handleSaveBudget} className="space-y-4.5 pt-2">
-                <div>
-                  <label className="text-[9px] uppercase font-extrabold text-slate-400 tracking-wider">Kategori Pengeluaran</label>
-                  <select
-                    className="w-full mt-1.5 p-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold focus:outline-indigo-500 cursor-pointer text-slate-800"
-                    value={budgetLimitCategory}
-                    onChange={(e) => setBudgetLimitCategory(e.target.value)}
-                  >
-                    {expenseCategories.map(c => <option key={c} value={c}>{c}</option>)}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="text-[9px] uppercase font-extrabold text-slate-400 tracking-wider">Kuota Limit Bulanan (Rp)</label>
-                  <input
-                    type="number"
-                    className="w-full mt-1.5 p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold font-mono focus:outline-indigo-500"
-                    placeholder="Contoh: 1500000"
-                    value={budgetLimitAmount}
-                    onChange={(e) => setBudgetLimitAmount(e.target.value)}
-                  />
-                </div>
-
-                <button
-                  type="submit"
-                  className="w-full py-3 bg-slate-900 hover:bg-slate-950 text-white text-xs font-bold rounded-xl cursor-pointer transition-colors text-center shadow-md shadow-slate-100 flex items-center justify-center gap-1.5"
-                >
-                  <Target className="w-4 h-4" />
-                  <span>Tetapkan Kuota Limit</span>
-                </button>
-              </form>
-            </div>
-
-            {/* Quotas Current month Progress view list */}
-            <div className="lg:col-span-7 bg-white p-5 rounded-3xl border border-slate-100 shadow-sm space-y-4">
-              <div>
-                <h3 className="text-sm font-bold text-slate-800 flex items-center gap-2">
-                  <ListTodo className="w-4 h-4 text-emerald-600" />
-                  <span>Daftar Pemakaian Kuota Anggaran Bulan Ini</span>
-                </h3>
-                <p className="text-[10px] text-slate-400 font-medium">Beban dinamis belanja berjalan dihitung otomatis dari riwayat transaksi.</p>
-              </div>
-
-              <div className="space-y-4.5 pt-2">
-                {Object.keys(budgetLimits).length === 0 ? (
-                  <p className="text-xs text-slate-400 italic py-8 text-center bg-slate-50 border border-dashed border-slate-150 rounded-2xl">
-                    Belum ada batas anggaran yang ditetapkan. Buat satu di panel kiri.
-                  </p>
-                ) : (
-                  Object.keys(budgetLimits).map((cat) => {
-                    const limit = budgetLimits[cat];
-                    const currentMonth = new Date().getMonth();
-                    const currentYear = new Date().getFullYear();
-                    const spent = transactions
-                      .filter(t => t.type === "pengeluaran" && t.category === cat && new Date(t.date).getMonth() === currentMonth && new Date(t.date).getFullYear() === currentYear)
-                      .reduce((sum, t) => sum + t.amount, 0);
-                    const pct = Math.min((spent / limit) * 100, 100);
-
-                    return (
-                      <div key={cat} className="space-y-2 bg-slate-50/60 p-3.5 rounded-2xl border border-slate-100">
-                        <div className="flex justify-between items-center text-xs">
-                          <span className="font-bold text-slate-700">{cat}</span>
-                          <span className="font-mono text-[11px] text-slate-500 font-semibold">
-                            Rp {spent.toLocaleString("id-ID")} / <span className="text-slate-800 font-bold">Rp {limit.toLocaleString("id-ID")}</span>
-                          </span>
-                        </div>
-                        
-                        <div className="w-full bg-slate-150 h-2.5 rounded-full overflow-hidden relative">
-                          <div 
-                            className={`h-full rounded-full transition-all duration-300 ${
-                              pct >= 100 ? "bg-red-500 shadow-xs shadow-red-100" : pct >= 80 ? "bg-amber-500" : "bg-emerald-500"
-                            }`}
-                            style={{ width: `${pct}%` }}
-                          />
-                        </div>
-
-                        <div className="flex justify-between items-center text-[9px] text-slate-400 font-extrabold uppercase">
-                          <span>PEMAKAIAN: {pct.toFixed(1)}%</span>
-                          <span className={pct >= 100 ? "text-red-500" : pct >= 80 ? "text-amber-500" : "text-emerald-500"}>
-                            {pct >= 100 ? "OVER-BUDGET!" : pct >= 80 ? "MENDEKATI LIMIT!" : "AMAN"}
-                          </span>
-                        </div>
-                      </div>
-                    );
-                  })
-                )}
-              </div>
-            </div>
-          </motion.div>
-        )}
-
-        {/* TAB 5: CELENGAN MODEREN (TABUNGAN PINTAR) */}
+        {/* TAB 5: SALDO KAS REKENING */}
         {activeTab === "tabungan" && (
           <motion.div
             initial={{ opacity: 0, y: 12 }}
@@ -1704,7 +1528,7 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
               </div>
 
               <div className="bg-indigo-900/95 text-white p-5 rounded-2xl text-center space-y-1 shadow-md shadow-indigo-100 border border-indigo-950">
-                <span className="text-[9px] uppercase font-bold text-indigo-300 tracking-widest block font-sans">Total Celengan Saat Ini</span>
+                <span className="text-[9px] uppercase font-bold text-indigo-300 tracking-widest block font-sans">Total Saldo Kas Rekening Saat Ini</span>
                 <span className="text-2xl font-black text-white font-mono block">Rp {totalSaved.toLocaleString("id-ID")}</span>
                 <span className="text-[10px] font-sans text-indigo-200 block font-medium opacity-80">Dari Kas Dompet Fisik</span>
               </div>
@@ -1823,7 +1647,7 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
                 </div>
                 <div>
                   <h2 className="text-sm font-black text-slate-800 uppercase tracking-tight">Pengaturan Sistem</h2>
-                  <p className="text-[10px] text-slate-400 font-medium">Kelola akun pengguna, profil perusahaan/institusi Anda, kustomisasi kategori anggaran & harian, serta reset data.</p>
+                  <p className="text-[10px] text-slate-400 font-medium">Kelola akun pengguna, profil perusahaan/institusi Anda, kustomisasi kategori transaksi, serta reset data.</p>
                 </div>
               </div>
             </div>
@@ -1883,6 +1707,15 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
               >
                 <BookOpen className="w-3.5 h-3.5 shrink-0" />
                 <span className="truncate">Panduan</span>
+              </button>
+              <button
+                onClick={() => setSettingsActiveTab("backup")}
+                className={`py-2.5 px-3 text-center text-[11px] lg:text-xs font-bold rounded-xl transition-all duration-200 flex items-center justify-center gap-1.5 cursor-pointer ${
+                  settingsActiveTab === "backup" ? "bg-white text-indigo-700 shadow-sm" : "text-slate-500 hover:text-slate-800"
+                }`}
+              >
+                <Database className="w-3.5 h-3.5 shrink-0" />
+                <span className="truncate">Backup/Restore</span>
               </button>
             </div>
 
@@ -2574,7 +2407,7 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
                 <div className="bg-rose-50 border border-rose-100 p-4 rounded-2xl text-xs text-rose-850 space-y-2">
                   <span className="font-extrabold text-rose-900 block uppercase tracking-wider text-[10px]">Peringatan Keamanan</span>
                   <p>
-                    Tindakan ini akan mengosongkan riwayat kas tunai, kas transfer, tabungan/celengan, batas kuota anggaran, serta preferensi kategori Anda di server browser lokal Anda. Tindakan ini **tidak dapat diurungkan**.
+                    Tindakan ini akan mengosongkan riwayat kas tunai, kas transfer, saldo kas rekening, serta preferensi kategori Anda di server browser lokal Anda. Tindakan ini **tidak dapat diurungkan**.
                   </p>
                 </div>
 
@@ -2603,6 +2436,59 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
                     <span>Reset Data Sekarang</span>
                   </button>
                 </form>
+              </div>
+            )}
+
+            {/* Sub-tab: BACKUP / RESTORE */}
+            {settingsActiveTab === "backup" && (
+              <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm max-w-lg space-y-6">
+                <div>
+                  <h3 className="text-sm font-bold text-slate-800 flex items-center gap-1.5">
+                    <Database className="w-5 h-5 text-indigo-600 shrink-0" />
+                    <span>Backup & Restore Data</span>
+                  </h3>
+                  <p className="text-[10px] text-slate-400 font-medium mt-0.5">Cadangkan data transaksi Anda sebagai file, atau pulihkan data dari file backup.</p>
+                </div>
+
+                <div className="bg-indigo-50/50 border border-indigo-100/50 p-4 rounded-2xl space-y-4">
+                  <div>
+                    <h4 className="text-xs font-bold text-indigo-900 flex items-center gap-1">
+                      <Download className="w-3.5 h-3.5 text-indigo-600" />
+                      Backup (Unduh Data)
+                    </h4>
+                    <p className="text-[10px] text-indigo-700/80 mt-1 mb-3">Unduh seluruh catatan transaksi dan profil Anda dalam format JSON untuk diamankan secara offline.</p>
+                    <button
+                      onClick={handleBackupData}
+                      className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow-md cursor-pointer transition-colors flex items-center justify-center gap-2"
+                    >
+                      <Download className="w-4 h-4" />
+                      Unduh File Backup JSON
+                    </button>
+                  </div>
+                </div>
+
+                <div className="bg-slate-50 border border-slate-200 p-4 rounded-2xl space-y-4">
+                  <div>
+                    <h4 className="text-xs font-bold text-slate-800 flex items-center gap-1">
+                      <Upload className="w-3.5 h-3.5 text-slate-500" />
+                      Restore (Pulihkan Data)
+                    </h4>
+                    <p className="text-[10px] text-slate-500 mt-1 mb-3">Pilih file JSON backup sebelumnya. Data yang ada saat ini di server akan ditimpa dengan isi file tersebut.</p>
+                    
+                    <label className="w-full flex cursor-pointer">
+                      <div className="w-full py-2.5 bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 font-bold text-xs rounded-xl shadow-sm transition-colors flex items-center justify-center gap-2 text-center">
+                        <Upload className="w-4 h-4" />
+                        <span>Pilih & Unggah File Backup</span>
+                      </div>
+                      <input 
+                        type="file" 
+                        accept=".json,application/json" 
+                        className="hidden" 
+                        onChange={handleRestoreData}
+                      />
+                    </label>
+                  </div>
+                </div>
               </div>
             )}
 
