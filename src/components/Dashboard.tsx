@@ -12,7 +12,7 @@ import {
   LogOut, Sparkles, Plus, Wallet, CreditCard, ChevronRight,
   TrendingUp, TrendingDown, DollarSign, Calendar, ListTodo, AlertTriangle, Check, BookOpen, PiggyBank,
   LayoutDashboard, History, BarChart3, Target, Settings, Users, FolderTree, RefreshCw, Trash2, Edit2, ShieldAlert,
-  Building, MapPin, Phone, Mail, FileText, Cpu, Monitor, Info, Download, Upload, Database
+  Building, MapPin, Phone, Mail, FileText, Cpu, Monitor, Info, Download, Upload, Database, MonitorSmartphone
 } from "lucide-react";
 import { motion } from "motion/react";
 import { collection, doc, setDoc, getDoc, getDocs, deleteDoc, updateDoc, query, where, onSnapshot, writeBatch } from "firebase/firestore";
@@ -27,6 +27,9 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [activeTab, setActiveTab] = useState<"ringkasan" | "transaksi" | "laporan" | "tabungan" | "pengaturan">("ringkasan");
   
+  // Install App states
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+
   // Smart Quick Add state
   const [smartInput, setSmartInput] = useState("");
   const [smartFeedback, setSmartFeedback] = useState<any>(null);
@@ -105,6 +108,20 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
     setFormInitialCash(String(initialCashBalance));
     setFormInitialTransfer(String(initialTransferBalance));
   }, [initialCashBalance, initialTransferBalance]);
+
+  // Handle PWA installation
+  useEffect(() => {
+    const handleBeforeInstallPrompt = (e: any) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    };
+  }, []);
 
   // Load user-specific data from Firestore in real-time
   useEffect(() => {
@@ -721,6 +738,14 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
 
   // Reset and defaults handler
   // Backup and Restore Data
+  const handleInstallClick = async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    console.log(`User response to the install prompt: ${outcome}`);
+    setDeferredPrompt(null);
+  };
+
   const handleBackupData = () => {
     try {
       const data = {
@@ -2533,6 +2558,22 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
                         <span>Keamanan enkripsi setara cloud standar dan database realtime Firebase.</span>
                       </li>
                     </ul>
+
+                    {deferredPrompt && (
+                      <div className="mt-4 pt-4 border-t border-slate-200">
+                        <h5 className="text-[11px] font-bold text-slate-800 mb-2">Pemasangan Perangkat (PWA)</h5>
+                        <p className="text-[10px] text-slate-500 mb-3 leading-relaxed">
+                          Anda dapat memasang aplikasi ini di perangkat ponsel pintar atau tablet untuk akses cepat (layar penuh) dan mode offline.
+                        </p>
+                        <button
+                          onClick={handleInstallClick}
+                          className="w-full sm:w-auto px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-[11px] rounded-xl shadow-md cursor-pointer transition-colors flex items-center justify-center gap-2"
+                        >
+                          <MonitorSmartphone className="w-4 h-4" />
+                          <span>Instal Aplikasi</span>
+                        </button>
+                      </div>
+                    )}
                     
                     <div className="mt-4 pt-3 border-t border-slate-200 flex justify-between items-center text-[9px] font-mono text-slate-400">
                       <span>Hak Cipta © {new Date().getFullYear()} {companyProfile?.appName || "DN Manajemen Keuangan"}.</span>
