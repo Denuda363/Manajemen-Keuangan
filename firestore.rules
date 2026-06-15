@@ -42,6 +42,16 @@ service cloud.firestore {
         && data.createdAt is string && data.createdAt.size() <= 64;
     }
 
+    function isValidActivityLog(data) {
+      return data.keys().hasAll(['id', 'userId', 'userName', 'action', 'details', 'timestamp'])
+        && data.id is string && data.id.size() <= 128
+        && data.userId is string && data.userId.size() <= 128
+        && data.userName is string && data.userName.size() <= 128
+        && data.action is string && data.action.size() <= 128
+        && data.details is string && data.details.size() <= 1000
+        && data.timestamp is string && data.timestamp.size() <= 64;
+    }
+
     // --- SYSTEM COLLECTION ENFORCEMENTS ---
 
     // 1. Users Profiles and Configurations (Validated Zero-Trust ID pairing)
@@ -63,6 +73,13 @@ service cloud.firestore {
       allow read, get, list: if true;
       allow create, update: if isValidId(companyId) && incoming().id == companyId;
       allow delete: if isValidId(companyId);
+    }
+
+    // 4. Activity Logs
+    match /activity_logs/{logId} {
+      allow read: if true;
+      allow create, update: if isValidId(logId) && incoming().id == logId && isValidActivityLog(incoming());
+      allow delete: if isValidId(logId);
     }
   }
 }

@@ -238,8 +238,8 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
     try {
       const newLog = {
         id: crypto.randomUUID?.() || Date.now().toString(),
-        userId: user.id,
-        userName: user.name,
+        userId: user.id || "unknown",
+        userName: user.name || user.username || "Unknown",
         action,
         details,
         timestamp: new Date().toISOString()
