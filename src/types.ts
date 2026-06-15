@@ -43,6 +43,15 @@ export interface CompanyProfile {
   expenseCategories?: string[];
 }
 
+export interface ActivityLog {
+  id: string;
+  userId: string;
+  userName: string;
+  action: string;
+  details: string;
+  timestamp: string; // ISO format
+}
+
 export interface CategorySummary {
   category: string;
   amount: number;

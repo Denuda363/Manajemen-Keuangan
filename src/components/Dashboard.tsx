@@ -4,7 +4,7 @@
  */
 
 import { useState, useEffect, useMemo, FormEvent } from "react";
-import { User, Transaction, INCOME_CATEGORIES, EXPENSE_CATEGORIES, CompanyProfile } from "../types";
+import { User, Transaction, INCOME_CATEGORIES, EXPENSE_CATEGORIES, CompanyProfile, ActivityLog } from "../types";
 import { parseTransactionText } from "../utils/parser";
 import ReportView from "./ReportView";
 import TransactionsList from "./TransactionsList";
@@ -25,6 +25,7 @@ interface DashboardProps {
 
 export default function Dashboard({ user, onLogout }: DashboardProps) {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [activityLogs, setActivityLogs] = useState<ActivityLog[]>([]);
   const [activeTab, setActiveTab] = useState<"ringkasan" | "transaksi" | "laporan" | "tabungan" | "pengaturan">("ringkasan");
   
   // Install App states
@@ -59,7 +60,7 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
   const [expenseCategories, setExpenseCategories] = useState<string[]>(EXPENSE_CATEGORIES);
 
   // Settings sub-tab state
-  const [settingsActiveTab, setSettingsActiveTab] = useState<"pengguna" | "kategori" | "reset" | "perusahaan" | "about" | "guide" | "backup">("pengguna");
+  const [settingsActiveTab, setSettingsActiveTab] = useState<"pengguna" | "kategori" | "reset" | "perusahaan" | "about" | "guide" | "backup" | "log_aktivitas">("pengguna");
 
   // Company Profile states
   const [companyProfile, setCompanyProfile] = useState<CompanyProfile | null>(null);
@@ -210,13 +211,44 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
       console.warn("Profil perusahaan belum dimuat:", error);
     });
 
+    // 5. Listen to activity logs
+    const unsubLogs = onSnapshot(collection(db, "activity_logs"), (querySnapshot) => {
+      const logs: ActivityLog[] = [];
+      querySnapshot.forEach((docSnap) => {
+        logs.push(docSnap.data() as ActivityLog);
+      });
+      // Sort by timestamp descending
+      logs.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+      setActivityLogs(logs);
+    }, (error) => {
+      console.error("Gagal memuat log aktivitas:", error);
+    });
+
     return () => {
       unsubUser();
       unsubTx();
       unsubUsersList();
       unsubCompany();
+      unsubLogs();
     };
   }, [user.id]);
+
+  // Helper to log activities
+  const logActivity = async (action: string, details: string) => {
+    try {
+      const newLog = {
+        id: crypto.randomUUID?.() || Date.now().toString(),
+        userId: user.id,
+        userName: user.name,
+        action,
+        details,
+        timestamp: new Date().toISOString()
+      };
+      await setDoc(doc(db, "activity_logs", newLog.id), newLog);
+    } catch (err) {
+      console.error("Gagal mencatat log aktivitas:", err);
+    }
+  };
 
   // Toast trigger
   const triggerToast = (msg: string) => {
@@ -309,6 +341,7 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
 
     try {
       await setDoc(doc(db, "transactions", newTx.id), newTx);
+      await logActivity("Tambah Transaksi AI", `Berhasil menambah ${newTx.type} sebesar Rp ${newTx.amount.toLocaleString("id-ID")} dengan kategori ${newTx.category} menggunakan AI`);
       const labelType = newTx.type === "pemasukan" ? "Pemasukan" : "Pengeluaran";
       triggerToast(`Berhasil mencatatkan ${labelType} otomatis: Rp ${newTx.amount.toLocaleString("id-ID")}`);
       setSmartInput("");
@@ -352,6 +385,7 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
           createdAt: existingTx?.createdAt || new Date().toISOString()
         };
         await setDoc(doc(db, "transactions", editingTransactionId), updatedTx);
+        await logActivity("Edit Transaksi", `Berhasil mengedit transaksi ${formType} menjadi sejumlah Rp ${amountNum.toLocaleString("id-ID")} dengan kategori ${formCategory}`);
         triggerToast("Transaksi berhasil diperbarui");
         setEditingTransactionId(null);
       } else {
@@ -368,6 +402,7 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
           createdAt: new Date().toISOString()
         };
         await setDoc(doc(db, "transactions", newTx.id), newTx);
+        await logActivity("Tambah Transaksi", `Berhasil menambah transaksi ${formType} sejumlah Rp ${amountNum.toLocaleString("id-ID")} dengan kategori ${formCategory}`);
         triggerToast("Transaksi manual berhasil ditambahkan");
       }
 
@@ -383,7 +418,11 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
   // Delete transaction handler
   const handleDeleteTransaction = async (id: string) => {
     try {
+      const txToDelete = transactions.find(t => t.id === id);
       await deleteDoc(doc(db, "transactions", id));
+      if (txToDelete) {
+        await logActivity("Hapus Transaksi", `Menghapus transaksi ${txToDelete.type} sejumlah Rp ${txToDelete.amount.toLocaleString("id-ID")} dengan kategori ${txToDelete.category}`);
+      }
       triggerToast("Transaksi dihapus");
     } catch (error) {
       handleFirestoreError(error, OperationType.DELETE, `transactions/${id}`);
@@ -432,6 +471,7 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
 
     try {
       await setDoc(doc(db, "transactions", newTx.id), newTx);
+      await logActivity("Pindah Saldo (Setor Tunai)", `Memindahkan saldo tunai ke rekening bank sebesar Rp ${amt.toLocaleString("id-ID")}`);
       triggerToast(`Berhasil menabung Rp ${amt.toLocaleString("id-ID")} ke rekening!`);
       setSavingsAmount("");
       setSavingsDescription("Setor tunai ke rekening bank");
@@ -480,6 +520,7 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
         };
 
         await setDoc(doc(db, "users", newUserId), newUser);
+        await logActivity("Tambah Pengguna", `Berhasil menambah pengguna baru: ${userFormUsername.trim()}`);
         triggerToast(`User "${userFormName}" berhasil ditambahkan!`);
         setShowUserModal(false);
         
@@ -507,6 +548,7 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
         };
 
         await updateDoc(doc(db, "users", selectedUserId!), updated);
+        await logActivity("Edit Pengguna", `Berhasil mengedit data pengguna: ${userFormUsername.trim()}`);
 
         // If the currently logged-in user is updated, sink their session!
         if (selectedUserId === user.id) {
@@ -562,6 +604,7 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
 
         // Delete user's profile
         await deleteDoc(doc(db, "users", userId));
+        await logActivity("Hapus Pengguna", `Menghapus pengguna ${userName} dan seluruh data transaksinya`);
 
         triggerToast(`User "${userName}" dan data transaksinya telah dihapus.`);
 
@@ -608,6 +651,7 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
     }
     const updated = [...incomeCategories, cat];
     await saveIncomeCategoriesList(updated);
+    await logActivity("Tambah Kategori Pendapatan", `Menambahkan kategori pendapatan baru: ${cat}`);
     setIncCatInput("");
     triggerToast(`Kategori "${cat}" berhasil ditambahkan!`);
   };
@@ -622,6 +666,7 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
     }
     const updated = [...expenseCategories, cat];
     await saveExpenseCategoriesList(updated);
+    await logActivity("Tambah Kategori Pengeluaran", `Menambahkan kategori pengeluaran baru: ${cat}`);
     setExpCatInput("");
     triggerToast(`Kategori "${cat}" berhasil ditambahkan!`);
   };
@@ -653,6 +698,7 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
           batch.update(doc(db, "transactions", docSnap.id), { category: newName });
         });
         await batch.commit();
+        await logActivity("Ubah Nama Kategori", `Ubah kategori pemasukan dari '${editingCatName}' menjadi '${newName}'`);
 
         triggerToast(`Kategori berhasil diubah menjadi "${newName}"`);
       } else {
@@ -676,6 +722,7 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
           batch.update(doc(db, "transactions", docSnap.id), { category: newName });
         });
         await batch.commit();
+        await logActivity("Ubah Nama Kategori", `Ubah kategori pengeluaran dari '${editingCatName}' menjadi '${newName}'`);
 
         triggerToast(`Kategori berhasil diubah menjadi "${newName}"`);
       }
@@ -708,6 +755,7 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
             batch.update(doc(db, "transactions", docSnap.id), { category: "Lain-lain" });
           });
           await batch.commit();
+          await logActivity("Hapus Kategori", `Menghapus kategori pendapatan: ${catName}`);
 
           triggerToast(`Kategori pendapatan "${catName}" berhasil dihapus.`);
         } else {
@@ -726,6 +774,7 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
             batch.update(doc(db, "transactions", docSnap.id), { category: "Lain-lain" });
           });
           await batch.commit();
+          await logActivity("Hapus Kategori", `Menghapus kategori pengeluaran: ${catName}`);
 
           triggerToast(`Kategori pengeluaran "${catName}" berhasil dihapus.`);
         }
@@ -760,6 +809,7 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
       a.download = `backup_kas_${new Date().toISOString().split("T")[0]}.json`;
       a.click();
       URL.revokeObjectURL(url);
+      logActivity("Backup Data", "Berhasil mengunduh file backup JSON");
       triggerToast("Backup data berhasil diunduh.");
     } catch (err: any) {
       console.error("Gagal backup data:", err);
@@ -815,6 +865,7 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
         // Update company profile
         const companyDocRef = doc(db, "company", "profile");
         await updateDoc(companyDocRef, data.companyProfile);
+        await logActivity("Restore Data", "Memulihkan data transaksi dan pengaturan dari file backup");
 
         triggerToast("Restore data berhasil diselesaikan!");
       } catch (err: any) {
@@ -857,6 +908,7 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
         setIncomeCategories(INCOME_CATEGORIES);
         setExpenseCategories(EXPENSE_CATEGORIES);
 
+        await logActivity("Reset Data", "Memulihkan semua data transaksi dan pengaturan ke status pabrik");
         setResetPin("");
         triggerToast("Semua data transaksi dan konfigurasi Anda berhasil di-reset ke default pabrik!");
       } catch (err: any) {
@@ -915,6 +967,7 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
         updatedAt: new Date().toISOString()
       };
       await setDoc(companyDocRef, updatedProfile);
+      await logActivity("Update Profil Perusahaan", "Mengubah pengaturan dasar dan nama profil usaha");
       setIsEditingCompany(false);
       triggerToast("Profil perusahaan berhasil diperbarui!");
     } catch (err: any) {
@@ -939,6 +992,7 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
         initialCashBalance: cash,
         initialTransferBalance: trans
       }, { merge: true });
+      await logActivity("Update Saldo Awal", `Menyetel saldo awal tunai: Rp ${cash.toLocaleString("id-ID")}, rekening: Rp ${trans.toLocaleString("id-ID")}`);
       triggerToast("Saldo awal global berhasil diperbarui!");
     } catch (error: any) {
       console.error("Gagal menyimpan saldo awal:", error);
@@ -1741,6 +1795,15 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
               >
                 <Database className="w-3.5 h-3.5 shrink-0" />
                 <span className="truncate">Backup/Restore</span>
+              </button>
+              <button
+                onClick={() => setSettingsActiveTab("log_aktivitas")}
+                className={`py-2.5 px-3 text-center text-[11px] lg:text-xs font-bold rounded-xl transition-all duration-200 flex items-center justify-center gap-1.5 cursor-pointer ${
+                  settingsActiveTab === "log_aktivitas" ? "bg-white text-indigo-700 shadow-sm" : "text-slate-500 hover:text-slate-800"
+                }`}
+              >
+                <History className="w-3.5 h-3.5 shrink-0" />
+                <span className="truncate">Log Aktivitas</span>
               </button>
             </div>
 
@@ -2667,6 +2730,70 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
                     <p className="text-[11px] font-medium text-indigo-700 mt-1">Kami berusaha memberikan pengalaman terbaik. Jika Anda mengalami kesulitan dalam pengoperasian aplikasi atau ada bug/kesalahan sistem pencatat, jangan ragu untuk menghubungi dukungan kami.</p>
                   </div>
                 </div>
+              </div>
+            )}
+
+            {/* Sub-tab 6: LOG AKTIVITAS */}
+            {settingsActiveTab === "log_aktivitas" && (
+              <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm space-y-6 max-w-4xl">
+                <div>
+                  <h3 className="text-base font-bold text-slate-800 flex items-center gap-1.5">
+                    <History className="w-5 h-5 text-indigo-600 shrink-0" />
+                    <span>Rekam Log Aktivitas Sistem</span>
+                  </h3>
+                  <p className="text-[10px] text-slate-400 mt-0.5">Semua riwayat perubahan, penambahan, dan penghapusan data tercatat di sini.</p>
+                </div>
+
+                {activityLogs.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center p-8 text-center bg-slate-50 border border-slate-100 border-dashed rounded-2xl">
+                    <History className="w-10 h-10 text-slate-300 mb-3" />
+                    <p className="text-sm font-semibold text-slate-500">Belum Ada Catatan Log Aktivitas</p>
+                    <p className="text-[10px] text-slate-400 mt-1">Aktivitas operasi akan terekam secara lengkap setelah mencatat suatu transaksi baru.</p>
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto rounded-xl border border-slate-200">
+                    <table className="w-full text-left border-collapse">
+                      <thead>
+                        <tr className="bg-slate-50 border-b border-slate-200">
+                          <th className="p-3 text-[10px] uppercase font-bold tracking-wider text-slate-500 whitespace-nowrap">Waktu</th>
+                          <th className="p-3 text-[10px] uppercase font-bold tracking-wider text-slate-500">Aktivitas</th>
+                          <th className="p-3 text-[10px] uppercase font-bold tracking-wider text-slate-500">Detail & Rincian</th>
+                          <th className="p-3 text-[10px] uppercase font-bold tracking-wider text-slate-500 text-right">User/Pengguna</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {activityLogs.map((log) => {
+                          const dateObj = new Date(log.timestamp);
+                          const dStr = dateObj.toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "numeric" });
+                          const tStr = dateObj.toLocaleTimeString("id-ID", { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                          return (
+                            <tr key={log.id} className="border-b border-slate-100 hover:bg-slate-50/50 transition-colors">
+                              <td className="p-3 align-top">
+                                <div className="flex flex-col">
+                                  <span className="text-[11px] font-bold text-slate-800 tabular-nums whitespace-nowrap">{dStr}</span>
+                                  <span className="text-[9px] font-mono text-slate-500">{tStr}</span>
+                                </div>
+                              </td>
+                              <td className="p-3 align-top">
+                                <span className="inline-flex py-1 px-2 rounded-md bg-indigo-50 text-indigo-700 text-[10px] font-bold tracking-wide whitespace-nowrap shadow-xs">
+                                  {log.action}
+                                </span>
+                              </td>
+                              <td className="p-3 text-[11px] font-medium text-slate-700 align-top leading-relaxed min-w-[200px]">
+                                {log.details}
+                              </td>
+                              <td className="p-3 text-right align-top">
+                                <span className="text-[11px] font-bold text-slate-800 bg-slate-100 py-1 px-2.5 rounded-lg border border-slate-200">
+                                  {log.userName}
+                                </span>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
               </div>
             )}
           </motion.div>
