@@ -552,30 +552,6 @@ export default function ReportView({
               <td class="num" style="font-weight: bold;">Rp ${pdfMetrics.incomeTunaiTotal.toLocaleString("id-ID")}</td>
             </tr>
 
-            <!-- PENGELUARAN TUNAI -->
-            <tr>
-              <td colspan="2" style="font-weight: bold; color: #000;">PENGELUARAN TUNAI</td>
-            </tr>
-            ${pdfMetrics.expenseTunaiList.length === 0 
-              ? `<tr><td style="padding-left: 20px; font-style: italic; color: #64748b;">NIHIL</td><td class="num">Rp 0</td></tr>`
-              : pdfMetrics.expenseTunaiList.map(item => `
-                  <tr>
-                    <td style="padding-left: 20px; font-weight: 500;">${item.category}</td>
-                    <td class="num" style="color: #dc2626;">Rp ${item.amount.toLocaleString("id-ID")}</td>
-                  </tr>
-                `).join("")
-            }
-            <tr class="bg-total" style="background-color: #cbd5e1; font-weight: bold;">
-              <td style="font-weight: bold; padding-left: 20px;">TOTAL PENGELUARAN</td>
-              <td class="num" style="font-weight: bold; color: #dc2626;">Rp ${pdfMetrics.expenseTunaiTotal.toLocaleString("id-ID")}</td>
-            </tr>
-
-            <!-- SISA -->
-            <tr class="bg-info" style="background-color: #e0f2fe; color: #0369a1; font-weight: bold;">
-              <td class="bold" style="font-weight: bold; padding-left: 10px;">SISA</td>
-              <td class="num" style="font-weight: bold;">Rp ${pdfMetrics.sisaSebelumNabung.toLocaleString("id-ID")}</td>
-            </tr>
-
             <!-- PENDAPATAN TRANSFER -->
             <tr>
               <td colspan="2" class="bold" style="font-weight: bold; color: #000;">PENDAPATAN TRANSFER</td>
@@ -604,6 +580,30 @@ export default function ReportView({
             <tr class="bg-total" style="background-color: #94a3b8; font-weight: bold; color: #fff;">
               <td class="bold" style="font-weight: bold;">TOTAL PENDAPATAN + METKO KEMARIN</td>
               <td class="num" style="font-weight: bold;">Rp ${pdfMetrics.totalIncomePlusMetko.toLocaleString("id-ID")}</td>
+            </tr>
+
+            <!-- PENGELUARAN TUNAI -->
+            <tr>
+              <td colspan="2" style="font-weight: bold; color: #000;">PENGELUARAN TUNAI</td>
+            </tr>
+            ${pdfMetrics.expenseTunaiList.length === 0 
+              ? `<tr><td style="padding-left: 20px; font-style: italic; color: #64748b;">NIHIL</td><td class="num">Rp 0</td></tr>`
+              : pdfMetrics.expenseTunaiList.map(item => `
+                  <tr>
+                    <td style="padding-left: 20px; font-weight: 500;">${item.category}</td>
+                    <td class="num" style="color: #dc2626;">Rp ${item.amount.toLocaleString("id-ID")}</td>
+                  </tr>
+                `).join("")
+            }
+            <tr class="bg-total" style="background-color: #cbd5e1; font-weight: bold;">
+              <td style="font-weight: bold; padding-left: 20px;">TOTAL PENGELUARAN</td>
+              <td class="num" style="font-weight: bold; color: #dc2626;">Rp ${pdfMetrics.expenseTunaiTotal.toLocaleString("id-ID")}</td>
+            </tr>
+
+            <!-- SISA -->
+            <tr class="bg-info" style="background-color: #e0f2fe; color: #0369a1; font-weight: bold;">
+              <td class="bold" style="font-weight: bold; padding-left: 10px;">SISA</td>
+              <td class="num" style="font-weight: bold;">Rp ${pdfMetrics.sisaSebelumNabung.toLocaleString("id-ID")}</td>
             </tr>
 
             <!-- NABUNG -->
@@ -1628,38 +1628,6 @@ export default function ReportView({
                         <span>Rp {pdfMetrics.incomeTunaiTotal.toLocaleString("id-ID")}</span>
                       </div>
                     </div>
-
-                    <div className="bg-white p-4 rounded-xl border border-slate-200/60 shadow-2xs space-y-1.5">
-                      <div className="font-extrabold text-indigo-950 uppercase tracking-wider text-[11px] border-b pb-1 border-slate-100">
-                        PENGELUARAN TUNAI
-                      </div>
-                      {pdfMetrics.expenseTunaiList.length === 0 ? (
-                        <div className="text-slate-400 italic text-[11px] py-1">NIHIL</div>
-                      ) : (
-                        <div className="space-y-1">
-                          {pdfMetrics.expenseTunaiList.map((item, idx) => (
-                            <div key={idx} className="flex justify-between text-[11px]">
-                              <span className="text-slate-600">{item.category}</span>
-                              <span className="font-bold text-red-650">Rp {item.amount.toLocaleString("id-ID")}</span>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                      <div className="flex justify-between text-red-650 text-[11px] font-bold border-t border-slate-100 pt-1.5 mt-1">
-                        <span className="text-slate-650">TOTAL PENGELUARAN</span>
-                        <span>Rp {pdfMetrics.expenseTunaiTotal.toLocaleString("id-ID")}</span>
-                      </div>
-                    </div>
-
-                    <div className="bg-indigo-50/50 p-4 rounded-xl border border-indigo-150 shadow-2xs space-y-1.5">
-                      <div className="font-extrabold text-indigo-950 uppercase tracking-wider text-[11px] border-b pb-1 border-indigo-250/20">
-                        SISA
-                      </div>
-                      <div className="flex justify-between text-indigo-900 text-[11px] font-black">
-                        <span className="text-slate-650">Sisa Kas Tunai</span>
-                        <span>Rp {pdfMetrics.sisaSebelumNabung.toLocaleString("id-ID")}</span>
-                      </div>
-                    </div>
                   </div>
                 )}
 
@@ -1693,6 +1661,38 @@ export default function ReportView({
                       <div className="flex justify-between font-extrabold text-slate-900 border-t border-slate-100 pt-1.5 mt-1 text-[11px]">
                         <span>TOTAL PENDAPATAN + METKO KEMARIN</span>
                         <span className="text-indigo-700">Rp {pdfMetrics.totalIncomePlusMetko.toLocaleString("id-ID")}</span>
+                      </div>
+                    </div>
+
+                    <div className="bg-white p-4 rounded-xl border border-slate-200/60 shadow-2xs space-y-1.5">
+                      <div className="font-extrabold text-indigo-950 uppercase tracking-wider text-[11px] border-b pb-1 border-slate-100">
+                        PENGELUARAN TUNAI
+                      </div>
+                      {pdfMetrics.expenseTunaiList.length === 0 ? (
+                        <div className="text-slate-400 italic text-[11px] py-1">NIHIL</div>
+                      ) : (
+                        <div className="space-y-1">
+                          {pdfMetrics.expenseTunaiList.map((item, idx) => (
+                            <div key={idx} className="flex justify-between text-[11px]">
+                              <span className="text-slate-600">{item.category}</span>
+                              <span className="font-bold text-red-650">Rp {item.amount.toLocaleString("id-ID")}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      <div className="flex justify-between text-red-650 text-[11px] font-bold border-t border-slate-100 pt-1.5 mt-1">
+                        <span className="text-slate-650">TOTAL PENGELUARAN</span>
+                        <span>Rp {pdfMetrics.expenseTunaiTotal.toLocaleString("id-ID")}</span>
+                      </div>
+                    </div>
+
+                    <div className="bg-indigo-50/50 p-4 rounded-xl border border-indigo-150 shadow-2xs space-y-1.5">
+                      <div className="font-extrabold text-indigo-950 uppercase tracking-wider text-[11px] border-b pb-1 border-indigo-250/20">
+                        SISA
+                      </div>
+                      <div className="flex justify-between text-indigo-900 text-[11px] font-black">
+                        <span className="text-slate-650">Sisa Kas Tunai</span>
+                        <span>Rp {pdfMetrics.sisaSebelumNabung.toLocaleString("id-ID")}</span>
                       </div>
                     </div>
 
@@ -2107,6 +2107,35 @@ export default function ReportView({
           </div>
           )}
 
+          {/* PENDAPATAN TRANSFER */}
+          {(reportViewType === "semua" || reportViewType === "tunai") && (
+          <div className="space-y-1 pt-1">
+            <div className="font-extrabold">PENDAPATAN TRANSFER</div>
+            {pdfMetrics.incomeTransferList.length === 0 ? (
+              <div className="pl-6 text-slate-500">NIHIL Rp 0</div>
+            ) : (
+              pdfMetrics.incomeTransferList.map((item, idx) => (
+                <div key={idx} className="flex justify-between pl-6 font-medium">
+                  <span>{item.category}</span>
+                  <span>Rp {item.amount.toLocaleString("id-ID")}</span>
+                </div>
+              ))
+            )}
+            <div className="flex justify-between font-extrabold border-t border-slate-900 pt-1 mt-1 pl-6">
+              <span>TOTAL PENDAPATAN TF</span>
+              <span>Rp {pdfMetrics.incomeTransferTotal.toLocaleString("id-ID")}</span>
+            </div>
+            <div className="flex justify-between font-extrabold border-t border-slate-900 pt-1 mt-1 pl-6">
+              <span>TOTAL PENDAPATAN</span>
+              <span>Rp {pdfMetrics.totalIncomeCombine.toLocaleString("id-ID")}</span>
+            </div>
+            <div className="flex justify-between font-black border-t border-slate-900 pt-1 mt-1 pl-6">
+              <span>TOTAL PENDAPATAN + METKO KEMARIN</span>
+              <span>Rp {pdfMetrics.totalIncomePlusMetko.toLocaleString("id-ID")}</span>
+            </div>
+          </div>
+          )}
+
           {/* PENGELUARAN TUNAI */}
           {(reportViewType === "semua" || reportViewType === "tunai") && (
           <div className="space-y-1 pt-1">
@@ -2135,35 +2164,6 @@ export default function ReportView({
             <div className="flex justify-between pl-6 font-extrabold pt-0.5">
               <span>Rp</span>
               <span>Rp {pdfMetrics.sisaSebelumNabung.toLocaleString("id-ID")}</span>
-            </div>
-          </div>
-          )}
-
-          {/* PENDAPATAN TRANSFER */}
-          {(reportViewType === "semua" || reportViewType === "tunai") && (
-          <div className="space-y-1 pt-1">
-            <div className="font-extrabold">PENDAPATAN TRANSFER</div>
-            {pdfMetrics.incomeTransferList.length === 0 ? (
-              <div className="pl-6 text-slate-500">NIHIL Rp 0</div>
-            ) : (
-              pdfMetrics.incomeTransferList.map((item, idx) => (
-                <div key={idx} className="flex justify-between pl-6 font-medium">
-                  <span>{item.category}</span>
-                  <span>Rp {item.amount.toLocaleString("id-ID")}</span>
-                </div>
-              ))
-            )}
-            <div className="flex justify-between font-extrabold border-t border-slate-900 pt-1 mt-1 pl-6">
-              <span>TOTAL PENDAPATAN TF</span>
-              <span>Rp {pdfMetrics.incomeTransferTotal.toLocaleString("id-ID")}</span>
-            </div>
-            <div className="flex justify-between font-extrabold border-t border-slate-900 pt-1 mt-1 pl-6">
-              <span>TOTAL PENDAPATAN</span>
-              <span>Rp {pdfMetrics.totalIncomeCombine.toLocaleString("id-ID")}</span>
-            </div>
-            <div className="flex justify-between font-black border-t border-slate-900 pt-1 mt-1 pl-6">
-              <span>TOTAL PENDAPATAN + METKO KEMARIN</span>
-              <span>Rp {pdfMetrics.totalIncomePlusMetko.toLocaleString("id-ID")}</span>
             </div>
           </div>
           )}
