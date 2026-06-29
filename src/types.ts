@@ -41,6 +41,14 @@ export interface CompanyProfile {
   initialTransferBalance?: number;
   incomeCategories?: string[];
   expenseCategories?: string[];
+  reportSettings?: {
+    showMetkoKemarin?: boolean;
+    showSisaSebelumNabung?: boolean;
+    showNabung?: boolean;
+    showSisaUangTunai?: boolean;
+    showRekeningSaldoAwal?: boolean;
+    showTotalPendapatanPlusMetko?: boolean;
+  };
 }
 
 export interface ActivityLog {
