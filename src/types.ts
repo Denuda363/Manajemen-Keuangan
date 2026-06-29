@@ -48,6 +48,10 @@ export interface CompanyProfile {
     showSisaUangTunai?: boolean;
     showRekeningSaldoAwal?: boolean;
     showTotalPendapatanPlusMetko?: boolean;
+    showPendapatanTunai?: boolean;
+    showPendapatanTransfer?: boolean;
+    showPengeluaranTunai?: boolean;
+    showPengeluaranTransfer?: boolean;
   };
 }
 

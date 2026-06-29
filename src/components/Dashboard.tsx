@@ -80,6 +80,10 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
   const [companyFormShowSisaUangTunai, setCompanyFormShowSisaUangTunai] = useState(true);
   const [companyFormShowRekeningSaldoAwal, setCompanyFormShowRekeningSaldoAwal] = useState(true);
   const [companyFormShowTotalPendapatanPlusMetko, setCompanyFormShowTotalPendapatanPlusMetko] = useState(true);
+  const [companyFormShowPendapatanTunai, setCompanyFormShowPendapatanTunai] = useState(true);
+  const [companyFormShowPendapatanTransfer, setCompanyFormShowPendapatanTransfer] = useState(true);
+  const [companyFormShowPengeluaranTunai, setCompanyFormShowPengeluaranTunai] = useState(true);
+  const [companyFormShowPengeluaranTransfer, setCompanyFormShowPengeluaranTransfer] = useState(true);
 
   // User Management lists
   const [usersList, setUsersList] = useState<any[]>([]);
@@ -944,6 +948,10 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
       setCompanyFormShowSisaUangTunai(settings.showSisaUangTunai ?? true);
       setCompanyFormShowRekeningSaldoAwal(settings.showRekeningSaldoAwal ?? true);
       setCompanyFormShowTotalPendapatanPlusMetko(settings.showTotalPendapatanPlusMetko ?? true);
+      setCompanyFormShowPendapatanTunai(settings.showPendapatanTunai ?? true);
+      setCompanyFormShowPendapatanTransfer(settings.showPendapatanTransfer ?? true);
+      setCompanyFormShowPengeluaranTunai(settings.showPengeluaranTunai ?? true);
+      setCompanyFormShowPengeluaranTransfer(settings.showPengeluaranTransfer ?? true);
     } else {
       setCompanyFormName("Apotek Assyifa Farma Cideres");
       setCompanyFormAppName("Manajemen Keuangan");
@@ -960,6 +968,10 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
       setCompanyFormShowSisaUangTunai(true);
       setCompanyFormShowRekeningSaldoAwal(true);
       setCompanyFormShowTotalPendapatanPlusMetko(true);
+      setCompanyFormShowPendapatanTunai(true);
+      setCompanyFormShowPendapatanTransfer(true);
+      setCompanyFormShowPengeluaranTunai(true);
+      setCompanyFormShowPengeluaranTransfer(true);
     }
     setIsEditingCompany(true);
   };
@@ -991,7 +1003,11 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
           showNabung: companyFormShowNabung,
           showSisaUangTunai: companyFormShowSisaUangTunai,
           showRekeningSaldoAwal: companyFormShowRekeningSaldoAwal,
-          showTotalPendapatanPlusMetko: companyFormShowTotalPendapatanPlusMetko
+          showTotalPendapatanPlusMetko: companyFormShowTotalPendapatanPlusMetko,
+          showPendapatanTunai: companyFormShowPendapatanTunai,
+          showPendapatanTransfer: companyFormShowPendapatanTransfer,
+          showPengeluaranTunai: companyFormShowPengeluaranTunai,
+          showPengeluaranTransfer: companyFormShowPengeluaranTransfer
         }
       };
       await setDoc(companyDocRef, updatedProfile, { merge: true });
@@ -2317,8 +2333,24 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
                           <span className="text-xs font-semibold text-slate-700">Metko Kemarin / Saldo Awal Tunai</span>
                         </label>
                         <label className="flex items-center gap-2 p-3 bg-slate-50 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-100 transition-colors">
+                          <input type="checkbox" checked={companyFormShowPendapatanTunai} onChange={(e) => setCompanyFormShowPendapatanTunai(e.target.checked)} className="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 border-slate-300" />
+                          <span className="text-xs font-semibold text-slate-700">Pendapatan Tunai</span>
+                        </label>
+                        <label className="flex items-center gap-2 p-3 bg-slate-50 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-100 transition-colors">
+                          <input type="checkbox" checked={companyFormShowPendapatanTransfer} onChange={(e) => setCompanyFormShowPendapatanTransfer(e.target.checked)} className="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 border-slate-300" />
+                          <span className="text-xs font-semibold text-slate-700">Pendapatan Transfer / Rekening</span>
+                        </label>
+                        <label className="flex items-center gap-2 p-3 bg-slate-50 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-100 transition-colors">
                           <input type="checkbox" checked={companyFormShowTotalPendapatanPlusMetko} onChange={(e) => setCompanyFormShowTotalPendapatanPlusMetko(e.target.checked)} className="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 border-slate-300" />
                           <span className="text-xs font-semibold text-slate-700">Total Pendapatan + Metko</span>
+                        </label>
+                        <label className="flex items-center gap-2 p-3 bg-slate-50 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-100 transition-colors">
+                          <input type="checkbox" checked={companyFormShowPengeluaranTunai} onChange={(e) => setCompanyFormShowPengeluaranTunai(e.target.checked)} className="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 border-slate-300" />
+                          <span className="text-xs font-semibold text-slate-700">Pengeluaran Tunai</span>
+                        </label>
+                        <label className="flex items-center gap-2 p-3 bg-slate-50 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-100 transition-colors">
+                          <input type="checkbox" checked={companyFormShowPengeluaranTransfer} onChange={(e) => setCompanyFormShowPengeluaranTransfer(e.target.checked)} className="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 border-slate-300" />
+                          <span className="text-xs font-semibold text-slate-700">Pengeluaran Transfer / Rekening</span>
                         </label>
                         <label className="flex items-center gap-2 p-3 bg-slate-50 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-100 transition-colors">
                           <input type="checkbox" checked={companyFormShowSisaSebelumNabung} onChange={(e) => setCompanyFormShowSisaSebelumNabung(e.target.checked)} className="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 border-slate-300" />
