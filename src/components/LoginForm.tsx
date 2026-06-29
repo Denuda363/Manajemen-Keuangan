@@ -96,7 +96,7 @@ export default function LoginForm({ onLoginSuccess }: LoginFormProps) {
           )}
         </h2>
         <p className="mt-2 text-sm text-slate-600 max-w-sm mx-auto">
-          {companyProfile?.appName || "DN Manajemen Keuangan"} – Solusi cerdas atur pemasukan & pengeluaran usaha dan pribadi Anda.
+          {companyProfile?.appName || "Manajemen Keuangan"} – Solusi cerdas atur pemasukan & pengeluaran usaha dan pribadi Anda.
         </p>
       </div>
 
@@ -159,7 +159,7 @@ export default function LoginForm({ onLoginSuccess }: LoginFormProps) {
           </motion.div>
 
         <p className="mt-6 text-center text-xs text-slate-400">
-          Hak Cipta © {new Date().getFullYear()} {companyProfile?.appName || "DN Manajemen Keuangan"}. Berjalan aman pada peramban Anda.
+          Hak Cipta © {new Date().getFullYear()} {companyProfile?.appName || "Manajemen Keuangan"}. Berjalan aman pada peramban Anda.
         </p>
       </div>
     </div>

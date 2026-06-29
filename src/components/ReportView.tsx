@@ -524,7 +524,7 @@ export default function ReportView({
             <td colspan="7" class="title" style="font-size: 18px; font-weight: 900; color: #1e293b;">LAPORAN REKONSILIASI KEUANGAN</td>
           </tr>
           <tr>
-            <td colspan="7" class="subtitle" style="font-weight: 600; color: #64748b;">${companyProfile?.appName || "DN Manajemen Keuangan"} - ${user?.name || "User"} | Periode: ${filterText} | Jenis Laporan: ${
+            <td colspan="7" class="subtitle" style="font-weight: 600; color: #64748b;">${companyProfile?.appName || "Manajemen Keuangan"} - ${user?.name || "User"} | Periode: ${filterText} | Jenis Laporan: ${
               reportViewType === "semua" ? "Gabungan (Tunai & Rekening)" : reportViewType === "tunai" ? "Hanya Kas Tunai" : "Hanya Rekening / Bank"
             }</td>
           </tr>
@@ -745,7 +745,7 @@ export default function ReportView({
           <tr style="border: none !important;">
             <td style="border: none !important; width: 50%; text-align: center; font-size: 10px;">
               Petugas Audit Keuangan Digital,<br/><br/><br/><br/>
-              <strong>( ${user?.name || `Sistem ${companyProfile?.appName || "DN Manajemen Keuangan"}`} )</strong>
+              <strong>( ${user?.name || `Sistem ${companyProfile?.appName || "Manajemen Keuangan"}`} )</strong>
             </td>
             <td style="border: none !important; width: 50%; text-align: center; font-size: 10px;">
               Mengetahui dan Disetujui,<br/><br/><br/><br/>
@@ -2077,7 +2077,7 @@ export default function ReportView({
           )}
           
           <div className="mt-4 flex justify-between items-center px-1 text-[9px] font-mono text-slate-500">
-            <span>Model: Sistem Kas DN Manajemen Keuangan</span>
+            <span>Model: Sistem Kas Manajemen Keuangan</span>
             <span>Tanggal Cetak: {new Date().toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" })} WIB</span>
           </div>
         </div>

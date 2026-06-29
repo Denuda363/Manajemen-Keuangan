@@ -946,7 +946,7 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
       setCompanyFormShowTotalPendapatanPlusMetko(settings.showTotalPendapatanPlusMetko ?? true);
     } else {
       setCompanyFormName("Apotek Assyifa Farma Cideres");
-      setCompanyFormAppName("DN Manajemen Keuangan");
+      setCompanyFormAppName("Manajemen Keuangan");
       setCompanyFormReportTitle("MANAJEMEN KEUANGAN APOTEK ASSYIFA FARMA CIDERES");
       setCompanyFormAddress("Jl Raya Cideres Ds Cipaku Kec Kadipaten - Majalengka");
       setCompanyFormPhone("");
@@ -2099,7 +2099,7 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
                           <Monitor className="w-4 h-4 text-slate-400 mt-0.5 shrink-0" />
                           <div>
                             <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wide block">Judul Aplikasi</span>
-                            <span className="text-xs font-semibold text-slate-800">{companyProfile?.appName || "DN Manajemen Keuangan"}</span>
+                            <span className="text-xs font-semibold text-slate-800">{companyProfile?.appName || "Manajemen Keuangan"}</span>
                           </div>
                         </div>
 
@@ -2202,7 +2202,7 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
                           type="text"
                           value={companyFormAppName}
                           onChange={(e) => setCompanyFormAppName(e.target.value)}
-                          placeholder="Contoh: DN Manajemen Keuangan"
+                          placeholder="Contoh: Manajemen Keuangan"
                           className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-indigo-500 text-slate-800"
                         />
                       </div>
@@ -2659,7 +2659,7 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
                         <Wallet className="w-6 h-6 text-indigo-600" />
                       </div>
                       <div>
-                        <h4 className="text-sm font-black text-slate-900 tracking-tight">{companyProfile?.appName || "DN Manajemen Keuangan"}</h4>
+                        <h4 className="text-sm font-black text-slate-900 tracking-tight">{companyProfile?.appName || "Manajemen Keuangan"}</h4>
                         <p className="text-xs text-slate-500 font-medium">Versi 1.0.0 (Cloud Edition)</p>
                       </div>
                     </div>
@@ -2700,7 +2700,7 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
                     )}
                     
                     <div className="mt-4 pt-3 border-t border-slate-200 flex justify-between items-center text-[9px] font-mono text-slate-400">
-                      <span>Hak Cipta © {new Date().getFullYear()} {companyProfile?.appName || "DN Manajemen Keuangan"}.</span>
+                      <span>Hak Cipta © {new Date().getFullYear()} {companyProfile?.appName || "Manajemen Keuangan"}.</span>
                       <span>Dibuat dengan ❤️ untuk Indonesia.</span>
                     </div>
                   </div>
