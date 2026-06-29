@@ -206,23 +206,23 @@ export default function TransactionsList({
                   return (
                     <div 
                       key={tx.id} 
-                      className="bg-white p-3.5 rounded-2xl shadow-xs border border-slate-100 flex items-center justify-between gap-4 group hover:shadow-md transition-shadow"
+                      className="bg-white p-3 md:p-3.5 rounded-2xl shadow-xs border border-slate-100 flex items-center justify-between gap-2 md:gap-4 group hover:shadow-md transition-shadow"
                     >
-                      <div className="flex items-center gap-3 truncate min-w-0">
+                      <div className="flex items-center gap-2 md:gap-3 truncate min-w-0">
                         {/* Status Icon */}
-                        <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${iconBgClass}`}>
+                        <div className={`w-8 h-8 md:w-9 md:h-9 rounded-[10px] md:rounded-xl flex items-center justify-center shrink-0 ${iconBgClass}`}>
                           {cardIcon}
                         </div>
 
                         {/* Text fields */}
                         <div className="truncate min-w-0">
-                          <h6 className="text-sm font-semibold text-slate-800 truncate">
+                          <h6 className="text-[11px] md:text-sm font-semibold text-slate-800 truncate">
                             {tx.description}
                           </h6>
-                          <div className="flex flex-wrap items-center gap-1.5 mt-1">
+                          <div className="flex flex-wrap items-center gap-1 md:gap-1.5 mt-0.5 md:mt-1">
                             {/* Category Badge */}
                             <span 
-                              className="text-[10px] font-medium text-white px-1.5 py-0.5 rounded-md flex items-center gap-1 shrink-0"
+                              className="text-[9px] md:text-[10px] font-medium text-white px-1 md:px-1.5 py-0.5 rounded flex items-center gap-1 shrink-0"
                               style={{ backgroundColor: itemColor }}
                             >
                               {isNabung ? <PiggyBank className="w-2.5 h-2.5" /> : <Tag className="w-2.5 h-2.5" />}
@@ -230,7 +230,7 @@ export default function TransactionsList({
                             </span>
 
                             {/* Method Badge */}
-                            <span className="text-[10px] font-medium text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded-md flex items-center gap-1 shrink-0 border border-slate-200/50">
+                            <span className="text-[9px] md:text-[10px] font-medium text-slate-500 bg-slate-100 px-1 md:px-1.5 py-0.5 rounded flex items-center gap-1 shrink-0 border border-slate-200/50">
                               {isNabung ? (
                                 <>
                                   <ArrowLeftRight className="w-2.5 h-2.5 text-indigo-500" />
@@ -253,21 +253,21 @@ export default function TransactionsList({
                       </div>
 
                       {/* Right Section: Amount & Modify Action Buttons */}
-                      <div className="flex items-center gap-3 shrink-0 text-right">
+                      <div className="flex items-center gap-1.5 md:gap-3 shrink-0 text-right">
                         <div>
-                          <span className={`text-sm font-bold font-mono tracking-tight ${amountColorClass}`}>
+                          <span className={`text-[11px] md:text-sm font-bold font-mono tracking-tight ${amountColorClass}`}>
                             {amountPrefix}Rp {tx.amount.toLocaleString("id-ID")}
                           </span>
                         </div>
 
-                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="flex items-center gap-0.5 md:gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                           {onEditTransaction && (
                             <button
                               onClick={() => onEditTransaction(tx)}
-                              className="p-1.5 rounded-lg bg-slate-50 hover:bg-emerald-50 text-slate-400 hover:text-emerald-600 transition-colors cursor-pointer"
+                              className="p-1 md:p-1.5 rounded-lg bg-slate-50 hover:bg-emerald-50 text-slate-400 hover:text-emerald-600 transition-colors cursor-pointer"
                               title="Ubah Transaksi"
                             >
-                              <Edit3 className="w-3.5 h-3.5" />
+                              <Edit3 className="w-3.5 h-3.5 md:w-3.5 md:h-3.5" />
                             </button>
                           )}
                           <button
@@ -276,10 +276,10 @@ export default function TransactionsList({
                                 onDeleteTransaction(tx.id);
                               }
                             }}
-                            className="p-1.5 rounded-lg bg-slate-50 hover:bg-red-50 text-slate-400 hover:text-red-500 transition-colors cursor-pointer"
+                            className="p-1 md:p-1.5 rounded-lg bg-slate-50 hover:bg-red-50 text-slate-400 hover:text-red-500 transition-colors cursor-pointer"
                             title="Hapus Transaksi"
                           >
-                            <Trash2 className="w-3.5 h-3.5" />
+                            <Trash2 className="w-3.5 h-3.5 md:w-3.5 md:h-3.5" />
                           </button>
                         </div>
                       </div>

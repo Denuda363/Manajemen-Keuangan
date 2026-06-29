@@ -8,6 +8,7 @@ import { User, Transaction, INCOME_CATEGORIES, EXPENSE_CATEGORIES, CompanyProfil
 import { parseTransactionText } from "../utils/parser";
 import ReportView from "./ReportView";
 import TransactionsList from "./TransactionsList";
+import ExcelImport from "./ExcelImport";
 import { 
   LogOut, Sparkles, Plus, Wallet, CreditCard, ChevronRight,
   TrendingUp, TrendingDown, DollarSign, Calendar, ListTodo, AlertTriangle, Check, BookOpen, PiggyBank,
@@ -805,6 +806,31 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
     setDeferredPrompt(null);
   };
 
+  const handleImportTransactions = async (newTransactions: Omit<Transaction, "id" | "userId" | "createdAt">[]) => {
+    try {
+      const batch = writeBatch(db);
+      const importedCount = newTransactions.length;
+      
+      for (const tx of newTransactions) {
+        const docRef = doc(collection(db, "transactions"));
+        batch.set(docRef, {
+          ...tx,
+          id: docRef.id,
+          userId: user.id,
+          createdAt: new Date().toISOString(),
+        });
+      }
+      
+      await batch.commit();
+      
+      logActivity("Import Excel", `Berhasil mengimpor ${importedCount} transaksi`);
+      triggerToast(`${importedCount} transaksi berhasil diimpor.`);
+    } catch (err: any) {
+      console.error("Gagal impor data:", err);
+      alert("Gagal melakukan impor: " + err.message);
+    }
+  };
+
   const handleBackupData = () => {
     try {
       const data = {
@@ -1150,7 +1176,7 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
       </nav>
 
       {/* Main Container - Renders Active Tab panels dynamically */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-28 md:pb-8">
         
         {/* TAB 1: RINGKASAN PANEL */}
         {activeTab === "ringkasan" && (
@@ -1161,19 +1187,19 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
             className="space-y-8"
           >
             {/* Header Greeting Gradient block */}
-            <div className="bg-gradient-to-br from-indigo-700 via-indigo-850 to-slate-900 text-white p-6 rounded-3xl shadow-md border border-indigo-950 relative overflow-hidden flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="bg-gradient-to-br from-indigo-700 via-indigo-850 to-slate-900 text-white p-4 md:p-6 rounded-2xl md:rounded-3xl shadow-md border border-indigo-950 relative overflow-hidden flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-4">
               <div className="absolute right-0 bottom-0 w-36 h-36 bg-indigo-500 opacity-20 rounded-full blur-2xl pointer-events-none" />
               <div className="absolute left-1/3 top-0 w-24 h-24 bg-purple-500 opacity-15 rounded-full blur-xl pointer-events-none" />
               
-              <div className="space-y-1 relative z-10">
+              <div className="space-y-0.5 md:space-y-1 relative z-10">
                 <span className="text-[10px] uppercase font-bold text-indigo-300 tracking-widest block">{greetingText},</span>
-                <h2 className="text-xl md:text-2xl font-black tracking-tight">{user.name}</h2>
-                <p className="text-xs text-indigo-100 font-medium max-w-lg">
+                <h2 className="text-lg md:text-2xl font-black tracking-tight">{user.name}</h2>
+                <p className="hidden md:block text-xs text-indigo-100 font-medium max-w-lg">
                   Arus kas dompet Anda terpantau dengan baik. Gunakan ketikan otomatis di bawah untuk mencatat transaksi secepat kilat!
                 </p>
               </div>
               
-              <div className="bg-white/10 backdrop-blur-md border border-white/10 px-4 py-3 rounded-2xl shrink-0 self-start md:self-auto relative z-10 flex items-center gap-2.5">
+              <div className="hidden md:flex bg-white/10 backdrop-blur-md border border-white/10 px-4 py-3 rounded-2xl shrink-0 items-center gap-2.5 relative z-10">
                 <Sparkles className="w-5 h-5 text-indigo-300 animate-pulse" />
                 <div>
                   <span className="text-[8px] font-extrabold uppercase tracking-wider text-slate-300 block">Metode Cerdas AI</span>
@@ -1183,56 +1209,56 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
             </div>
 
             {/* Status Dompet & Rekening Aktif */}
-            <div className="space-y-3.5">
+            <div className="space-y-3 md:space-y-3.5">
               <h3 className="text-[10px] font-black uppercase text-slate-400 tracking-wider flex items-center gap-2 px-1">
-                <Wallet className="w-4 h-4 text-indigo-600 animate-pulse" />
+                <Wallet className="w-3.5 h-3.5 md:w-4 md:h-4 text-indigo-600 animate-pulse" />
                 <span>Posisi Dompet & Rekening (Saldo Berjalan)</span>
               </h3>
               
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+              <div className="flex overflow-x-auto snap-x snap-mandatory gap-3 pb-2 -mx-4 px-4 md:grid md:grid-cols-3 md:overflow-visible md:snap-none md:gap-5 md:px-0 md:mx-0 md:pb-0 hide-scrollbar">
                 {/* Card Total balance */}
-                <div className="bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-950 text-white p-5 rounded-2xl relative overflow-hidden shadow-lg border border-slate-850 flex flex-col justify-between min-h-[140px] hover:shadow-xl transition-all duration-200">
+                <div className="min-w-[200px] snap-center shrink-0 md:w-auto md:min-w-0 bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-950 text-white p-3.5 md:p-5 rounded-2xl relative overflow-hidden shadow-lg border border-slate-850 flex flex-col justify-between min-h-[100px] md:min-h-[140px] hover:shadow-xl transition-all duration-200">
                   <div className="absolute -right-6 -bottom-6 w-32 h-32 bg-indigo-500 rounded-full opacity-10 blur-xl" />
                   <div>
-                    <span className="text-[10px] font-bold text-indigo-300 uppercase tracking-wider block">Total Saldo Gabungan</span>
-                    <h3 className="text-3xl font-black tracking-tight mt-1 text-emerald-400">
+                    <span className="text-[9px] md:text-[10px] font-bold text-indigo-300 uppercase tracking-wider block">Total Saldo Gabungan</span>
+                    <h3 className="text-xl md:text-3xl font-black tracking-tight mt-0.5 md:mt-1 text-emerald-400">
                       Rp {metrics.saldoTotal.toLocaleString("id-ID")}
                     </h3>
                   </div>
-                  <div className="mt-4 text-[10px] text-slate-400 flex items-center justify-between border-t border-slate-800 pt-2 font-semibold">
+                  <div className="mt-2 md:mt-4 text-[9px] md:text-[10px] text-slate-400 flex items-center justify-between border-t border-slate-800 pt-1.5 md:pt-2 font-semibold">
                     <span className="text-emerald-400 font-mono">In: Rp {(metrics.totalPemasukan / 1000).toFixed(0)}k</span>
                     <span className="text-red-400 font-mono">Out: Rp {(metrics.totalPengeluaran / 1000).toFixed(0)}k</span>
                   </div>
                 </div>
 
                 {/* Card Uang Tunai */}
-                <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex flex-col justify-between hover:shadow-md transition-all duration-200 min-h-[140px] relative overflow-hidden">
+                <div className="min-w-[200px] snap-center shrink-0 md:w-auto md:min-w-0 bg-white p-3.5 md:p-5 rounded-2xl border border-slate-200 shadow-xs flex flex-col justify-between hover:shadow-md transition-all duration-200 min-h-[100px] md:min-h-[140px] relative overflow-hidden">
                   <div className="absolute -right-6 -bottom-6 w-24 h-24 bg-emerald-50 rounded-full opacity-40 blur-lg" />
                   <div>
-                    <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-wider block">Nominal Uang Tunai (Fisik)</span>
-                    <h3 className="text-2xl font-black text-emerald-700 tracking-tight mt-1 font-mono">
+                    <span className="text-[9px] md:text-[10px] font-bold text-emerald-600 uppercase tracking-wider block">Nominal Uang Tunai (Fisik)</span>
+                    <h3 className="text-lg md:text-2xl font-black text-emerald-700 tracking-tight mt-0.5 md:mt-1 font-mono">
                       Rp {metrics.cashBalance.toLocaleString("id-ID")}
                     </h3>
-                    <p className="text-[10px] text-slate-400 mt-1">Sisa uang tunai fisik di dompet.</p>
+                    <p className="hidden md:block text-[10px] text-slate-400 mt-1">Sisa uang tunai fisik di dompet.</p>
                   </div>
-                  <div className="mt-3 flex items-center text-emerald-600 text-xs font-semibold gap-1 z-10">
-                    <Wallet className="w-3.5 h-3.5" />
+                  <div className="mt-2 md:mt-3 flex items-center text-emerald-600 text-[10px] md:text-xs font-semibold gap-1 z-10">
+                    <Wallet className="w-3 md:w-3.5 h-3 md:h-3.5" />
                     <span>Lacak Saku Fisik</span>
                   </div>
                 </div>
 
                 {/* Card Uang di Rekening */}
-                <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex flex-col justify-between hover:shadow-md transition-all duration-200 min-h-[140px] relative overflow-hidden">
+                <div className="min-w-[200px] snap-center shrink-0 md:w-auto md:min-w-0 bg-white p-3.5 md:p-5 rounded-2xl border border-slate-200 shadow-xs flex flex-col justify-between hover:shadow-md transition-all duration-200 min-h-[100px] md:min-h-[140px] relative overflow-hidden">
                   <div className="absolute -right-6 -bottom-6 w-24 h-24 bg-blue-50 rounded-full opacity-40 blur-lg" />
                   <div>
-                    <span className="text-[10px] font-bold text-blue-600 uppercase tracking-wider block">Nominal Uang di Rekening (Bank)</span>
-                    <h3 className="text-2xl font-black text-indigo-700 tracking-tight mt-1 font-mono">
+                    <span className="text-[9px] md:text-[10px] font-bold text-blue-600 uppercase tracking-wider block">Nominal Uang di Rekening (Bank)</span>
+                    <h3 className="text-lg md:text-2xl font-black text-indigo-700 tracking-tight mt-0.5 md:mt-1 font-mono">
                       Rp {metrics.transferBalance.toLocaleString("id-ID")}
                     </h3>
-                    <p className="text-[10px] text-slate-400 mt-1">Sisa saldo bank digital &amp; e-wallet.</p>
+                    <p className="hidden md:block text-[10px] text-slate-400 mt-1">Sisa saldo bank digital &amp; e-wallet.</p>
                   </div>
-                  <div className="mt-3 flex items-center text-blue-600 text-xs font-semibold gap-1 z-10">
-                    <CreditCard className="w-3.5 h-3.5" />
+                  <div className="mt-2 md:mt-3 flex items-center text-blue-600 text-[10px] md:text-xs font-semibold gap-1 z-10">
+                    <CreditCard className="w-3 md:w-3.5 h-3 md:h-3.5" />
                     <span>Lacak Bank &amp; E-Wallet</span>
                   </div>
                 </div>
@@ -1246,73 +1272,73 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
                 <span>Rincian Arus Aliran Dana Masuk vs Keluar Buku</span>
               </h3>
               
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-5">
                 {/* Card Pendapatan Tunai */}
-                <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs flex flex-col justify-between hover:shadow-md transition-shadow">
+                <div className="bg-white p-3 md:p-5 rounded-2xl border border-slate-200/80 shadow-xs flex flex-col justify-between hover:shadow-md transition-shadow">
                   <div>
-                    <p className="text-xs font-bold text-slate-500 uppercase tracking-wide">Pendapatan Tunai</p>
-                    <h2 className="text-xl font-bold text-slate-900 mt-1.5 font-mono">
+                    <p className="text-[9px] md:text-xs font-bold text-slate-500 uppercase tracking-wide">Pendapatan Tunai</p>
+                    <h2 className="text-sm sm:text-lg md:text-xl font-bold text-slate-900 mt-1 font-mono">
                       Rp {metrics.pemasukanTunai.toLocaleString("id-ID")}
                     </h2>
                   </div>
-                  <div className="mt-3 flex items-center text-emerald-600 text-xs font-semibold gap-1">
-                    <TrendingUp className="w-3.5 h-3.5" />
+                  <div className="mt-2 md:mt-3 flex items-center text-emerald-600 text-[9px] md:text-xs font-semibold gap-1">
+                    <TrendingUp className="w-3 h-3 md:w-3.5 md:h-3.5" />
                     <span>Tunai Saku</span>
                   </div>
                 </div>
 
                 {/* Card Pendapatan Transfer */}
-                <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs flex flex-col justify-between hover:shadow-md transition-shadow">
+                <div className="bg-white p-3 md:p-5 rounded-2xl border border-slate-200/80 shadow-xs flex flex-col justify-between hover:shadow-md transition-shadow">
                   <div>
-                    <p className="text-xs font-bold text-slate-500 uppercase tracking-wide">Pendapatan Transfer</p>
-                    <h2 className="text-xl font-bold text-slate-900 mt-1.5 font-mono">
+                    <p className="text-[9px] md:text-xs font-bold text-slate-500 uppercase tracking-wide">Pendapatan Transfer</p>
+                    <h2 className="text-sm sm:text-lg md:text-xl font-bold text-slate-900 mt-1 font-mono">
                       Rp {metrics.pemasukanTransfer.toLocaleString("id-ID")}
                     </h2>
                   </div>
-                  <div className="mt-3 flex items-center text-indigo-600 text-xs font-semibold gap-1">
-                    <CreditCard className="w-3.5 h-3.5" />
-                    <span>Bank &amp; e-Wallet</span>
+                  <div className="mt-2 md:mt-3 flex items-center text-indigo-600 text-[9px] md:text-xs font-semibold gap-1">
+                    <CreditCard className="w-3 h-3 md:w-3.5 md:h-3.5" />
+                    <span className="truncate">Bank &amp; e-Wallet</span>
                   </div>
                 </div>
 
                 {/* Card Pengeluaran Tunai */}
-                <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs flex flex-col justify-between hover:shadow-md transition-shadow">
+                <div className="bg-white p-3 md:p-5 rounded-2xl border border-slate-200/80 shadow-xs flex flex-col justify-between hover:shadow-md transition-shadow">
                   <div>
-                    <p className="text-xs font-bold text-slate-500 uppercase tracking-wide">Pengeluaran Tunai</p>
-                    <h2 className="text-xl font-bold text-slate-900 mt-1.5 font-mono">
+                    <p className="text-[9px] md:text-xs font-bold text-slate-500 uppercase tracking-wide">Pengeluaran Tunai</p>
+                    <h2 className="text-sm sm:text-lg md:text-xl font-bold text-slate-900 mt-1 font-mono">
                       Rp {metrics.pengeluaranTunai.toLocaleString("id-ID")}
                     </h2>
                   </div>
-                  <div className="mt-3 flex items-center text-red-600 text-xs font-semibold gap-1">
-                    <TrendingDown className="w-3.5 h-3.5" />
+                  <div className="mt-2 md:mt-3 flex items-center text-red-600 text-[9px] md:text-xs font-semibold gap-1">
+                    <TrendingDown className="w-3 h-3 md:w-3.5 md:h-3.5" />
                     <span>Belanja Fisik</span>
                   </div>
                 </div>
 
                 {/* Card Pengeluaran Transfer */}
-                <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs flex flex-col justify-between hover:shadow-md transition-shadow">
+                <div className="bg-white p-3 md:p-5 rounded-2xl border border-slate-200/80 shadow-xs flex flex-col justify-between hover:shadow-md transition-shadow">
                   <div>
-                    <p className="text-xs font-bold text-slate-500 uppercase tracking-wide">Pengeluaran Transfer</p>
-                    <h2 className="text-xl font-bold text-slate-900 mt-1.5 font-mono">
+                    <p className="text-[9px] md:text-xs font-bold text-slate-500 uppercase tracking-wide">Pengeluaran Transfer</p>
+                    <h2 className="text-sm sm:text-lg md:text-xl font-bold text-slate-900 mt-1 font-mono">
                       Rp {metrics.pengeluaranTransfer.toLocaleString("id-ID")}
                     </h2>
                   </div>
-                  <div className="mt-3 flex items-center text-slate-500 text-xs font-semibold gap-1">
-                    <CreditCard className="w-3.5 h-3.5 text-slate-400" />
-                    <span>Autodebit &amp; QRIS</span>
+                  <div className="mt-2 md:mt-3 flex items-center text-slate-500 text-[9px] md:text-xs font-semibold gap-1">
+                    <CreditCard className="w-3 h-3 md:w-3.5 md:h-3.5 text-slate-400" />
+                    <span className="truncate">Autodebit &amp; QRIS</span>
                   </div>
                 </div>
               </div>
             </div>
 
             {/* Prompt Parser Input card */}
-            <section className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm space-y-4">
+            <section className="bg-white p-4 md:p-6 rounded-3xl border border-slate-100 shadow-sm space-y-4">
               <div>
                 <h2 className="text-base font-bold text-slate-900 flex items-center gap-1.5">
                   <Sparkles className="w-5 h-5 text-indigo-600" />
                   <span>Input Pencatatan Sistem Otomatis</span>
                 </h2>
-                <p className="text-xs text-slate-500 mt-0.5">
+                <p className="text-[10px] md:text-xs text-slate-500 mt-0.5">
                   Ketik peristiwa keuangan Anda dalam kalimat Bahasa Indonesia bebas, teknologi AI lokas kami mendeteksi nominal secara real-time!
                 </p>
               </div>
@@ -1360,7 +1386,7 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
                   </div>
                 )}
                 
-                <div className="bg-slate-50 p-3 rounded-2xl text-[11px] text-slate-500 space-y-1 border border-slate-100 flex items-start gap-2">
+                <div className="hidden md:flex bg-slate-50 p-3 rounded-2xl text-[11px] text-slate-500 space-y-1 border border-slate-100 items-start gap-2">
                   <BookOpen className="w-4 h-4 text-slate-400 shrink-0 mt-0.5" />
                   <p>
                     <span className="font-bold text-slate-600 block">Form Buku Cepat:</span>
@@ -1371,10 +1397,10 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
             </section>
 
             {/* Side-by-side Overview Widgets Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
               
               {/* Widget A: Tabungan Saya */}
-              <div className="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm flex flex-col justify-between space-y-4">
+              <div className="bg-white p-4 md:p-5 rounded-3xl border border-slate-100 shadow-sm flex flex-col justify-between space-y-4">
                 <div>
                   <h4 className="text-xs font-bold uppercase text-slate-400 tracking-wider flex items-center gap-1.5">
                     <PiggyBank className="w-4 h-4 text-indigo-600" />
@@ -1421,14 +1447,14 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
             className="space-y-6"
           >
             {/* Header Riwayat Panel */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-3xl border border-slate-100 shadow-sm">
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
-                  <History className="w-5 h-5" />
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 md:gap-4 bg-white p-4 md:p-5 rounded-2xl md:rounded-3xl border border-slate-100 shadow-sm">
+              <div className="flex items-center gap-2 md:gap-3">
+                <div className="w-8 h-8 md:w-9 md:h-9 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
+                  <History className="w-4 h-4 md:w-5 md:h-5" />
                 </div>
                 <div>
-                  <h2 className="text-sm font-black text-slate-800">Riwayat & Pencatatan Transaksi</h2>
-                  <p className="text-[10px] text-slate-400 font-medium">Telusuri, lakukan pengeditan nilai, atau hapus entri secara penuh.</p>
+                  <h2 className="text-xs md:text-sm font-black text-slate-800">Riwayat & Pencatatan Transaksi</h2>
+                  <p className="text-[9px] md:text-[10px] text-slate-400 font-medium">Telusuri, edit nilai, atau hapus entri secara penuh.</p>
                 </div>
               </div>
               
@@ -1440,14 +1466,14 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
                   setFormDescription("");
                   setShowManualForm(!showManualForm);
                 }}
-                className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-md transition-all ${
+                className={`px-3 py-2 md:px-4 md:py-2.5 rounded-xl text-[10px] md:text-xs font-bold flex justify-center items-center gap-1.5 cursor-pointer shadow-md transition-all ${
                   showManualForm 
                     ? "bg-slate-800 hover:bg-slate-900 text-white shadow-slate-100" 
                     : "bg-indigo-600 hover:bg-indigo-700 text-white shadow-indigo-100"
                 }`}
               >
-                <Plus className="w-4 h-4" />
-                <span>{showManualForm ? "Tutup Form Manual" : "Input Transaksi Manual"}</span>
+                <Plus className="w-3.5 h-3.5 md:w-4 md:h-4" />
+                <span>{showManualForm ? "Tutup Form" : "Input Manual"}</span>
               </button>
             </div>
 
@@ -1456,7 +1482,7 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
               <motion.section 
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: "auto" }}
-                className="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm"
+                className="bg-white p-4 md:p-5 rounded-2xl md:rounded-3xl border border-slate-100 shadow-sm"
               >
                 <form onSubmit={handleManualSubmit} className="space-y-4 pt-1">
                   <h3 className="text-sm font-bold text-slate-850">
@@ -1839,6 +1865,15 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
               >
                 <Database className="w-3.5 h-3.5 shrink-0" />
                 <span className="truncate">Backup/Restore</span>
+              </button>
+              <button
+                onClick={() => setSettingsActiveTab("import_excel")}
+                className={`py-2.5 px-3 text-center text-[11px] lg:text-xs font-bold rounded-xl transition-all duration-200 flex items-center justify-center gap-1.5 cursor-pointer ${
+                  settingsActiveTab === "import_excel" ? "bg-white text-green-700 shadow-sm" : "text-slate-500 hover:text-slate-800"
+                }`}
+              >
+                <FileDown className="w-3.5 h-3.5 shrink-0" />
+                <span className="truncate">Excel Import</span>
               </button>
               <button
                 onClick={() => setSettingsActiveTab("log_aktivitas")}
@@ -2673,6 +2708,17 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
               </div>
             )}
 
+            {/* Sub-tab: IMPORT EXCEL */}
+            {settingsActiveTab === "import_excel" && (
+              <div className="max-w-4xl">
+                <ExcelImport 
+                  onImport={handleImportTransactions}
+                  incomeCategories={companyProfile?.incomeCategories || INCOME_CATEGORIES}
+                  expenseCategories={companyProfile?.expenseCategories || EXPENSE_CATEGORIES}
+                />
+              </div>
+            )}
+
             {/* Sub-tab 4: ABOUT / TENTANG APLIKASI */}
             {settingsActiveTab === "about" && (
               <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm space-y-6 max-w-3xl">
@@ -2895,7 +2941,7 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
       </main>
 
       {/* Mobile Floating Thumb Navigation Dock (Hidden on MD screens and above) */}
-      <nav id="mobile-navigation-dock" className="md:hidden fixed bottom-4 left-4 right-4 z-45 bg-white/95 backdrop-blur-md rounded-2xl shadow-xl border border-slate-200/90 p-2.5 flex items-center justify-around">
+      <nav id="mobile-navigation-dock" className="md:hidden fixed bottom-3 left-3 right-3 z-45 bg-white/95 backdrop-blur-md rounded-[20px] shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-slate-200/90 p-2 flex items-center justify-around">
         {NAV_ITEMS.map((item) => (
           <button
             key={item.id}
@@ -2903,23 +2949,27 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
               setActiveTab(item.id);
               setShowManualForm(false);
             }}
-            className={`relative flex flex-col items-center justify-center py-2 px-1 rounded-xl transition-all cursor-pointer flex-1 min-w-0 ${
-              activeTab === item.id ? "text-indigo-600 scale-[1.03]" : "text-slate-400 hover:text-slate-600"
+            className={`relative flex flex-col items-center justify-center py-2 px-1 rounded-[16px] transition-all cursor-pointer flex-1 min-w-0 ${
+              activeTab === item.id ? "text-indigo-600" : "text-slate-400 hover:text-slate-600"
             }`}
           >
             {activeTab === item.id && (
               <motion.div
                 layoutId="mobile-active-indicator"
-                className="absolute inset-0 bg-indigo-50 border border-indigo-100 rounded-xl"
+                className="absolute inset-0 bg-indigo-50 border border-indigo-100 rounded-[16px]"
                 transition={{ type: "spring", stiffness: 350, damping: 25 }}
               />
             )}
-            <span className="relative z-10">
-              {item.icon}
+            <span className="relative z-10 flex items-center justify-center">
+              {React.cloneElement(item.icon as React.ReactElement, {
+                className: `w-5 h-5 transition-transform ${activeTab === item.id ? "scale-110" : "scale-100"}`
+              })}
             </span>
-            <span className="relative z-10 text-[8px] font-extrabold mt-1 block truncate">
-              {item.labelShort}
-            </span>
+            {activeTab === item.id && (
+              <span className="relative z-10 text-[9px] font-extrabold mt-1 block truncate">
+                {item.labelShort}
+              </span>
+            )}
           </button>
         ))}
       </nav>

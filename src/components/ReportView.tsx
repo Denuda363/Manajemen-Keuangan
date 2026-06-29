@@ -1309,10 +1309,10 @@ export default function ReportView({
   };
 
   return (
-    <div id="report-view-container" className="space-y-6">
+    <div id="report-view-container" className="space-y-4 md:space-y-6">
       
       {/* Dynamic Date, Month, Year Filter Header card configuration */}
-      <div className="bg-white p-5 rounded-3xl shadow-sm border border-slate-100 space-y-4 no-print">
+      <div className="bg-white p-4 md:p-5 rounded-2xl md:rounded-3xl shadow-sm border border-slate-100 space-y-4 no-print">
         
         {/* Row 1: Filter Tab Mode Pickers */}
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
@@ -1326,11 +1326,11 @@ export default function ReportView({
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3 self-start lg:self-auto">
-            <div className="flex items-center gap-1.5 bg-slate-100 p-1.5 rounded-2xl w-fit">
+          <div className="flex flex-col sm:flex-row flex-wrap items-start sm:items-center gap-3 w-full lg:w-auto">
+            <div className="flex items-center gap-1 md:gap-1.5 bg-slate-100 p-1 md:p-1.5 rounded-2xl w-full sm:w-fit overflow-x-auto hide-scrollbar">
               <button
                 onClick={() => { setFilterType("harian"); setHoveredIdx(null); }}
-                className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                className={`px-3 py-1 md:px-3.5 md:py-1.5 rounded-xl text-[10px] md:text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
                   filterType === "harian" ? "bg-white text-slate-800 shadow-xs" : "text-slate-500 hover:text-slate-800"
                 }`}
               >
@@ -1338,7 +1338,7 @@ export default function ReportView({
               </button>
               <button
                 onClick={() => { setFilterType("mingguan"); setHoveredIdx(null); }}
-                className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                className={`px-3 py-1 md:px-3.5 md:py-1.5 rounded-xl text-[10px] md:text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
                   filterType === "mingguan" ? "bg-white text-slate-800 shadow-xs" : "text-slate-500 hover:text-slate-800"
                 }`}
               >
@@ -1346,7 +1346,7 @@ export default function ReportView({
               </button>
               <button
                 onClick={() => { setFilterType("bulanan"); setHoveredIdx(null); }}
-                className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                className={`px-3 py-1 md:px-3.5 md:py-1.5 rounded-xl text-[10px] md:text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
                   filterType === "bulanan" ? "bg-white text-slate-800 shadow-xs" : "text-slate-500 hover:text-slate-800"
                 }`}
               >
@@ -1354,7 +1354,7 @@ export default function ReportView({
               </button>
               <button
                 onClick={() => { setFilterType("tahunan"); setHoveredIdx(null); }}
-                className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                className={`px-3 py-1 md:px-3.5 md:py-1.5 rounded-xl text-[10px] md:text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
                   filterType === "tahunan" ? "bg-white text-slate-800 shadow-xs" : "text-slate-500 hover:text-slate-800"
                 }`}
               >
@@ -1362,37 +1362,37 @@ export default function ReportView({
               </button>
               <button
                 onClick={() => { setFilterType("rentang"); setHoveredIdx(null); }}
-                className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                className={`px-3 py-1 md:px-3.5 md:py-1.5 rounded-xl text-[10px] md:text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
                   filterType === "rentang" ? "bg-white text-slate-800 shadow-xs" : "text-slate-500 hover:text-slate-800"
                 }`}
               >
-                Rentang Tanggal
+                Rentang
               </button>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
               <button
                 onClick={() => setShowPdfGuide(true)}
-                className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl text-xs font-bold flex items-center gap-2 cursor-pointer transition-all duration-250 shadow-sm hover:shadow-emerald-200"
+                className="flex-1 sm:flex-none px-3 py-2 md:px-4 md:py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl md:rounded-2xl text-[10px] md:text-xs font-bold flex items-center justify-center gap-1.5 md:gap-2 cursor-pointer transition-all duration-250 shadow-sm"
               >
-                <FileDown className="w-4 h-4" />
-                <span>Ekspor ke PDF</span>
+                <FileDown className="w-3.5 h-3.5 md:w-4 md:h-4" />
+                <span>PDF</span>
               </button>
 
               <button
                 onClick={exportToExcel}
-                className="px-4 py-2.5 bg-teal-600 hover:bg-teal-700 text-white rounded-2xl text-xs font-bold flex items-center gap-2 cursor-pointer transition-all duration-250 shadow-sm hover:shadow-teal-200"
+                className="flex-1 sm:flex-none px-3 py-2 md:px-4 md:py-2.5 bg-teal-600 hover:bg-teal-700 text-white rounded-xl md:rounded-2xl text-[10px] md:text-xs font-bold flex items-center justify-center gap-1.5 md:gap-2 cursor-pointer transition-all duration-250 shadow-sm"
               >
-                <FileSpreadsheet className="w-4 h-4" />
-                <span>Ekspor ke Excel</span>
+                <FileSpreadsheet className="w-3.5 h-3.5 md:w-4 md:h-4" />
+                <span>Excel</span>
               </button>
 
               <button
                 onClick={() => window.print()}
-                className="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl text-xs font-bold flex items-center gap-2 cursor-pointer transition-all duration-250 shadow-sm hover:shadow-indigo-200"
+                className="flex-1 sm:flex-none px-3 py-2 md:px-4 md:py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl md:rounded-2xl text-[10px] md:text-xs font-bold flex items-center justify-center gap-1.5 md:gap-2 cursor-pointer transition-all duration-250 shadow-sm"
               >
-                <Printer className="w-4 h-4" />
-                <span>Cetak Laporan</span>
+                <Printer className="w-3.5 h-3.5 md:w-4 md:h-4" />
+                <span>Cetak</span>
               </button>
             </div>
           </div>
@@ -1583,9 +1583,9 @@ export default function ReportView({
         </div>
       </div>
 
-      <div className="no-print space-y-6">
+      <div className="no-print space-y-4 md:space-y-6">
         {filteredTransactions.length === 0 ? (
-          <div className="bg-white py-16 px-6 rounded-3xl shadow-sm border border-slate-100 text-center animate-fade-in">
+          <div className="bg-white py-12 md:py-16 px-4 md:px-6 rounded-2xl md:rounded-3xl shadow-sm border border-slate-100 text-center animate-fade-in">
             <div className="w-14 h-14 bg-slate-50 text-indigo-400 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-dashed border-slate-200">
               <Calendar className="w-7 h-7" />
             </div>
@@ -1597,7 +1597,7 @@ export default function ReportView({
         ) : (
           <>
             {/* PRESETS ON-SCREEN RECONCILIATION SUMMARY BOX matching requested PDF format */}
-            <div className="bg-white p-6 rounded-3xl shadow-xs border border-slate-200/80 space-y-4">
+            <div className="bg-white p-4 md:p-6 rounded-2xl md:rounded-3xl shadow-xs border border-slate-200/80 space-y-3 md:space-y-4">
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
                   <FileDown className="w-4 h-4" />
@@ -1609,18 +1609,18 @@ export default function ReportView({
               </div>
 
               {/* Exact format layout requested by user */}
-              <div className={`bg-slate-50 border border-slate-150 p-5 rounded-2xl grid grid-cols-1 md:grid-cols-2 ${reportViewType === "semua" ? "lg:grid-cols-3" : "lg:grid-cols-2"} gap-6 font-mono text-xs text-slate-800 leading-relaxed`}>
+              <div className={`bg-slate-50 border border-slate-150 p-4 md:p-5 rounded-2xl grid grid-cols-1 md:grid-cols-2 ${reportViewType === "semua" ? "lg:grid-cols-3" : "lg:grid-cols-2"} gap-4 md:gap-6 font-mono text-[10px] md:text-xs text-slate-800 leading-relaxed`}>
                 
                 {/* Column 1: Pendapatan Tunai, Pengeluaran Tunai & Sisa */}
                 {(reportViewType === "semua" || reportViewType === "tunai") && (
-                  <div className="space-y-4">
+                  <div className="space-y-3 md:space-y-4">
                     {showMetkoKemarin && (
-                      <div className="bg-white p-4 rounded-xl border border-slate-200/60 shadow-2xs space-y-1.5">
-                        <div className="font-extrabold text-indigo-950 uppercase tracking-wider text-[11px] border-b pb-1 border-slate-100 flex items-center justify-between">
+                      <div className="bg-white p-3 md:p-4 rounded-xl border border-slate-200/60 shadow-2xs space-y-1 md:space-y-1.5">
+                        <div className="font-extrabold text-indigo-950 uppercase tracking-wider text-[10px] md:text-[11px] border-b pb-1 border-slate-100 flex items-center justify-between">
                           <span>SALDO AWAL KAS TUNAI / METKO KEMARIN</span>
                           <Wallet className="w-3.5 h-3.5 text-slate-400" />
                         </div>
-                        <div className="flex justify-between text-[11px]">
+                        <div className="flex justify-between text-[10px] md:text-[11px]">
                           <span className="text-slate-600">RP</span>
                           <span className="font-bold text-slate-900">{pdfMetrics.cashSaldoAwal.toLocaleString("id-ID")}</span>
                         </div>
@@ -1628,23 +1628,23 @@ export default function ReportView({
                     )}
 
                     {showPendapatanTunai && (
-                      <div className="bg-white p-4 rounded-xl border border-slate-200/60 shadow-2xs space-y-2">
-                        <div className="font-extrabold text-indigo-950 uppercase tracking-wider text-[11px] border-b pb-1 border-slate-100">
+                      <div className="bg-white p-3 md:p-4 rounded-xl border border-slate-200/60 shadow-2xs space-y-1.5 md:space-y-2">
+                        <div className="font-extrabold text-indigo-950 uppercase tracking-wider text-[10px] md:text-[11px] border-b pb-1 border-slate-100">
                           PENDAPATAN TUNAI
                         </div>
                         {pdfMetrics.incomeTunaiList.length === 0 ? (
-                          <div className="text-slate-400 italic text-[11px] py-1">NIHIL</div>
+                          <div className="text-slate-400 italic text-[10px] md:text-[11px] py-1">NIHIL</div>
                         ) : (
                           <div className="space-y-1">
                             {pdfMetrics.incomeTunaiList.map((item, idx) => (
-                              <div key={idx} className="flex justify-between text-[11px]">
+                              <div key={idx} className="flex justify-between text-[10px] md:text-[11px]">
                                 <span className="text-slate-600">{item.category}</span>
                                 <span className="font-bold">Rp {item.amount.toLocaleString("id-ID")}</span>
                               </div>
                             ))}
                           </div>
                         )}
-                        <div className="flex justify-between font-extrabold text-[#000] border-t border-slate-100 pt-1.5 mt-1 text-[11px]">
+                        <div className="flex justify-between font-extrabold text-[#000] border-t border-slate-100 pt-1.5 mt-1 text-[10px] md:text-[11px]">
                           <span>TOTAL</span>
                           <span>Rp {pdfMetrics.incomeTunaiTotal.toLocaleString("id-ID")}</span>
                         </div>
@@ -1657,32 +1657,32 @@ export default function ReportView({
                 {(reportViewType === "semua" || reportViewType === "tunai") && (
                   <div className="space-y-4">
                     {showPendapatanTransfer && (
-                      <div className="bg-white p-4 rounded-xl border border-slate-200/60 shadow-2xs space-y-1.5">
-                        <div className="font-extrabold text-indigo-950 uppercase tracking-wider text-[11px] border-b pb-1 border-slate-100">
+                      <div className="bg-white p-3 md:p-4 rounded-xl border border-slate-200/60 shadow-2xs space-y-1 md:space-y-1.5">
+                        <div className="font-extrabold text-indigo-950 uppercase tracking-wider text-[10px] md:text-[11px] border-b pb-1 border-slate-100">
                           PENDAPATAN TRANSFER
                         </div>
                         {pdfMetrics.incomeTransferList.length === 0 ? (
-                          <div className="text-slate-400 italic text-[11px] py-1">NIHIL</div>
+                          <div className="text-slate-400 italic text-[10px] md:text-[11px] py-1">NIHIL</div>
                         ) : (
                           <div className="space-y-1">
                             {pdfMetrics.incomeTransferList.map((item, idx) => (
-                              <div key={idx} className="flex justify-between text-[11px]">
+                              <div key={idx} className="flex justify-between text-[10px] md:text-[11px]">
                                 <span className="text-slate-600">{item.category}</span>
                                 <span className="font-bold">Rp {item.amount.toLocaleString("id-ID")}</span>
                               </div>
                             ))}
                           </div>
                         )}
-                        <div className="flex justify-between text-[11px] border-t border-slate-100 pt-1.5 mt-1">
+                        <div className="flex justify-between text-[10px] md:text-[11px] border-t border-slate-100 pt-1.5 mt-1">
                           <span className="text-slate-600 font-bold">TOTAL PENDAPATAN TF</span>
                           <span className="font-bold">Rp {pdfMetrics.incomeTransferTotal.toLocaleString("id-ID")}</span>
                         </div>
-                        <div className="flex justify-between font-extrabold text-slate-900 border-t border-slate-100 pt-1.5 mt-1 text-[11px]">
+                        <div className="flex justify-between font-extrabold text-slate-900 border-t border-slate-100 pt-1.5 mt-1 text-[10px] md:text-[11px]">
                           <span>TOTAL PENDAPATAN</span>
                           <span className="text-indigo-700">Rp {pdfMetrics.totalIncomeCombine.toLocaleString("id-ID")}</span>
                         </div>
                         {showTotalPendapatanPlusMetko && (
-                          <div className="flex justify-between font-extrabold text-slate-900 border-t border-slate-100 pt-1.5 mt-1 text-[11px]">
+                          <div className="flex justify-between font-extrabold text-slate-900 border-t border-slate-100 pt-1.5 mt-1 text-[10px] md:text-[11px]">
                             <span>TOTAL PENDAPATAN + METKO KEMARIN</span>
                             <span className="text-indigo-700">Rp {pdfMetrics.totalIncomePlusMetko.toLocaleString("id-ID")}</span>
                           </div>
@@ -1691,23 +1691,23 @@ export default function ReportView({
                     )}
 
                     {showPengeluaranTunai && (
-                      <div className="bg-white p-4 rounded-xl border border-slate-200/60 shadow-2xs space-y-1.5">
-                        <div className="font-extrabold text-indigo-950 uppercase tracking-wider text-[11px] border-b pb-1 border-slate-100">
+                      <div className="bg-white p-3 md:p-4 rounded-xl border border-slate-200/60 shadow-2xs space-y-1 md:space-y-1.5">
+                        <div className="font-extrabold text-indigo-950 uppercase tracking-wider text-[10px] md:text-[11px] border-b pb-1 border-slate-100">
                           PENGELUARAN TUNAI
                         </div>
                         {pdfMetrics.expenseTunaiList.length === 0 ? (
-                          <div className="text-slate-400 italic text-[11px] py-1">NIHIL</div>
+                          <div className="text-slate-400 italic text-[10px] md:text-[11px] py-1">NIHIL</div>
                         ) : (
                           <div className="space-y-1">
                             {pdfMetrics.expenseTunaiList.map((item, idx) => (
-                              <div key={idx} className="flex justify-between text-[11px]">
+                              <div key={idx} className="flex justify-between text-[10px] md:text-[11px]">
                                 <span className="text-slate-600">{item.category}</span>
                                 <span className="font-bold text-red-650">Rp {item.amount.toLocaleString("id-ID")}</span>
                               </div>
                             ))}
                           </div>
                         )}
-                        <div className="flex justify-between text-red-650 text-[11px] font-bold border-t border-slate-100 pt-1.5 mt-1">
+                        <div className="flex justify-between text-red-650 text-[10px] md:text-[11px] font-bold border-t border-slate-100 pt-1.5 mt-1">
                           <span className="text-slate-650">TOTAL PENGELUARAN</span>
                           <span>Rp {pdfMetrics.expenseTunaiTotal.toLocaleString("id-ID")}</span>
                         </div>
@@ -1715,11 +1715,11 @@ export default function ReportView({
                     )}
 
                     {showSisaSebelumNabung && (
-                      <div className="bg-indigo-50/50 p-4 rounded-xl border border-indigo-150 shadow-2xs space-y-1.5">
-                        <div className="font-extrabold text-indigo-950 uppercase tracking-wider text-[11px] border-b pb-1 border-indigo-250/20">
+                      <div className="bg-indigo-50/50 p-3 md:p-4 rounded-xl border border-indigo-150 shadow-2xs space-y-1 md:space-y-1.5">
+                        <div className="font-extrabold text-indigo-950 uppercase tracking-wider text-[10px] md:text-[11px] border-b pb-1 border-indigo-250/20">
                           SISA
                         </div>
-                        <div className="flex justify-between text-indigo-900 text-[11px] font-black">
+                        <div className="flex justify-between text-indigo-900 text-[10px] md:text-[11px] font-black">
                           <span className="text-slate-650">Sisa Kas Tunai</span>
                           <span>Rp {pdfMetrics.sisaSebelumNabung.toLocaleString("id-ID")}</span>
                         </div>
@@ -1727,23 +1727,23 @@ export default function ReportView({
                     )}
 
                     {showNabung && (
-                      <div className="bg-white p-4 rounded-xl border border-slate-200/60 shadow-2xs space-y-1.5">
-                        <div className="font-extrabold text-indigo-950 uppercase tracking-wider text-[11px] border-b pb-1 border-slate-100">
+                      <div className="bg-white p-3 md:p-4 rounded-xl border border-slate-200/60 shadow-2xs space-y-1 md:space-y-1.5">
+                        <div className="font-extrabold text-indigo-950 uppercase tracking-wider text-[10px] md:text-[11px] border-b pb-1 border-slate-100">
                           NABUNG
                         </div>
                         {pdfMetrics.nabungList.length === 0 ? (
-                          <div className="text-slate-400 italic text-[11px] py-1">NIHIL</div>
+                          <div className="text-slate-400 italic text-[10px] md:text-[11px] py-1">NIHIL</div>
                         ) : (
                           <div className="space-y-1">
                             {pdfMetrics.nabungList.map((item, idx) => (
-                              <div key={idx} className="flex justify-between text-[11px]">
+                              <div key={idx} className="flex justify-between text-[10px] md:text-[11px]">
                                 <span className="text-slate-600">{item.category}</span>
                                 <span className="font-bold text-amber-700">Rp {item.amount.toLocaleString("id-ID")}</span>
                               </div>
                             ))}
                           </div>
                         )}
-                        <div className="flex justify-between font-extrabold text-[#000] border-t border-slate-100 pt-1.5 mt-1 text-[11px]">
+                        <div className="flex justify-between font-extrabold text-[#000] border-t border-slate-100 pt-1.5 mt-1 text-[10px] md:text-[11px]">
                           <span>TOTAL NABUNG</span>
                           <span className="text-amber-700">Rp {pdfMetrics.nabungTotal.toLocaleString("id-ID")}</span>
                         </div>
@@ -1751,11 +1751,11 @@ export default function ReportView({
                     )}
 
                     {showSisaUangTunai && (
-                      <div className="bg-[#ecfdf5] p-4 rounded-xl border border-emerald-250 shadow-2xs space-y-1.5">
-                        <div className="font-extrabold text-emerald-950 uppercase tracking-wider text-[11px] border-b pb-1 border-emerald-150">
+                      <div className="bg-[#ecfdf5] p-3 md:p-4 rounded-xl border border-emerald-250 shadow-2xs space-y-1 md:space-y-1.5">
+                        <div className="font-extrabold text-emerald-950 uppercase tracking-wider text-[10px] md:text-[11px] border-b pb-1 border-emerald-150">
                           SISA UANG TUNAI
                         </div>
-                        <div className="flex justify-between text-emerald-800 text-[11px]">
+                        <div className="flex justify-between text-emerald-800 text-[10px] md:text-[11px]">
                           <span className="text-emerald-700 font-bold">Rp.</span>
                           <span className="font-black">Rp {pdfMetrics.sisaUangTunai.toLocaleString("id-ID")}</span>
                         </div>
@@ -1767,12 +1767,12 @@ export default function ReportView({
                 {/* Column 3: Saldo Rekening */}
                 {(reportViewType === "semua" || reportViewType === "rekening") && (
                   <div className={reportViewType === "rekening" ? "md:col-span-2" : "md:col-span-2 lg:col-span-1"}>
-                  <div className="bg-slate-900 text-slate-100 p-4 rounded-xl border border-slate-800 shadow-2xs space-y-2 h-full flex flex-col justify-between">
+                  <div className="bg-slate-900 text-slate-100 p-3 md:p-4 rounded-xl border border-slate-800 shadow-2xs space-y-1.5 md:space-y-2 h-full flex flex-col justify-between">
                     <div>
-                      <div className="font-extrabold text-indigo-300 uppercase tracking-wider text-[11px] border-b pb-1 border-slate-800">
+                      <div className="font-extrabold text-indigo-300 uppercase tracking-wider text-[10px] md:text-[11px] border-b pb-1 border-slate-800">
                         SALDO REKENING
                       </div>
-                      <div className="space-y-1.5 text-[11px] mt-2">
+                      <div className="space-y-1 md:space-y-1.5 text-[10px] md:text-[11px] mt-2">
                         {showRekeningSaldoAwal && (
                           <div className="flex justify-between">
                             <span className="text-slate-400">SALDO AWAL</span>
@@ -1848,62 +1848,62 @@ export default function ReportView({
               </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 md:gap-6 items-start">
             
             {/* Column Left: Visual stats totals cockpit */}
-            <div className="lg:col-span-4 space-y-6">
+            <div className="lg:col-span-4 space-y-3 md:space-y-6">
               
               {/* Net Savings Box */}
-              <div className="bg-gradient-to-br from-indigo-900 to-slate-900 text-white p-5 rounded-3xl shadow-md border border-indigo-950 relative overflow-hidden">
+              <div className="bg-gradient-to-br from-indigo-900 to-slate-900 text-white p-3.5 md:p-5 rounded-2xl md:rounded-3xl shadow-md border border-indigo-950 relative overflow-hidden">
                 <div className="absolute right-0 bottom-0 w-24 h-24 bg-indigo-500 opacity-10 rounded-full blur-xl pointer-events-none" />
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">Selisih Bersih (Pencapaian)</span>
-                <h3 className={`text-2xl font-black tracking-tight mt-1.5 ${stats.netBalance >= 0 ? "text-emerald-400" : "text-red-400"}`}>
+                <span className="text-[9px] md:text-[10px] font-bold text-slate-400 uppercase tracking-widest block">Selisih Bersih (Pencapaian)</span>
+                <h3 className={`text-xl md:text-2xl font-black tracking-tight mt-0.5 md:mt-1.5 ${stats.netBalance >= 0 ? "text-emerald-400" : "text-red-400"}`}>
                   {stats.netBalance >= 0 ? "+" : ""}
                   Rp {stats.netBalance.toLocaleString("id-ID")}
                 </h3>
-                <p className="text-xs text-slate-400 mt-2 flex items-center gap-1.5">
-                  <Activity className="w-4 h-4 text-indigo-400" />
+                <p className="hidden md:flex text-[10px] md:text-xs text-slate-400 mt-2 items-center gap-1.5">
+                  <Activity className="w-3.5 h-3.5 md:w-4 md:h-4 text-indigo-400" />
                   <span>Pembukuan Arus Kas Periode Terpilih</span>
                 </p>
               </div>
 
               {/* Automatic Tabungan box */}
               {stats.savingTotal > 0 && (
-                <div className="bg-emerald-50/70 border border-emerald-100/60 p-4 rounded-3xl flex items-center justify-between shadow-xs">
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-9 h-9 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center">
-                      <PiggyBank className="w-5 h-5" />
+                <div className="bg-emerald-50/70 border border-emerald-100/60 p-3 md:p-4 rounded-2xl md:rounded-3xl flex items-center justify-between shadow-xs">
+                  <div className="flex items-center gap-2 md:gap-2.5">
+                    <div className="w-7 h-7 md:w-9 md:h-9 rounded-[10px] md:rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center">
+                      <PiggyBank className="w-4 h-4 md:w-5 md:h-5" />
                     </div>
                     <div>
                       <span className="text-[8px] font-extrabold uppercase tracking-wider text-slate-400 block">Dana Terpindahkan</span>
-                      <span className="text-xs font-bold text-emerald-900">Rp {stats.savingTotal.toLocaleString("id-ID")}</span>
+                      <span className="text-[11px] md:text-xs font-bold text-emerald-900">Rp {stats.savingTotal.toLocaleString("id-ID")}</span>
                     </div>
                   </div>
-                  <span className="bg-emerald-100/50 text-emerald-800 px-2 py-0.5 rounded-lg text-[9px] font-bold border border-emerald-200/50">Nabung Aman</span>
+                  <span className="bg-emerald-100/50 text-emerald-800 px-2 py-0.5 rounded-lg text-[8px] md:text-[9px] font-bold border border-emerald-200/50">Nabung Aman</span>
                 </div>
               )}
 
               {/* Split Tunai vs Transfer (Aliran Dana Otomatis) */}
-              <div className="bg-white p-5 rounded-3xl shadow-sm border border-slate-100 space-y-4">
-                <h3 className="text-xs font-black text-slate-800 flex items-center gap-2 uppercase tracking-wider">
-                  <Layers className="w-4 h-4 text-indigo-600" />
+              <div className="bg-white p-3.5 md:p-5 rounded-2xl md:rounded-3xl shadow-sm border border-slate-100 space-y-2 md:space-y-4">
+                <h3 className="text-[9px] md:text-xs font-black text-slate-800 flex items-center gap-1.5 md:gap-2 uppercase tracking-wider">
+                  <Layers className="w-3.5 h-3.5 md:w-4 md:h-4 text-indigo-600" />
                   <span>Rincian Jenis Pembayaran</span>
                 </h3>
 
-                <div className="space-y-4 pt-1">
+                <div className="space-y-3 md:space-y-4 pt-0.5 md:pt-1">
                   {/* Pemasukan block */}
                   <div>
-                    <span className="text-[10px] font-extrabold text-emerald-600 uppercase tracking-widest block mb-2">Sumber Pemasukan</span>
-                    <div className="grid grid-cols-2 gap-2.5">
-                      <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
-                        <span className="text-[9px] font-medium text-slate-400 block mb-0.5">TUNAI</span>
-                        <span className="text-xs font-bold text-slate-800 block">
+                    <span className="text-[9px] md:text-[10px] font-extrabold text-emerald-600 uppercase tracking-widest block mb-1.5 md:mb-2">Sumber Pemasukan</span>
+                    <div className="grid grid-cols-2 gap-2 md:gap-2.5">
+                      <div className="bg-slate-50 p-2 md:p-2.5 rounded-xl border border-slate-100">
+                        <span className="text-[8px] md:text-[9px] font-medium text-slate-400 block mb-0.5">TUNAI</span>
+                        <span className="text-[10px] md:text-xs font-bold text-slate-800 block">
                           Rp {stats.incomeTunai.toLocaleString("id-ID")}
                         </span>
                       </div>
-                      <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
-                        <span className="text-[9px] font-medium text-slate-400 block mb-0.5">TRANSFER/BANK</span>
-                        <span className="text-xs font-bold text-slate-800 block">
+                      <div className="bg-slate-50 p-2 md:p-2.5 rounded-xl border border-slate-100">
+                        <span className="text-[8px] md:text-[9px] font-medium text-slate-400 block mb-0.5">TRANSFER/BANK</span>
+                        <span className="text-[10px] md:text-xs font-bold text-slate-800 block">
                           Rp {stats.incomeTransfer.toLocaleString("id-ID")}
                         </span>
                       </div>
@@ -1914,17 +1914,17 @@ export default function ReportView({
 
                   {/* Pengeluaran block */}
                   <div>
-                    <span className="text-[10px] font-extrabold text-red-500 uppercase tracking-widest block mb-2">Pos Pengeluaran</span>
-                    <div className="grid grid-cols-2 gap-2.5">
-                      <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
-                        <span className="text-[9px] font-medium text-slate-400 block mb-0.5">TUNAI</span>
-                        <span className="text-xs font-bold text-slate-700 block">
+                    <span className="text-[9px] md:text-[10px] font-extrabold text-red-500 uppercase tracking-widest block mb-1.5 md:mb-2">Pos Pengeluaran</span>
+                    <div className="grid grid-cols-2 gap-2 md:gap-2.5">
+                      <div className="bg-slate-50 p-2 md:p-2.5 rounded-xl border border-slate-100">
+                        <span className="text-[8px] md:text-[9px] font-medium text-slate-400 block mb-0.5">TUNAI</span>
+                        <span className="text-[10px] md:text-xs font-bold text-slate-700 block">
                           Rp {stats.expenseTunai.toLocaleString("id-ID")}
                         </span>
                       </div>
-                      <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
-                        <span className="text-[9px] font-medium text-slate-400 block mb-0.5">TRANSFER/BANK</span>
-                        <span className="text-xs font-bold text-slate-700 block">
+                      <div className="bg-slate-50 p-2 md:p-2.5 rounded-xl border border-slate-100">
+                        <span className="text-[8px] md:text-[9px] font-medium text-slate-400 block mb-0.5">TRANSFER/BANK</span>
+                        <span className="text-[10px] md:text-xs font-bold text-slate-700 block">
                           Rp {stats.expenseTransfer.toLocaleString("id-ID")}
                         </span>
                       </div>
@@ -1937,19 +1937,19 @@ export default function ReportView({
             </div>
 
             {/* Column Right: Interactive Trend Chart & Breakdown grids */}
-            <div className="lg:col-span-8 space-y-6">
+            <div className="lg:col-span-8 space-y-3 md:space-y-6">
               
               {/* Visual Modern Trend Charts Card component */}
               <div className="space-y-3">
                 <div className="flex items-center justify-between px-1">
                   <div>
-                    <h4 className="text-sm font-black text-slate-800 flex items-center gap-2">
-                      <BarChart2 className="w-5 h-5 text-indigo-600" />
+                    <h4 className="text-xs md:text-sm font-black text-slate-800 flex items-center gap-1.5 md:gap-2">
+                      <BarChart2 className="w-4 h-4 md:w-5 md:h-5 text-indigo-600" />
                       <span>Tren Arus Kas Keuangan</span>
                     </h4>
-                    <p className="text-[10px] text-slate-400 font-medium">Layout pergerakan saldo tunai masuk (hijau) vs keluar (merah)</p>
+                    <p className="text-[9px] md:text-[10px] text-slate-400 font-medium mt-0.5">Layout pergerakan saldo tunai masuk (hijau) vs keluar (merah)</p>
                   </div>
-                  <span className="text-[9px] font-bold text-indigo-600 bg-indigo-50 border border-indigo-100 px-2 py-0.5 rounded-md uppercase tracking-wider">
+                  <span className="text-[8px] md:text-[9px] font-bold text-indigo-600 bg-indigo-50 border border-indigo-100 px-1.5 md:px-2 py-0.5 rounded-md uppercase tracking-wider hidden sm:inline-block">
                     Grafik Interaktif
                   </span>
                 </div>
@@ -1958,33 +1958,33 @@ export default function ReportView({
               </div>
 
               {/* Category breakdown dual boxes */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                 
                 {/* Pie/Donut Chart visual */}
-                <div className="bg-white p-5 rounded-3xl shadow-sm border border-slate-100 flex flex-col justify-between space-y-4">
+                <div className="bg-white p-3.5 md:p-5 rounded-2xl md:rounded-3xl shadow-sm border border-slate-100 flex flex-col justify-between space-y-3 md:space-y-4">
                   <div>
-                    <h4 className="text-xs font-black uppercase text-slate-500 flex items-center gap-2 tracking-wide">
-                      <PieChart className="w-4 h-4 text-pink-500" />
+                    <h4 className="text-[10px] md:text-xs font-black uppercase text-slate-500 flex items-center gap-1.5 md:gap-2 tracking-wide">
+                      <PieChart className="w-3.5 h-3.5 md:w-4 md:h-4 text-pink-500" />
                       <span>Distribusi Pengeluaran</span>
                     </h4>
-                    <p className="text-[10px] text-slate-400 font-medium">Beban alokasi per kategori pos pembelanjaan</p>
+                    <p className="text-[9px] md:text-[10px] text-slate-400 font-medium mt-0.5">Beban alokasi per kategori pos pembelanjaan</p>
                   </div>
 
-                  <div className="flex justify-center py-2">
+                  <div className="flex justify-center py-1 md:py-2">
                     {customDonutChart || (
-                      <p className="text-xs text-slate-400 italic py-6">Belum ada pengeluaran pada periode ini.</p>
+                      <p className="text-[10px] md:text-xs text-slate-400 italic py-4 md:py-6">Belum ada pengeluaran pada periode ini.</p>
                     )}
                   </div>
 
                   {/* Donut Legend items */}
-                  <div className="space-y-2 max-h-[140px] overflow-y-auto pr-1">
+                  <div className="space-y-1.5 md:space-y-2 max-h-[140px] overflow-y-auto pr-1 hide-scrollbar">
                     {stats.categoriesExpense.slice(0, 4).map((item, idx) => (
-                      <div key={idx} className="flex items-center justify-between text-xs">
-                        <div className="flex items-center gap-2 truncate">
-                          <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: item.color }} />
+                      <div key={idx} className="flex items-center justify-between text-[10px] md:text-xs">
+                        <div className="flex items-center gap-1.5 md:gap-2 truncate">
+                          <span className="w-2 h-2 md:w-2.5 md:h-2.5 rounded-full shrink-0" style={{ backgroundColor: item.color }} />
                           <span className="text-slate-600 font-medium truncate">{item.category}</span>
                         </div>
-                        <span className="font-bold text-slate-800 font-mono text-[11px]">
+                        <span className="font-bold text-slate-800 font-mono text-[9px] md:text-[11px]">
                           {item.percentage.toFixed(0)}%
                         </span>
                       </div>
@@ -1993,30 +1993,30 @@ export default function ReportView({
                 </div>
 
                 {/* Cash Progress targets table limits */}
-                <div className="bg-white p-5 rounded-3xl shadow-sm border border-slate-100 space-y-4">
+                <div className="bg-white p-3.5 md:p-5 rounded-2xl md:rounded-3xl shadow-sm border border-slate-100 space-y-3 md:space-y-4">
                   <div>
-                    <h4 className="text-xs font-black uppercase text-slate-500 flex items-center gap-2 tracking-wide">
-                      <TrendingUp className="w-4 h-4 text-emerald-500" />
+                    <h4 className="text-[10px] md:text-xs font-black uppercase text-slate-500 flex items-center gap-1.5 md:gap-2 tracking-wide">
+                      <TrendingUp className="w-3.5 h-3.5 md:w-4 md:h-4 text-emerald-500" />
                       <span>Aliran Pemasukan</span>
                     </h4>
-                    <p className="text-[10px] text-slate-400 font-medium">Sumber dana pemasukan saku & bank</p>
+                    <p className="text-[9px] md:text-[10px] text-slate-400 font-medium mt-0.5">Sumber dana pemasukan saku & bank</p>
                   </div>
 
                   {stats.categoriesIncome.length === 0 ? (
-                    <div className="h-56 flex items-center justify-center text-xs text-slate-400 italic border border-dashed border-slate-100 rounded-2xl">
+                    <div className="h-40 md:h-56 flex items-center justify-center text-[10px] md:text-xs text-slate-400 italic border border-dashed border-slate-100 rounded-xl md:rounded-2xl">
                       Belum ada dana masuk pada periode ini
                     </div>
                   ) : (
-                    <div className="space-y-4 overflow-y-auto max-h-[300px] pr-1">
+                    <div className="space-y-3 md:space-y-4 overflow-y-auto max-h-[250px] md:max-h-[300px] pr-1 hide-scrollbar">
                       {stats.categoriesIncome.map((item, idx) => (
                         <div key={idx} className="space-y-1">
-                          <div className="flex justify-between items-center text-xs">
+                          <div className="flex justify-between items-center text-[10px] md:text-xs">
                             <span className="font-semibold text-slate-700">{item.category}</span>
                             <span className="font-extrabold text-emerald-600 font-mono">
                               Rp {item.amount.toLocaleString("id-ID")}
                             </span>
                           </div>
-                          <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
+                          <div className="w-full bg-slate-100 h-1 md:h-1.5 rounded-full overflow-hidden">
                             <motion.div 
                               initial={{ width: 0 }}
                               animate={{ width: `${item.percentage}%` }}
@@ -2033,25 +2033,25 @@ export default function ReportView({
               </div>
 
               {/* Comprehensive category table with indicators */}
-              <div className="bg-white p-5 rounded-3xl shadow-sm border border-slate-100">
-                <h4 className="text-sm font-black text-slate-800 mb-4">Urutan Beban Belanja (Tertinggi)</h4>
+              <div className="bg-white p-3.5 md:p-5 rounded-2xl md:rounded-3xl shadow-sm border border-slate-100">
+                <h4 className="text-[11px] md:text-sm font-black text-slate-800 mb-3 md:mb-4">Urutan Beban Belanja (Tertinggi)</h4>
                 
                 {stats.categoriesExpense.length === 0 ? (
-                  <p className="text-xs text-slate-400 italic py-6 text-center">Belum ada pengeluaran belanja yang tercatat.</p>
+                  <p className="text-[10px] md:text-xs text-slate-400 italic py-4 md:py-6 text-center">Belum ada pengeluaran belanja yang tercatat.</p>
                 ) : (
-                  <div className="space-y-3.5">
+                  <div className="space-y-3 md:space-y-3.5">
                     {stats.categoriesExpense.map((item, idx) => (
-                      <div key={idx} className="space-y-1.5">
-                        <div className="flex items-center justify-between text-xs">
+                      <div key={idx} className="space-y-1 md:space-y-1.5">
+                        <div className="flex items-center justify-between text-[10px] md:text-xs">
                           <span className="font-bold text-slate-700">{item.category}</span>
-                          <div className="flex items-center gap-2 font-mono text-[11px]">
+                          <div className="flex items-center gap-1.5 md:gap-2 font-mono text-[9px] md:text-[11px]">
                             <span className="text-slate-500">Rp {item.amount.toLocaleString("id-ID")}</span>
-                            <span className="bg-slate-100 text-slate-700 px-2 py-0.5 rounded-md text-[10px] font-bold">
+                            <span className="bg-slate-100 text-slate-700 px-1.5 md:px-2 py-0.5 rounded flex items-center justify-center font-bold">
                               {item.percentage.toFixed(1)}% porsi
                             </span>
                           </div>
                         </div>
-                        <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                        <div className="w-full bg-slate-100 h-1.5 md:h-2 rounded-full overflow-hidden">
                           <motion.div
                             initial={{ width: 0 }}
                             animate={{ width: `${item.percentage}%` }}
