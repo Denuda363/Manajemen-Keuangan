@@ -5,10 +5,26 @@
 
 import { useState, useMemo } from "react";
 import { Transaction, CATEGORY_COLORS, CompanyProfile } from "../types";
-import { 
-  TrendingUp, TrendingDown, CreditCard, Wallet, Calendar, 
-  BarChart2, PieChart, ChevronLeft, ChevronRight, Activity,
-  Filter, PiggyBank, RefreshCw, Layers, Printer, FileDown, X, Info, FileSpreadsheet
+import {
+  TrendingUp,
+  TrendingDown,
+  CreditCard,
+  Wallet,
+  Calendar,
+  BarChart2,
+  PieChart,
+  ChevronLeft,
+  ChevronRight,
+  Activity,
+  Filter,
+  PiggyBank,
+  RefreshCw,
+  Layers,
+  Printer,
+  FileDown,
+  X,
+  Info,
+  FileSpreadsheet,
 } from "lucide-react";
 import { motion } from "motion/react";
 
@@ -26,26 +42,48 @@ interface ReportViewProps {
 }
 
 const MONTH_NAMES = [
-  "Januari", "Februari", "Maret", "April", "Mei", "Juni",
-  "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+  "Januari",
+  "Februari",
+  "Maret",
+  "April",
+  "Mei",
+  "Juni",
+  "Juli",
+  "Agustus",
+  "September",
+  "Oktober",
+  "November",
+  "Desember",
 ];
 
 const MONTH_SHORT = [
-  "Jan", "Feb", "Mar", "Apr", "Mei", "Jun",
-  "Jul", "Agu", "Sep", "Okt", "Nov", "Des"
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "Mei",
+  "Jun",
+  "Jul",
+  "Agu",
+  "Sep",
+  "Okt",
+  "Nov",
+  "Des",
 ];
 
-export default function ReportView({ 
-  transactions, 
-  user, 
+export default function ReportView({
+  transactions,
+  user,
   companyProfile,
   initialCashBalance = 0,
-  initialTransferBalance = 0
+  initialTransferBalance = 0,
 }: ReportViewProps) {
   // Filter types: "harian" (Tanggal), "mingguan" (Mingguan), "bulanan" (Bulan), "tahunan" (Tahun), "rentang" (Rentang Tanggal)
-  const [filterType, setFilterType] = useState<"harian" | "mingguan" | "bulanan" | "tahunan" | "rentang">("bulanan");
+  const [filterType, setFilterType] = useState<
+    "harian" | "mingguan" | "bulanan" | "tahunan" | "rentang"
+  >("bulanan");
   const [showPdfGuide, setShowPdfGuide] = useState(false);
-  
+
   // Pivot states for custom date and times
   const [selectedDate, setSelectedDate] = useState<string>(() => {
     const today = new Date();
@@ -70,7 +108,9 @@ export default function ReportView({
   const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
 
   // Split report type selector
-  const [reportViewType, setReportViewType] = useState<"semua" | "tunai" | "rekening">("semua");
+  const [reportViewType, setReportViewType] = useState<
+    "semua" | "tunai" | "rekening"
+  >("semua");
 
   const reportSettings = companyProfile?.reportSettings || {};
   const showMetkoKemarin = reportSettings.showMetkoKemarin ?? true;
@@ -78,33 +118,40 @@ export default function ReportView({
   const showNabung = reportSettings.showNabung ?? true;
   const showSisaUangTunai = reportSettings.showSisaUangTunai ?? true;
   const showRekeningSaldoAwal = reportSettings.showRekeningSaldoAwal ?? true;
-  const showTotalPendapatanPlusMetko = reportSettings.showTotalPendapatanPlusMetko ?? true;
+  const showTotalPendapatanPlusMetko =
+    reportSettings.showTotalPendapatanPlusMetko ?? true;
   const showPendapatanTunai = reportSettings.showPendapatanTunai ?? true;
   const showPendapatanTransfer = reportSettings.showPendapatanTransfer ?? true;
   const showPengeluaranTunai = reportSettings.showPengeluaranTunai ?? true;
-  const showPengeluaranTransfer = reportSettings.showPengeluaranTransfer ?? true;
+  const showPengeluaranTransfer =
+    reportSettings.showPengeluaranTransfer ?? true;
 
   // Compute Monday-to-Sunday range boundary for a given pivot date (locally adjusted)
   const weekRange = useMemo(() => {
     const pivot = new Date(selectedDate);
     if (isNaN(pivot.getTime())) {
       const today = new Date();
-      return { startStr: today.toISOString().split("T")[0], endStr: today.toISOString().split("T")[0], start: today, end: today };
+      return {
+        startStr: today.toISOString().split("T")[0],
+        endStr: today.toISOString().split("T")[0],
+        start: today,
+        end: today,
+      };
     }
     const day = pivot.getDay(); // 0 is Sunday, 1 is Monday...
     const diffToMonday = pivot.getDate() - day + (day === 0 ? -6 : 1);
-    
+
     const startOfWeek = new Date(pivot);
     startOfWeek.setDate(diffToMonday);
-    
+
     const endOfWeek = new Date(startOfWeek);
     endOfWeek.setDate(startOfWeek.getDate() + 6);
-    
+
     return {
       start: startOfWeek,
       end: endOfWeek,
       startStr: startOfWeek.toISOString().split("T")[0],
-      endStr: endOfWeek.toISOString().split("T")[0]
+      endStr: endOfWeek.toISOString().split("T")[0],
     };
   }, [selectedDate]);
 
@@ -113,7 +160,7 @@ export default function ReportView({
     const years = new Set<number>();
     years.add(new Date().getFullYear());
     years.add(new Date().getFullYear() - 1);
-    transactions.forEach(t => {
+    transactions.forEach((t) => {
       const y = new Date(t.date).getFullYear();
       if (!isNaN(y)) {
         years.add(y);
@@ -136,16 +183,16 @@ export default function ReportView({
       if (direction === "prev") {
         if (selectedMonth === 0) {
           setSelectedMonth(11);
-          setSelectedYear(prev => prev - 1);
+          setSelectedYear((prev) => prev - 1);
         } else {
-          setSelectedMonth(prev => prev - 1);
+          setSelectedMonth((prev) => prev - 1);
         }
       } else {
         if (selectedMonth === 11) {
           setSelectedMonth(0);
-          setSelectedYear(prev => prev + 1);
+          setSelectedYear((prev) => prev + 1);
         } else {
-          setSelectedMonth(prev => prev + 1);
+          setSelectedMonth((prev) => prev + 1);
         }
       }
     } else if (filterType === "rentang") {
@@ -154,16 +201,16 @@ export default function ReportView({
       const diffTime = Math.abs(e.getTime() - s.getTime());
       const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) || 1;
       const shift = direction === "next" ? diffDays : -diffDays;
-      
+
       const nextS = new Date(startDate);
       nextS.setDate(nextS.getDate() + shift);
       const nextE = new Date(endDate);
       nextE.setDate(nextE.getDate() + shift);
-      
+
       setStartDate(nextS.toISOString().split("T")[0]);
       setEndDate(nextE.toISOString().split("T")[0]);
     } else {
-      setSelectedYear(prev => prev + (direction === "next" ? 1 : -1));
+      setSelectedYear((prev) => prev + (direction === "next" ? 1 : -1));
     }
   };
 
@@ -175,12 +222,19 @@ export default function ReportView({
         weekday: "long",
         day: "numeric",
         month: "long",
-        year: "numeric"
+        year: "numeric",
       });
     }
     if (filterType === "mingguan") {
-      const startLabel = weekRange.start.toLocaleDateString("id-ID", { day: "numeric", month: "long" });
-      const endLabel = weekRange.end.toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" });
+      const startLabel = weekRange.start.toLocaleDateString("id-ID", {
+        day: "numeric",
+        month: "long",
+      });
+      const endLabel = weekRange.end.toLocaleDateString("id-ID", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      });
       return `${startLabel} - ${endLabel}`;
     }
     if (filterType === "bulanan") {
@@ -189,12 +243,28 @@ export default function ReportView({
     if (filterType === "rentang") {
       const startD = new Date(startDate);
       const endD = new Date(endDate);
-      const startLabel = startD.toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" });
-      const endLabel = endD.toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" });
+      const startLabel = startD.toLocaleDateString("id-ID", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      });
+      const endLabel = endD.toLocaleDateString("id-ID", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      });
       return `${startLabel} - ${endLabel}`;
     }
     return `Tahun ${selectedYear}`;
-  }, [filterType, selectedDate, selectedMonth, selectedYear, weekRange, startDate, endDate]);
+  }, [
+    filterType,
+    selectedDate,
+    selectedMonth,
+    selectedYear,
+    weekRange,
+    startDate,
+    endDate,
+  ]);
 
   // Filter transactions exactly matching selected period rules
   const filteredTransactions = useMemo(() => {
@@ -220,35 +290,93 @@ export default function ReportView({
       // tahunan
       return txYr === selectedYear;
     });
-  }, [transactions, filterType, selectedDate, selectedMonth, selectedYear, weekRange, startDate, endDate]);
+  }, [
+    transactions,
+    filterType,
+    selectedDate,
+    selectedMonth,
+    selectedYear,
+    weekRange,
+    startDate,
+    endDate,
+  ]);
 
   // Sort chronologically for printing ledgers cleanly
   const chronologicalTransactions = useMemo(() => {
     let list = [...filteredTransactions];
     if (reportViewType === "tunai") {
-      list = list.filter(tx => tx.method === "tunai" || tx.type === "nabung");
+      list = list.filter((tx) => tx.method === "tunai" || tx.type === "nabung");
     } else if (reportViewType === "rekening") {
-      list = list.filter(tx => tx.method === "transfer" || tx.type === "nabung");
+      list = list.filter(
+        (tx) => tx.method === "transfer" || tx.type === "nabung",
+      );
     }
-    return list.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()).map(tx => ({
-      ...tx,
-      category: tx.category.replace(/\bGaji\b/gi, "Pendapatan / Omzet"),
-      description: tx.description ? tx.description.replace(/\bGaji\b/gi, "Pendapatan / Omzet") : tx.description
-    }));
+    return list
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+      .map((tx) => ({
+        ...tx,
+        category: tx.category.replace(/\bGaji\b/gi, "Pendapatan / Omzet"),
+        description: tx.description
+          ? tx.description.replace(/\bGaji\b/gi, "Pendapatan / Omzet")
+          : tx.description,
+      }));
   }, [filteredTransactions, reportViewType]);
+
+  const tableRowsData = useMemo(() => {
+    let sumIncome = 0;
+    let sumExpense = 0;
+
+    const rows = chronologicalTransactions.map((tx) => {
+      let income = 0;
+      let expense = 0;
+      if (tx.type === "pemasukan") income = tx.amount;
+      else if (tx.type === "pengeluaran") expense = tx.amount;
+      else if (tx.type === "nabung") {
+        if (reportViewType === "tunai") expense = tx.amount;
+        else if (reportViewType === "rekening") income = tx.amount;
+      }
+
+      sumIncome += income;
+      sumExpense += expense;
+      const rowTotal = sumIncome - sumExpense;
+
+      const jenisTransaksi = tx.description
+        ? `${tx.category} - ${tx.description}`
+        : tx.category;
+
+      return {
+        ...tx,
+        income,
+        expense,
+        rowTotal,
+        jenisTransaksi,
+      };
+    });
+
+    return {
+      rows,
+      sumIncome,
+      sumExpense,
+      finalTotal: sumIncome - sumExpense,
+    };
+  }, [chronologicalTransactions, reportViewType]);
 
   // To cover calculations as well without altering state upstream
   const displayFilteredTransactions = useMemo(() => {
     let list = [...filteredTransactions];
     if (reportViewType === "tunai") {
-      list = list.filter(tx => tx.method === "tunai" || tx.type === "nabung");
+      list = list.filter((tx) => tx.method === "tunai" || tx.type === "nabung");
     } else if (reportViewType === "rekening") {
-      list = list.filter(tx => tx.method === "transfer" || tx.type === "nabung");
+      list = list.filter(
+        (tx) => tx.method === "transfer" || tx.type === "nabung",
+      );
     }
-    return list.map(tx => ({
+    return list.map((tx) => ({
       ...tx,
       category: tx.category.replace(/\bGaji\b/gi, "Pendapatan / Omzet"),
-      description: tx.description ? tx.description.replace(/\bGaji\b/gi, "Pendapatan / Omzet") : tx.description
+      description: tx.description
+        ? tx.description.replace(/\bGaji\b/gi, "Pendapatan / Omzet")
+        : tx.description,
     }));
   }, [filteredTransactions, reportViewType]);
 
@@ -257,7 +385,7 @@ export default function ReportView({
     let incomeTotal = 0;
     let expenseTotal = 0;
     let savingTotal = 0;
-    
+
     let incomeTunai = 0;
     let incomeTransfer = 0;
     let expenseTunai = 0;
@@ -272,32 +400,40 @@ export default function ReportView({
         incomeTotal += amt;
         if (tx.method === "tunai") incomeTunai += amt;
         else incomeTransfer += amt;
-        
-        incomeCategoryMap[tx.category] = (incomeCategoryMap[tx.category] || 0) + amt;
+
+        incomeCategoryMap[tx.category] =
+          (incomeCategoryMap[tx.category] || 0) + amt;
       } else if (tx.type === "pengeluaran") {
         expenseTotal += amt;
         if (tx.method === "tunai") expenseTunai += amt;
         else expenseTransfer += amt;
 
-        expenseCategoryMap[tx.category] = (expenseCategoryMap[tx.category] || 0) + amt;
+        expenseCategoryMap[tx.category] =
+          (expenseCategoryMap[tx.category] || 0) + amt;
       } else if (tx.type === "nabung") {
         savingTotal += amt;
       }
     });
 
-    const categoriesExpense = Object.keys(expenseCategoryMap).map(k => ({
-      category: k,
-      amount: expenseCategoryMap[k],
-      percentage: expenseTotal > 0 ? (expenseCategoryMap[k] / expenseTotal) * 100 : 0,
-      color: CATEGORY_COLORS[k] || "#6B7280"
-    })).sort((a, b) => b.amount - a.amount);
+    const categoriesExpense = Object.keys(expenseCategoryMap)
+      .map((k) => ({
+        category: k,
+        amount: expenseCategoryMap[k],
+        percentage:
+          expenseTotal > 0 ? (expenseCategoryMap[k] / expenseTotal) * 100 : 0,
+        color: CATEGORY_COLORS[k] || "#6B7280",
+      }))
+      .sort((a, b) => b.amount - a.amount);
 
-    const categoriesIncome = Object.keys(incomeCategoryMap).map(k => ({
-      category: k,
-      amount: incomeCategoryMap[k],
-      percentage: incomeTotal > 0 ? (incomeCategoryMap[k] / incomeTotal) * 100 : 0,
-      color: CATEGORY_COLORS[k] || "#6B7280"
-    })).sort((a, b) => b.amount - a.amount);
+    const categoriesIncome = Object.keys(incomeCategoryMap)
+      .map((k) => ({
+        category: k,
+        amount: incomeCategoryMap[k],
+        percentage:
+          incomeTotal > 0 ? (incomeCategoryMap[k] / incomeTotal) * 100 : 0,
+        color: CATEGORY_COLORS[k] || "#6B7280",
+      }))
+      .sort((a, b) => b.amount - a.amount);
 
     return {
       incomeTotal,
@@ -365,13 +501,28 @@ export default function ReportView({
     });
 
     // Income and Expense Tunai broken down by category in the selected period, including date for weekly/monthly
-    const incomeTunaiMap = new Map<string, { category: string, amount: number, dateStr: string }>();
-    const expenseTunaiMap = new Map<string, { category: string, amount: number, dateStr: string }>();
+    const incomeTunaiMap = new Map<
+      string,
+      { category: string; amount: number; dateStr: string }
+    >();
+    const expenseTunaiMap = new Map<
+      string,
+      { category: string; amount: number; dateStr: string }
+    >();
 
     // Income and Expense Transfer broken down by category in the selected period, including date for weekly/monthly
-    const incomeTransferMap = new Map<string, { category: string, amount: number, dateStr: string }>();
-    const expenseTransferMap = new Map<string, { category: string, amount: number, dateStr: string }>();
-    const nabungMap = new Map<string, { category: string, amount: number, dateStr: string }>();
+    const incomeTransferMap = new Map<
+      string,
+      { category: string; amount: number; dateStr: string }
+    >();
+    const expenseTransferMap = new Map<
+      string,
+      { category: string; amount: number; dateStr: string }
+    >();
+    const nabungMap = new Map<
+      string,
+      { category: string; amount: number; dateStr: string }
+    >();
 
     let incomeTunaiTotal = 0;
     let incomeTransferTotal = 0;
@@ -381,26 +532,46 @@ export default function ReportView({
 
     displayFilteredTransactions.forEach((tx) => {
       const amt = tx.amount;
-      
+
       let dateLabel = "";
-      if (filterType === "mingguan" || filterType === "bulanan" || filterType === "rentang") {
-        dateLabel = new Date(tx.date).toLocaleDateString("id-ID", { day: "2-digit", month: "short" }) + " - ";
+      if (
+        filterType === "mingguan" ||
+        filterType === "bulanan" ||
+        filterType === "rentang"
+      ) {
+        dateLabel =
+          new Date(tx.date).toLocaleDateString("id-ID", {
+            day: "2-digit",
+            month: "short",
+          }) + " - ";
       } else if (filterType === "tahunan") {
-        dateLabel = new Date(tx.date).toLocaleDateString("id-ID", { month: "long" }) + " - ";
+        dateLabel =
+          new Date(tx.date).toLocaleDateString("id-ID", { month: "long" }) +
+          " - ";
       }
 
-      const categoryLabel = (dateLabel + (tx.category || "LAIN-LAIN")).toUpperCase();
+      const categoryLabel = (
+        dateLabel + (tx.category || "LAIN-LAIN")
+      ).toUpperCase();
 
       if (tx.type === "pemasukan") {
         if (tx.method === "tunai") {
           if (!incomeTunaiMap.has(categoryLabel)) {
-            incomeTunaiMap.set(categoryLabel, { category: categoryLabel, amount: 0, dateStr: tx.date });
+            incomeTunaiMap.set(categoryLabel, {
+              category: categoryLabel,
+              amount: 0,
+              dateStr: tx.date,
+            });
           }
           incomeTunaiMap.get(categoryLabel)!.amount += amt;
           incomeTunaiTotal += amt;
         } else {
           if (!incomeTransferMap.has(categoryLabel)) {
-            incomeTransferMap.set(categoryLabel, { category: categoryLabel, amount: 0, dateStr: tx.date });
+            incomeTransferMap.set(categoryLabel, {
+              category: categoryLabel,
+              amount: 0,
+              dateStr: tx.date,
+            });
           }
           incomeTransferMap.get(categoryLabel)!.amount += amt;
           incomeTransferTotal += amt;
@@ -408,44 +579,76 @@ export default function ReportView({
       } else if (tx.type === "pengeluaran") {
         if (tx.method === "tunai") {
           if (!expenseTunaiMap.has(categoryLabel)) {
-            expenseTunaiMap.set(categoryLabel, { category: categoryLabel, amount: 0, dateStr: tx.date });
+            expenseTunaiMap.set(categoryLabel, {
+              category: categoryLabel,
+              amount: 0,
+              dateStr: tx.date,
+            });
           }
           expenseTunaiMap.get(categoryLabel)!.amount += amt;
           expenseTunaiTotal += amt;
         } else {
           if (!expenseTransferMap.has(categoryLabel)) {
-            expenseTransferMap.set(categoryLabel, { category: categoryLabel, amount: 0, dateStr: tx.date });
+            expenseTransferMap.set(categoryLabel, {
+              category: categoryLabel,
+              amount: 0,
+              dateStr: tx.date,
+            });
           }
           expenseTransferMap.get(categoryLabel)!.amount += amt;
           expenseTransferTotal += amt;
         }
       } else if (tx.type === "nabung") {
         if (!nabungMap.has(categoryLabel)) {
-          nabungMap.set(categoryLabel, { category: categoryLabel, amount: 0, dateStr: tx.date });
+          nabungMap.set(categoryLabel, {
+            category: categoryLabel,
+            amount: 0,
+            dateStr: tx.date,
+          });
         }
         nabungMap.get(categoryLabel)!.amount += amt;
         nabungTotal += amt;
       }
     });
 
-    const incomeTunaiList = Array.from(incomeTunaiMap.values())
-      .sort((a, b) => new Date(a.dateStr).getTime() - new Date(b.dateStr).getTime() || b.amount - a.amount);
-      
-    const expenseTunaiList = Array.from(expenseTunaiMap.values())
-      .sort((a, b) => new Date(a.dateStr).getTime() - new Date(b.dateStr).getTime() || b.amount - a.amount);
+    const incomeTunaiList = Array.from(incomeTunaiMap.values()).sort(
+      (a, b) =>
+        new Date(a.dateStr).getTime() - new Date(b.dateStr).getTime() ||
+        b.amount - a.amount,
+    );
 
-    const incomeTransferList = Array.from(incomeTransferMap.values())
-      .sort((a, b) => new Date(a.dateStr).getTime() - new Date(b.dateStr).getTime() || b.amount - a.amount);
-      
-    const expenseTransferList = Array.from(expenseTransferMap.values())
-      .sort((a, b) => new Date(a.dateStr).getTime() - new Date(b.dateStr).getTime() || b.amount - a.amount);
+    const expenseTunaiList = Array.from(expenseTunaiMap.values()).sort(
+      (a, b) =>
+        new Date(a.dateStr).getTime() - new Date(b.dateStr).getTime() ||
+        b.amount - a.amount,
+    );
 
-    const nabungList = Array.from(nabungMap.values())
-      .sort((a, b) => new Date(a.dateStr).getTime() - new Date(b.dateStr).getTime() || b.amount - a.amount);
+    const incomeTransferList = Array.from(incomeTransferMap.values()).sort(
+      (a, b) =>
+        new Date(a.dateStr).getTime() - new Date(b.dateStr).getTime() ||
+        b.amount - a.amount,
+    );
 
-    const sisaSebelumNabung = cashSaldoAwal + incomeTunaiTotal - expenseTunaiTotal;
+    const expenseTransferList = Array.from(expenseTransferMap.values()).sort(
+      (a, b) =>
+        new Date(a.dateStr).getTime() - new Date(b.dateStr).getTime() ||
+        b.amount - a.amount,
+    );
+
+    const nabungList = Array.from(nabungMap.values()).sort(
+      (a, b) =>
+        new Date(a.dateStr).getTime() - new Date(b.dateStr).getTime() ||
+        b.amount - a.amount,
+    );
+
+    const sisaSebelumNabung =
+      cashSaldoAwal + incomeTunaiTotal - expenseTunaiTotal;
     const sisaUangTunai = sisaSebelumNabung - nabungTotal;
-    const rekeningSaldoAkhir = rekeningSaldoAwal + incomeTransferTotal + nabungTotal - expenseTransferTotal;
+    const rekeningSaldoAkhir =
+      rekeningSaldoAwal +
+      incomeTransferTotal +
+      nabungTotal -
+      expenseTransferTotal;
 
     return {
       cashSaldoAwal,
@@ -464,9 +667,20 @@ export default function ReportView({
       sisaUangTunai,
       rekeningSaldoAkhir,
       totalIncomeCombine: incomeTunaiTotal + incomeTransferTotal,
-      totalIncomePlusMetko: incomeTunaiTotal + incomeTransferTotal + cashSaldoAwal
+      totalIncomePlusMetko:
+        incomeTunaiTotal + incomeTransferTotal + cashSaldoAwal,
     };
-  }, [transactions, displayFilteredTransactions, filterType, selectedDate, selectedMonth, selectedYear, weekRange, startDate, endDate]);
+  }, [
+    transactions,
+    displayFilteredTransactions,
+    filterType,
+    selectedDate,
+    selectedMonth,
+    selectedYear,
+    weekRange,
+    startDate,
+    endDate,
+  ]);
 
   // Export report to MS Excel compatible spreadsheet
   const exportToExcel = () => {
@@ -476,15 +690,35 @@ export default function ReportView({
     } else if (filterType === "mingguan") {
       filterText = `Minggu: ${weekRange.startStr} s.d. ${weekRange.endStr}`;
     } else if (filterType === "bulanan") {
-      const monthNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+      const monthNames = [
+        "Januari",
+        "Februari",
+        "Maret",
+        "April",
+        "Mei",
+        "Juni",
+        "Juli",
+        "Agustus",
+        "September",
+        "Oktober",
+        "November",
+        "Desember",
+      ];
       filterText = `Bulan: ${monthNames[selectedMonth]} ${selectedYear}`;
     } else if (filterType === "tahunan") {
       filterText = `Tahun: ${selectedYear}`;
     } else if (filterType === "rentang") {
       const startD = new Date(startDate);
       const endD = new Date(endDate);
-      const startLabel = startD.toLocaleDateString("id-ID", { day: "numeric", month: "long" });
-      const endLabel = endD.toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" });
+      const startLabel = startD.toLocaleDateString("id-ID", {
+        day: "numeric",
+        month: "long",
+      });
+      const endLabel = endD.toLocaleDateString("id-ID", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      });
       filterText = `Rentang: ${startLabel} s.d. ${endLabel}`;
     }
 
@@ -529,7 +763,11 @@ export default function ReportView({
           </tr>
           <tr>
             <td colspan="7" class="subtitle" style="font-weight: 600; color: #64748b;">${companyProfile?.appName || "Manajemen Keuangan"} - ${user?.name || "User"} | Periode: ${filterText} | Jenis Laporan: ${
-              reportViewType === "semua" ? "Gabungan (Tunai & Rekening)" : reportViewType === "tunai" ? "Hanya Kas Tunai" : "Hanya Rekening / Bank"
+              reportViewType === "semua"
+                ? "Gabungan (Tunai & Rekening)"
+                : reportViewType === "tunai"
+                  ? "Hanya Kas Tunai"
+                  : "Hanya Rekening / Bank"
             }</td>
           </tr>
         </table>
@@ -541,50 +779,74 @@ export default function ReportView({
             </tr>
           </thead>
           <tbody>
-            ${reportViewType === "semua" || reportViewType === "tunai" ? `
-            ${showPendapatanTunai ? `
+            ${
+              reportViewType === "semua" || reportViewType === "tunai"
+                ? `
+            ${
+              showPendapatanTunai
+                ? `
             <!-- PENDAPATAN TUNAI -->
             <tr style="background-color: #f1f5f9; font-weight: bold;">
               <td colspan="2" style="font-weight: bold; color: #0f172a;">PENDAPATAN TUNAI</td>
             </tr>
-            ${showMetkoKemarin ? `<tr>
+            ${
+              showMetkoKemarin
+                ? `<tr>
               <td style="padding-left: 20px; font-weight: 500; color: #475569;">SALDO AWAL KAS TUNAI / METKO KEMARIN</td>
               <td class="num" style="color: #475569;">Rp ${pdfMetrics.cashSaldoAwal.toLocaleString("id-ID")}</td>
-            </tr>` : ''}
-            ${pdfMetrics.incomeTunaiList.length === 0 
-              ? `<tr><td style="padding-left: 20px; font-style: italic; color: #64748b;">NIHIL</td><td class="num">Rp 0</td></tr>`
-              : pdfMetrics.incomeTunaiList.map(item => `
+            </tr>`
+                : ""
+            }
+            ${
+              pdfMetrics.incomeTunaiList.length === 0
+                ? `<tr><td style="padding-left: 20px; font-style: italic; color: #64748b;">NIHIL</td><td class="num">Rp 0</td></tr>`
+                : pdfMetrics.incomeTunaiList
+                    .map(
+                      (item) => `
                   <tr>
                     <td style="padding-left: 20px; font-weight: 500;">${item.category}</td>
                     <td class="num">Rp ${item.amount.toLocaleString("id-ID")}</td>
                   </tr>
-                `).join("")
+                `,
+                    )
+                    .join("")
             }
             <tr class="bg-total" style="background-color: #cbd5e1; font-weight: bold;">
               <td style="font-weight: bold; padding-left: 20px;">TOTAL</td>
               <td class="num" style="font-weight: bold;">Rp ${pdfMetrics.incomeTunaiTotal.toLocaleString("id-ID")}</td>
             </tr>
-            ` : ""}
+            `
+                : ""
+            }
 
             <!-- PENDAPATAN TRANSFER -->
-            ${showPendapatanTransfer ? `
+            ${
+              showPendapatanTransfer
+                ? `
             <tr>
               <td colspan="2" class="bold" style="font-weight: bold; color: #000;">PENDAPATAN TRANSFER</td>
             </tr>
-            ${pdfMetrics.incomeTransferList.length === 0 
-              ? `<tr><td style="padding-left: 20px; font-style: italic; color: #64748b;">NIHIL</td><td class="num">Rp 0</td></tr>`
-              : pdfMetrics.incomeTransferList.map(item => `
+            ${
+              pdfMetrics.incomeTransferList.length === 0
+                ? `<tr><td style="padding-left: 20px; font-style: italic; color: #64748b;">NIHIL</td><td class="num">Rp 0</td></tr>`
+                : pdfMetrics.incomeTransferList
+                    .map(
+                      (item) => `
                   <tr>
                     <td style="padding-left: 20px; font-weight: 500;">${item.category}</td>
                     <td class="num">Rp ${item.amount.toLocaleString("id-ID")}</td>
                   </tr>
-                `).join("")
+                `,
+                    )
+                    .join("")
             }
             <tr class="bg-total" style="background-color: #cbd5e1; font-weight: bold;">
               <td style="font-weight: bold; padding-left: 20px;">TOTAL PENDAPATAN TF</td>
               <td class="num" style="font-weight: bold;">Rp ${pdfMetrics.incomeTransferTotal.toLocaleString("id-ID")}</td>
             </tr>
-            ` : ""}
+            `
+                : ""
+            }
 
             <!-- TOTAL PENDAPATAN -->
             <tr class="bg-total" style="background-color: #cbd5e1; font-weight: bold;">
@@ -593,160 +855,230 @@ export default function ReportView({
             </tr>
 
             <!-- TOTAL PENDAPATAN + METKO KEMARIN -->
-            ${showTotalPendapatanPlusMetko ? `<tr class="bg-total" style="background-color: #94a3b8; font-weight: bold; color: #fff;">
+            ${
+              showTotalPendapatanPlusMetko
+                ? `<tr class="bg-total" style="background-color: #94a3b8; font-weight: bold; color: #fff;">
               <td class="bold" style="font-weight: bold;">TOTAL PENDAPATAN + METKO KEMARIN</td>
               <td class="num" style="font-weight: bold;">Rp ${pdfMetrics.totalIncomePlusMetko.toLocaleString("id-ID")}</td>
-            </tr>` : ''}
+            </tr>`
+                : ""
+            }
 
             <!-- PENGELUARAN TUNAI -->
-            ${showPengeluaranTunai ? `
+            ${
+              showPengeluaranTunai
+                ? `
             <tr>
               <td colspan="2" style="font-weight: bold; color: #000;">PENGELUARAN TUNAI</td>
             </tr>
-            ${pdfMetrics.expenseTunaiList.length === 0 
-              ? `<tr><td style="padding-left: 20px; font-style: italic; color: #64748b;">NIHIL</td><td class="num">Rp 0</td></tr>`
-              : pdfMetrics.expenseTunaiList.map(item => `
+            ${
+              pdfMetrics.expenseTunaiList.length === 0
+                ? `<tr><td style="padding-left: 20px; font-style: italic; color: #64748b;">NIHIL</td><td class="num">Rp 0</td></tr>`
+                : pdfMetrics.expenseTunaiList
+                    .map(
+                      (item) => `
                   <tr>
                     <td style="padding-left: 20px; font-weight: 500;">${item.category}</td>
                     <td class="num" style="color: #dc2626;">Rp ${item.amount.toLocaleString("id-ID")}</td>
                   </tr>
-                `).join("")
+                `,
+                    )
+                    .join("")
             }
             <tr class="bg-total" style="background-color: #cbd5e1; font-weight: bold;">
               <td style="font-weight: bold; padding-left: 20px;">TOTAL PENGELUARAN</td>
               <td class="num" style="font-weight: bold; color: #dc2626;">Rp ${pdfMetrics.expenseTunaiTotal.toLocaleString("id-ID")}</td>
             </tr>
-            ` : ""}
+            `
+                : ""
+            }
 
             <!-- SISA -->
-            ${showSisaSebelumNabung ? `<tr class="bg-info" style="background-color: #e0f2fe; color: #0369a1; font-weight: bold;">
+            ${
+              showSisaSebelumNabung
+                ? `<tr class="bg-info" style="background-color: #e0f2fe; color: #0369a1; font-weight: bold;">
               <td class="bold" style="font-weight: bold; padding-left: 10px;">SISA</td>
               <td class="num" style="font-weight: bold;">Rp ${pdfMetrics.sisaSebelumNabung.toLocaleString("id-ID")}</td>
-            </tr>` : ''}
+            </tr>`
+                : ""
+            }
 
             <!-- NABUNG -->
-            ${showNabung ? `<tr style="background-color: #f1f5f9; font-weight: bold;">
+            ${
+              showNabung
+                ? `<tr style="background-color: #f1f5f9; font-weight: bold;">
               <td colspan="2" style="font-weight: bold; color: #0f172a; padding-left: 10px;">NABUNG</td>
             </tr>
-            ${pdfMetrics.nabungList.length === 0
-              ? `<tr><td style="padding-left: 20px; font-style: italic; color: #64748b;">NIHIL</td><td class="num">Rp 0</td></tr>`
-              : pdfMetrics.nabungList.map(item => `
+            ${
+              pdfMetrics.nabungList.length === 0
+                ? `<tr><td style="padding-left: 20px; font-style: italic; color: #64748b;">NIHIL</td><td class="num">Rp 0</td></tr>`
+                : pdfMetrics.nabungList
+                    .map(
+                      (item) => `
                 <tr>
                   <td style="padding-left: 20px; font-weight: 500; font-style: italic; color: #475569;">${item.category}</td>
                   <td class="num" style="color: #4338ca;">Rp ${item.amount.toLocaleString("id-ID")}</td>
                 </tr>
-              `).join("")
+              `,
+                    )
+                    .join("")
             }
             <tr style="font-weight: bold; color: #4338ca;">
               <td style="padding-left: 20px; font-weight: bold;">TOTAL NABUNG</td>
               <td class="num">Rp ${pdfMetrics.nabungTotal.toLocaleString("id-ID")}</td>
-            </tr>` : ''}
+            </tr>`
+                : ""
+            }
 
             <!-- SISA UANG TUNAI -->
-            ${showSisaUangTunai ? `<tr class="bg-success" style="background-color: #d1fae5; color: #065f46; font-weight: bold;">
+            ${
+              showSisaUangTunai
+                ? `<tr class="bg-success" style="background-color: #d1fae5; color: #065f46; font-weight: bold;">
               <td class="bold" style="font-weight: bold; padding-left: 10px;">SISA UANG TUNAI</td>
               <td class="num" style="font-weight: bold;">Rp ${pdfMetrics.sisaUangTunai.toLocaleString("id-ID")}</td>
-            </tr>` : ''}
-            ` : ""}
+            </tr>`
+                : ""
+            }
+            `
+                : ""
+            }
 
-            ${reportViewType === "semua" || reportViewType === "rekening" ? `
+            ${
+              reportViewType === "semua" || reportViewType === "rekening"
+                ? `
             <!-- SALDO REKENING -->
             <tr style="background-color: #f1f5f9; font-weight: bold;">
               <td colspan="2" style="font-weight: bold; color: #0f172a;">SALDO REKENING</td>
             </tr>
-            ${showRekeningSaldoAwal ? `<tr>
+            ${
+              showRekeningSaldoAwal
+                ? `<tr>
               <td style="padding-left: 20px; font-weight: 500; color: #475569;">SALDO AWAL</td>
               <td class="num" style="color: #475569;">Rp ${pdfMetrics.rekeningSaldoAwal.toLocaleString("id-ID")}</td>
-            </tr>` : ''}
-            ${showPendapatanTransfer ? (pdfMetrics.incomeTransferList.length > 0
-              ? `<tr><td colspan="2" style="font-weight: bold; color: #059669; padding-left: 20px;">PENDAPATAN TF</td></tr>` +
-                pdfMetrics.incomeTransferList.map(item => `
+            </tr>`
+                : ""
+            }
+            ${
+              showPendapatanTransfer
+                ? pdfMetrics.incomeTransferList.length > 0
+                  ? `<tr><td colspan="2" style="font-weight: bold; color: #059669; padding-left: 20px;">PENDAPATAN TF</td></tr>` +
+                    pdfMetrics.incomeTransferList
+                      .map(
+                        (item) => `
                 <tr>
                   <td style="padding-left: 30px; font-weight: 500; font-style: italic;">${item.category}</td>
                   <td class="num" style="color: #059669; font-style: italic;">Rp ${item.amount.toLocaleString("id-ID")}</td>
                 </tr>
-              `).join("") +
-              `<tr>
+              `,
+                      )
+                      .join("") +
+                    `<tr>
                  <td style="padding-left: 20px; font-weight: bold; color: #059669;">TOTAL PENDAPATAN TF</td>
                  <td class="num" style="color: #059669; font-weight: bold;">Rp ${pdfMetrics.incomeTransferTotal.toLocaleString("id-ID")}</td>
                </tr>`
-              : `<tr>
+                  : `<tr>
                    <td style="padding-left: 20px; font-weight: 500; color: #059669;">PENDAPATAN TF</td>
                    <td class="num" style="color: #059669;">Rp 0</td>
-                 </tr>`) : ''
+                 </tr>`
+                : ""
             }
-            ${showNabung ? (pdfMetrics.nabungList.length > 0
-              ? `<tr><td colspan="2" style="font-weight: bold; color: #4f46e5; padding-left: 20px;">NABUNG</td></tr>` +
-                pdfMetrics.nabungList.map(item => `
+            ${
+              showNabung
+                ? pdfMetrics.nabungList.length > 0
+                  ? `<tr><td colspan="2" style="font-weight: bold; color: #4f46e5; padding-left: 20px;">NABUNG</td></tr>` +
+                    pdfMetrics.nabungList
+                      .map(
+                        (item) => `
                 <tr>
                   <td style="padding-left: 30px; font-weight: 500; font-style: italic;">${item.category}</td>
                   <td class="num" style="color: #4f46e5; font-style: italic;">Rp ${item.amount.toLocaleString("id-ID")}</td>
                 </tr>
-              `).join("") +
-              `<tr>
+              `,
+                      )
+                      .join("") +
+                    `<tr>
                  <td style="padding-left: 20px; font-weight: bold; color: #4f46e5;">TOTAL NABUNG</td>
                  <td class="num" style="color: #4f46e5; font-weight: bold;">Rp ${pdfMetrics.nabungTotal.toLocaleString("id-ID")}</td>
                </tr>`
-              : `<tr>
+                  : `<tr>
                    <td style="padding-left: 20px; font-weight: 500; color: #4f46e5;">NABUNG</td>
                    <td class="num" style="color: #4f46e5;">Rp 0</td>
-                 </tr>`) : ''
+                 </tr>`
+                : ""
             }
-            ${showPengeluaranTransfer ? (pdfMetrics.expenseTransferList.length > 0 
-              ? `<tr><td colspan="2" style="font-weight: bold; color: #dc2626; padding-left: 20px;">PENGELUARAN TF</td></tr>` +
-                pdfMetrics.expenseTransferList.map(item => `
+            ${
+              showPengeluaranTransfer
+                ? pdfMetrics.expenseTransferList.length > 0
+                  ? `<tr><td colspan="2" style="font-weight: bold; color: #dc2626; padding-left: 20px;">PENGELUARAN TF</td></tr>` +
+                    pdfMetrics.expenseTransferList
+                      .map(
+                        (item) => `
                 <tr>
                   <td style="padding-left: 30px; font-weight: 500; font-style: italic;">${item.category}</td>
                   <td class="num" style="color: #dc2626; font-style: italic;">-Rp ${item.amount.toLocaleString("id-ID")}</td>
                 </tr>
-              `).join("") +
-              `<tr>
+              `,
+                      )
+                      .join("") +
+                    `<tr>
                  <td style="padding-left: 20px; font-weight: bold; color: #dc2626;">TOTAL PENGELUARAN TF</td>
                  <td class="num" style="color: #dc2626; font-weight: bold;">-Rp ${pdfMetrics.expenseTransferTotal.toLocaleString("id-ID")}</td>
                </tr>`
-              : "") : ''
+                  : ""
+                : ""
             }
             <tr class="bg-total" style="background-color: #0f172a; color: #ffffff; font-weight: 950; font-size: 12px;">
               <td style="font-weight: bold; padding-left: 20px;">SALDO AKHIR REKENING</td>
               <td class="num" style="font-weight: bold; color: #22c55e;">Rp ${pdfMetrics.rekeningSaldoAkhir.toLocaleString("id-ID")}</td>
             </tr>
-            ` : ""}
+            `
+                : ""
+            }
           </tbody>
         </table>
 
         <table>
           <thead>
             <tr>
-              <th colspan="7" class="section-title" style="background-color: #1e3a8a;">DAFTAR RINCIAN ARUS KAS TRANSAKSI</th>
+              <th colspan="5" class="section-title" style="background-color: #1e3a8a;">DAFTAR RINCIAN ARUS KAS TRANSAKSI</th>
             </tr>
             <tr style="background-color: #475569; color: #ffffff; font-weight: bold;">
-              <th style="width: 50px; text-align: center;">No</th>
               <th style="width: 120px; text-align: center;">Tanggal</th>
-              <th style="width: 160px; text-align: left;">Kategori</th>
-              <th style="width: 240px; text-align: left;">Deskripsi</th>
-              <th style="width: 100px; text-align: center;">Metode</th>
-              <th style="width: 120px; text-align: center;">Jenis</th>
-              <th style="width: 150px; text-align: right;">Jumlah</th>
+              <th style="width: 240px; text-align: left;">Jenis Transaksi</th>
+              <th style="width: 150px; text-align: right;">Nominal Pendapatan</th>
+              <th style="width: 150px; text-align: right;">Nominal Pengeluaran</th>
+              <th style="width: 150px; text-align: right;">Total</th>
             </tr>
           </thead>
           <tbody>
-            ${chronologicalTransactions.length === 0 
-              ? `<tr><td colspan="7" class="text-center" style="color: #64748b; font-style: italic;">Tidak ada catatan transaksi dalam periode ini</td></tr>`
-              : chronologicalTransactions.map((tx, idx) => `
+            ${
+              tableRowsData.rows.length === 0
+                ? `<tr><td colspan="5" class="text-center" style="color: #64748b; font-style: italic;">Tidak ada catatan transaksi dalam periode ini</td></tr>`
+                : tableRowsData.rows
+                    .map(
+                      (row, idx) => `
                   <tr class="${idx % 2 === 0 ? "bg-light" : ""}">
-                    <td class="text-center" style="color: #64748b;">${idx + 1}</td>
-                    <td class="text-center">${new Date(tx.date).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })}</td>
-                    <td class="bold" style="color: #0f172a;">${tx.category.toUpperCase()}</td>
-                    <td style="color: #334155;">${tx.description || "-"}</td>
-                    <td class="text-center" style="font-weight: 600; text-transform: uppercase;">${tx.method}</td>
-                    <td class="text-center" style="font-weight: bold; color: ${tx.type === "pemasukan" ? "#059669" : tx.type === "pengeluaran" ? "#dc2626" : "#2563eb"}">
-                      ${tx.type === "pemasukan" ? "MASUK" : tx.type === "pengeluaran" ? "KELUAR" : "NABUNG"}
-                    </td>
-                    <td class="num" style="color: ${tx.type === "pemasukan" ? "#047857" : tx.type === "pengeluaran" ? "#b91c1c" : "#4f46e5"}">
-                      ${tx.type === "pengeluaran" ? "-" : tx.type === "pemasukan" ? "+" : ""}Rp ${tx.amount.toLocaleString("id-ID")}
-                    </td>
+                    <td class="text-center">${new Date(row.date).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" }).toLowerCase()}</td>
+                    <td class="bold" style="color: #0f172a;">${row.jenisTransaksi}</td>
+                    <td class="num" style="color: #047857;">${row.income > 0 ? "Rp " + row.income.toLocaleString("id-ID") : ""}</td>
+                    <td class="num" style="color: #b91c1c;">${row.expense > 0 ? "Rp " + row.expense.toLocaleString("id-ID") : ""}</td>
+                    <td class="num" style="color: #4f46e5;">Rp ${row.rowTotal.toLocaleString("id-ID")}</td>
                   </tr>
-                `).join("")
+                `,
+                    )
+                    .join("")
+            }
+            ${
+              tableRowsData.rows.length > 0
+                ? `
+              <tr class="bg-total" style="background-color: #cbd5e1; font-weight: bold;">
+                <td colspan="2" style="font-weight: bold; text-align: center;">Total</td>
+                <td class="num" style="font-weight: bold; color: #047857;">Rp ${tableRowsData.sumIncome.toLocaleString("id-ID")}</td>
+                <td class="num" style="font-weight: bold; color: #b91c1c;">Rp ${tableRowsData.sumExpense.toLocaleString("id-ID")}</td>
+                <td class="num" style="font-weight: bold; color: #4f46e5;">Rp ${tableRowsData.finalTotal.toLocaleString("id-ID")}</td>
+              </tr>
+            `
+                : ""
             }
           </tbody>
         </table>
@@ -772,19 +1104,27 @@ export default function ReportView({
       .replace(/\bGaji\b/g, "Pendapatan / Omzet")
       .replace(/\bgaji\b/g, "pendapatan / omzet");
 
-    const blob = new Blob([processedHtmlContent], { type: "application/vnd.ms-excel;charset=utf-8;" });
+    const blob = new Blob([processedHtmlContent], {
+      type: "application/vnd.ms-excel;charset=utf-8;",
+    });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    
+
     let periodName = "Bulanan";
     if (filterType === "harian") periodName = `Harian_${selectedDate}`;
-    else if (filterType === "mingguan") periodName = `Mingguan_${weekRange.startStr}_ke_${weekRange.endStr}`;
-    else if (filterType === "bulanan") periodName = `Bulanan_${selectedYear}_${selectedMonth + 1}`;
-    else if (filterType === "rentang") periodName = `Rentang_${startDate}_ke_${endDate}`;
+    else if (filterType === "mingguan")
+      periodName = `Mingguan_${weekRange.startStr}_ke_${weekRange.endStr}`;
+    else if (filterType === "bulanan")
+      periodName = `Bulanan_${selectedYear}_${selectedMonth + 1}`;
+    else if (filterType === "rentang")
+      periodName = `Rentang_${startDate}_ke_${endDate}`;
     else if (filterType === "tahunan") periodName = `Tahunan_${selectedYear}`;
 
-    link.setAttribute("download", `Laporan_Keuangan_DompetPintar_${periodName}.xls`);
+    link.setAttribute(
+      "download",
+      `Laporan_Keuangan_DompetPintar_${periodName}.xls`,
+    );
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -800,18 +1140,21 @@ export default function ReportView({
         const d = new Date(base);
         d.setDate(base.getDate() - i);
         const dStr = d.toISOString().split("T")[0];
-        const label = d.toLocaleDateString("id-ID", { day: "numeric", month: "short" });
+        const label = d.toLocaleDateString("id-ID", {
+          day: "numeric",
+          month: "short",
+        });
         data.push({
           key: dStr,
           label,
           income: 0,
           expense: 0,
-          savings: 0
+          savings: 0,
         });
       }
 
       transactions.forEach((tx) => {
-        const match = data.find(item => item.key === tx.date);
+        const match = data.find((item) => item.key === tx.date);
         if (match) {
           if (tx.type === "pemasukan") match.income += tx.amount;
           else if (tx.type === "pengeluaran") match.expense += tx.amount;
@@ -834,12 +1177,12 @@ export default function ReportView({
           label: daysLabel[i],
           income: 0,
           expense: 0,
-          savings: 0
+          savings: 0,
         });
       }
 
       transactions.forEach((tx) => {
-        const match = data.find(item => item.key === tx.date);
+        const match = data.find((item) => item.key === tx.date);
         if (match) {
           if (tx.type === "pemasukan") match.income += tx.amount;
           else if (tx.type === "pengeluaran") match.expense += tx.amount;
@@ -852,20 +1195,73 @@ export default function ReportView({
     if (filterType === "bulanan") {
       // 6 calendar segments of 5 days each for the selected month
       const segments = [
-        { key: "1-5", label: "Tgl 1-5", min: 1, max: 5, income: 0, expense: 0, savings: 0 },
-        { key: "6-10", label: "Tgl 6-10", min: 6, max: 10, income: 0, expense: 0, savings: 0 },
-        { key: "11-15", label: "Tgl 11-15", min: 11, max: 15, income: 0, expense: 0, savings: 0 },
-        { key: "16-20", label: "Tgl 16-20", min: 16, max: 20, income: 0, expense: 0, savings: 0 },
-        { key: "21-25", label: "Tgl 21-25", min: 21, max: 25, income: 0, expense: 0, savings: 0 },
-        { key: "26+", label: "Tgl 26+", min: 26, max: 31, income: 0, expense: 0, savings: 0 },
+        {
+          key: "1-5",
+          label: "Tgl 1-5",
+          min: 1,
+          max: 5,
+          income: 0,
+          expense: 0,
+          savings: 0,
+        },
+        {
+          key: "6-10",
+          label: "Tgl 6-10",
+          min: 6,
+          max: 10,
+          income: 0,
+          expense: 0,
+          savings: 0,
+        },
+        {
+          key: "11-15",
+          label: "Tgl 11-15",
+          min: 11,
+          max: 15,
+          income: 0,
+          expense: 0,
+          savings: 0,
+        },
+        {
+          key: "16-20",
+          label: "Tgl 16-20",
+          min: 16,
+          max: 20,
+          income: 0,
+          expense: 0,
+          savings: 0,
+        },
+        {
+          key: "21-25",
+          label: "Tgl 21-25",
+          min: 21,
+          max: 25,
+          income: 0,
+          expense: 0,
+          savings: 0,
+        },
+        {
+          key: "26+",
+          label: "Tgl 26+",
+          min: 26,
+          max: 31,
+          income: 0,
+          expense: 0,
+          savings: 0,
+        },
       ];
 
       transactions.forEach((tx) => {
         if (!tx.date) return;
         const d = new Date(tx.date);
-        if (d.getFullYear() === selectedYear && d.getMonth() === selectedMonth) {
+        if (
+          d.getFullYear() === selectedYear &&
+          d.getMonth() === selectedMonth
+        ) {
           const dateNum = d.getDate();
-          const seg = segments.find(s => dateNum >= s.min && dateNum <= s.max);
+          const seg = segments.find(
+            (s) => dateNum >= s.min && dateNum <= s.max,
+          );
           if (seg) {
             if (tx.type === "pemasukan") seg.income += tx.amount;
             else if (tx.type === "pengeluaran") seg.expense += tx.amount;
@@ -877,29 +1273,41 @@ export default function ReportView({
     }
 
     if (filterType === "rentang") {
-      const data: { key: string, label: string, income: number, componentIdx?: number, expense: number, savings: number, startStr?: string, endStr?: string }[] = [];
+      const data: {
+        key: string;
+        label: string;
+        income: number;
+        componentIdx?: number;
+        expense: number;
+        savings: number;
+        startStr?: string;
+        endStr?: string;
+      }[] = [];
       const start = new Date(startDate);
       const end = new Date(endDate);
       const diffTime = Math.abs(end.getTime() - start.getTime());
       const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) || 1;
-      
+
       if (diffDays <= 31) {
         for (let i = 0; i < diffDays; i++) {
           const d = new Date(start);
           d.setDate(start.getDate() + i);
           const dStr = d.toISOString().split("T")[0];
-          const label = d.toLocaleDateString("id-ID", { day: "numeric", month: "short" });
+          const label = d.toLocaleDateString("id-ID", {
+            day: "numeric",
+            month: "short",
+          });
           data.push({
             key: dStr,
             label,
             income: 0,
             expense: 0,
-            savings: 0
+            savings: 0,
           });
         }
-        
+
         transactions.forEach((tx) => {
-          const match = data.find(item => item.key === tx.date);
+          const match = data.find((item) => item.key === tx.date);
           if (match) {
             if (tx.type === "pemasukan") match.income += tx.amount;
             else if (tx.type === "pengeluaran") match.expense += tx.amount;
@@ -910,18 +1318,24 @@ export default function ReportView({
         const segmentDays = Math.ceil(diffDays / 6);
         for (let i = 0; i < 6; i++) {
           const segStart = new Date(start);
-          segStart.setDate(start.getDate() + (i * segmentDays));
-          
+          segStart.setDate(start.getDate() + i * segmentDays);
+
           const segEnd = new Date(start);
           segEnd.setDate(start.getDate() + ((i + 1) * segmentDays - 1));
           if (segEnd > end) {
             segEnd.setTime(end.getTime());
           }
-          
-          const labelStart = segStart.toLocaleDateString("id-ID", { day: "numeric", month: "short" });
-          const labelEnd = segEnd.toLocaleDateString("id-ID", { day: "numeric", month: "short" });
+
+          const labelStart = segStart.toLocaleDateString("id-ID", {
+            day: "numeric",
+            month: "short",
+          });
+          const labelEnd = segEnd.toLocaleDateString("id-ID", {
+            day: "numeric",
+            month: "short",
+          });
           const label = `${labelStart} - ${labelEnd}`;
-          
+
           data.push({
             key: `seg-${i}`,
             label,
@@ -929,13 +1343,15 @@ export default function ReportView({
             endStr: segEnd.toISOString().split("T")[0],
             income: 0,
             expense: 0,
-            savings: 0
+            savings: 0,
           });
         }
-        
+
         transactions.forEach((tx) => {
           if (!tx.date) return;
-          const match = data.find(item => tx.date! >= item.startStr! && tx.date! <= item.endStr!);
+          const match = data.find(
+            (item) => tx.date! >= item.startStr! && tx.date! <= item.endStr!,
+          );
           if (match) {
             if (tx.type === "pemasukan") match.income += tx.amount;
             else if (tx.type === "pengeluaran") match.expense += tx.amount;
@@ -953,7 +1369,7 @@ export default function ReportView({
       label: MONTH_SHORT[i],
       income: 0,
       expense: 0,
-      savings: 0
+      savings: 0,
     }));
 
     transactions.forEach((tx) => {
@@ -963,18 +1379,28 @@ export default function ReportView({
         const m = d.getMonth();
         if (m >= 0 && m < 12) {
           if (tx.type === "pemasukan") monthsData[m].income += tx.amount;
-          else if (tx.type === "pengeluaran") monthsData[m].expense += tx.amount;
+          else if (tx.type === "pengeluaran")
+            monthsData[m].expense += tx.amount;
           else if (tx.type === "nabung") monthsData[m].savings += tx.amount;
         }
       }
     });
     return monthsData;
-  }, [transactions, filterType, selectedDate, selectedMonth, selectedYear, weekRange, startDate, endDate]);
+  }, [
+    transactions,
+    filterType,
+    selectedDate,
+    selectedMonth,
+    selectedYear,
+    weekRange,
+    startDate,
+    endDate,
+  ]);
 
   // Compute boundaries for drawing the modern custom chart
   const chartMetrics = useMemo(() => {
     let maxVal = 50000;
-    currentTrendData.forEach(item => {
+    currentTrendData.forEach((item) => {
       if (item.income > maxVal) maxVal = item.income;
       if (item.expense > maxVal) maxVal = item.expense;
     });
@@ -986,44 +1412,44 @@ export default function ReportView({
   const customDonutChart = useMemo(() => {
     const list = stats.categoriesExpense;
     if (list.length === 0) return null;
-    
+
     let cumulativePercent = 0;
     const slices = list.map((item, idx) => {
       const percentage = item.percentage;
       const startPercent = cumulativePercent;
       cumulativePercent += percentage;
-      
+
       const startAngle = (startPercent / 100) * 360 - 90;
       const endAngle = (cumulativePercent / 100) * 360 - 90;
-      
+
       const startRad = (startAngle * Math.PI) / 180;
       const endRad = (endAngle * Math.PI) / 180;
-      
+
       const r = 50;
       const cx = 60;
       const cy = 60;
-      
+
       const x1 = cx + r * Math.cos(startRad);
       const y1 = cy + r * Math.sin(startRad);
       const x2 = cx + r * Math.cos(endRad);
       const y2 = cy + r * Math.sin(endRad);
-      
+
       const largeArcFlag = percentage > 50 ? 1 : 0;
       const pathData = [
         `M ${x1} ${y1}`,
         `A ${r} ${r} 0 ${largeArcFlag} 1 ${x2} ${y2}`,
         `L ${cx} ${cy}`,
-        "Z"
+        "Z",
       ].join(" ");
-      
+
       return {
         path: pathData,
         color: item.color,
         category: item.category,
-        percentage
+        percentage,
       };
     });
-    
+
     return (
       <div className="relative group select-none">
         <svg viewBox="0 0 120 120" className="w-56 h-56 mx-auto drop-shadow-md">
@@ -1034,15 +1460,35 @@ export default function ReportView({
               fill={slice.color}
               className="transition-all duration-300 hover:opacity-90 hover:scale-[1.02] origin-center cursor-pointer"
             >
-              <title>{slice.category}: {slice.percentage.toFixed(1)}%</title>
+              <title>
+                {slice.category}: {slice.percentage.toFixed(1)}%
+              </title>
             </path>
           ))}
-          <circle cx="60" cy="60" r="34" fill="#ffffff" className="shadow-inner" />
-          <foreignObject x="30" y="30" width="60" height="60" className="text-center">
+          <circle
+            cx="60"
+            cy="60"
+            r="34"
+            fill="#ffffff"
+            className="shadow-inner"
+          />
+          <foreignObject
+            x="30"
+            y="30"
+            width="60"
+            height="60"
+            className="text-center"
+          >
             <div className="w-full h-full flex flex-col items-center justify-center">
-              <span className="text-[7px] uppercase font-bold text-slate-400 block leading-none">Pengeluaran</span>
-              <span className="text-xs font-black text-slate-700 mt-1 leading-none">Pos Belanja</span>
-              <span className="text-[8px] font-medium text-indigo-600 mt-0.5">{list.length} Kategori</span>
+              <span className="text-[7px] uppercase font-bold text-slate-400 block leading-none">
+                Pengeluaran
+              </span>
+              <span className="text-xs font-black text-slate-700 mt-1 leading-none">
+                Pos Belanja
+              </span>
+              <span className="text-[8px] font-medium text-indigo-600 mt-0.5">
+                {list.length} Kategori
+              </span>
             </div>
           </foreignObject>
         </svg>
@@ -1070,8 +1516,10 @@ export default function ReportView({
 
     const coords = currentTrendData.map((item, idx) => {
       const x = axisLeftMargin + (idx * plotWidth) / (totalPoints - 1 || 1);
-      const yInc = axisTopMargin + plotHeight - (item.income / ceilingValue) * plotHeight;
-      const yExp = axisTopMargin + plotHeight - (item.expense / ceilingValue) * plotHeight;
+      const yInc =
+        axisTopMargin + plotHeight - (item.income / ceilingValue) * plotHeight;
+      const yExp =
+        axisTopMargin + plotHeight - (item.expense / ceilingValue) * plotHeight;
       return { x, yInc, yExp, item };
     });
 
@@ -1085,24 +1533,28 @@ export default function ReportView({
       }
     });
 
-    const incAreaStr = coords.length > 0 
-      ? `${incPointsStr} L ${axisLeftMargin + plotWidth} ${axisTopMargin + plotHeight} L ${axisLeftMargin} ${axisTopMargin + plotHeight} Z`
-      : "";
+    const incAreaStr =
+      coords.length > 0
+        ? `${incPointsStr} L ${axisLeftMargin + plotWidth} ${axisTopMargin + plotHeight} L ${axisLeftMargin} ${axisTopMargin + plotHeight} Z`
+        : "";
 
-    const expAreaStr = coords.length > 0
-      ? `${expPointsStr} L ${axisLeftMargin + plotWidth} ${axisTopMargin + plotHeight} L ${axisLeftMargin} ${axisTopMargin + plotHeight} Z`
-      : "";
+    const expAreaStr =
+      coords.length > 0
+        ? `${expPointsStr} L ${axisLeftMargin + plotWidth} ${axisTopMargin + plotHeight} L ${axisLeftMargin} ${axisTopMargin + plotHeight} Z`
+        : "";
 
     // Generate grid lines
     const gridRows = 4;
     const gridLines = Array.from({ length: gridRows }, (_, i) => {
       const value = (ceilingValue * i) / (gridRows - 1);
-      const y = axisTopMargin + plotHeight - (value / ceilingValue) * plotHeight;
+      const y =
+        axisTopMargin + plotHeight - (value / ceilingValue) * plotHeight;
       return { y, value };
     });
 
     const formatShortCompactVal = (val: number) => {
-      if (val >= 1000000) return `${(val / 1000000).toFixed(1).replace(/\.0$/, "")}jt`;
+      if (val >= 1000000)
+        return `${(val / 1000000).toFixed(1).replace(/\.0$/, "")}jt`;
       if (val >= 1000) return `${(val / 1000).toFixed(0)}rb`;
       return val.toString();
     };
@@ -1111,15 +1563,20 @@ export default function ReportView({
       <div className="relative bg-white rounded-3xl border border-slate-100 p-4 shadow-sm w-full">
         {/* Tooltip Popup absolute on Hover */}
         {hoveredIdx !== null && currentTrendData[hoveredIdx] && (
-          <div 
+          <div
             className="absolute bg-slate-900/95 text-white p-3 rounded-2xl shadow-xl text-[11px] space-y-1.5 z-20 pointer-events-none transition-all duration-150 border border-slate-800"
             style={{
               left: `${Math.min(
-                Math.max(15, ((60 + (hoveredIdx * plotWidth) / (totalPoints - 1 || 1)) / svgWidth) * 100),
-                82
+                Math.max(
+                  15,
+                  ((60 + (hoveredIdx * plotWidth) / (totalPoints - 1 || 1)) /
+                    svgWidth) *
+                    100,
+                ),
+                82,
               )}%`,
               top: "32px",
-              transform: "translateX(-50%)"
+              transform: "translateX(-50%)",
             }}
           >
             <p className="font-bold border-b border-slate-800 pb-1 text-slate-300 text-center">
@@ -1132,46 +1589,65 @@ export default function ReportView({
               </span>
               <span className="text-slate-400">Pengeluaran:</span>
               <span className="text-red-400 font-bold font-mono text-right">
-                Rp {currentTrendData[hoveredIdx].expense.toLocaleString("id-ID")}
+                Rp{" "}
+                {currentTrendData[hoveredIdx].expense.toLocaleString("id-ID")}
               </span>
               {currentTrendData[hoveredIdx].savings > 0 && (
                 <>
-                  <span className="text-slate-400 font-semibold">Tabungan:</span>
+                  <span className="text-slate-400 font-semibold">
+                    Tabungan:
+                  </span>
                   <span className="text-indigo-400 font-bold font-mono text-right">
-                    Rp {currentTrendData[hoveredIdx].savings.toLocaleString("id-ID")}
+                    Rp{" "}
+                    {currentTrendData[hoveredIdx].savings.toLocaleString(
+                      "id-ID",
+                    )}
                   </span>
                 </>
               )}
-              <span className="text-white border-t border-slate-800 pt-1">Selisih:</span>
-              <span className={`border-t border-slate-800 pt-1 font-bold font-mono text-right ${
-                currentTrendData[hoveredIdx].income - currentTrendData[hoveredIdx].expense >= 0 
-                  ? "text-emerald-400" 
-                  : "text-red-400"
-              }`}>
-                Rp {(currentTrendData[hoveredIdx].income - currentTrendData[hoveredIdx].expense).toLocaleString("id-ID")}
+              <span className="text-white border-t border-slate-800 pt-1">
+                Selisih:
+              </span>
+              <span
+                className={`border-t border-slate-800 pt-1 font-bold font-mono text-right ${
+                  currentTrendData[hoveredIdx].income -
+                    currentTrendData[hoveredIdx].expense >=
+                  0
+                    ? "text-emerald-400"
+                    : "text-red-400"
+                }`}
+              >
+                Rp{" "}
+                {(
+                  currentTrendData[hoveredIdx].income -
+                  currentTrendData[hoveredIdx].expense
+                ).toLocaleString("id-ID")}
               </span>
             </div>
           </div>
         )}
 
         <div className="overflow-x-auto">
-          <svg viewBox={`0 0 ${svgWidth} ${svgHeight}`} className="w-full h-auto min-w-[480px]">
+          <svg
+            viewBox={`0 0 ${svgWidth} ${svgHeight}`}
+            className="w-full h-auto min-w-[480px]"
+          >
             {/* Definitions representing modern gradient fills */}
             <defs>
               <linearGradient id="incomeAreaGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#10B981" stopOpacity="0.25"/>
-                <stop offset="100%" stopColor="#10B981" stopOpacity="0.00"/>
+                <stop offset="0%" stopColor="#10B981" stopOpacity="0.25" />
+                <stop offset="100%" stopColor="#10B981" stopOpacity="0.00" />
               </linearGradient>
               <linearGradient id="expenseAreaGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#EF4444" stopOpacity="0.20"/>
-                <stop offset="100%" stopColor="#EF4444" stopOpacity="0.00"/>
+                <stop offset="0%" stopColor="#EF4444" stopOpacity="0.20" />
+                <stop offset="100%" stopColor="#EF4444" stopOpacity="0.00" />
               </linearGradient>
             </defs>
 
             {/* Horizontal Grid lines */}
             {gridLines.map((line, i) => (
               <g key={i} className="opacity-45">
-                <line 
+                <line
                   x1={axisLeftMargin}
                   y1={line.y}
                   x2={svgWidth - axisRightMargin}
@@ -1180,7 +1656,7 @@ export default function ReportView({
                   strokeWidth="1"
                   strokeDasharray="4 4"
                 />
-                <text 
+                <text
                   x={axisLeftMargin - 8}
                   y={line.y + 3.5}
                   textAnchor="end"
@@ -1193,37 +1669,37 @@ export default function ReportView({
 
             {/* Area Fills inside charts */}
             {incAreaStr && (
-              <path 
-                d={incAreaStr} 
-                fill="url(#incomeAreaGrad)" 
+              <path
+                d={incAreaStr}
+                fill="url(#incomeAreaGrad)"
                 className="transition-all duration-300"
               />
             )}
             {expAreaStr && (
-              <path 
-                d={expAreaStr} 
-                fill="url(#expenseAreaGrad)" 
+              <path
+                d={expAreaStr}
+                fill="url(#expenseAreaGrad)"
                 className="transition-all duration-300"
               />
             )}
 
             {/* Smooth line strokes */}
             {incPointsStr && (
-              <path 
-                d={incPointsStr} 
-                fill="none" 
-                stroke="#10B981" 
-                strokeWidth="2.5" 
+              <path
+                d={incPointsStr}
+                fill="none"
+                stroke="#10B981"
+                strokeWidth="2.5"
                 strokeLinecap="round"
                 className="transition-all duration-300"
               />
             )}
             {expPointsStr && (
-              <path 
-                d={expPointsStr} 
-                fill="none" 
-                stroke="#EF4444" 
-                strokeWidth="2.5" 
+              <path
+                d={expPointsStr}
+                fill="none"
+                stroke="#EF4444"
+                strokeWidth="2.5"
                 strokeLinecap="round"
                 className="transition-all duration-300"
               />
@@ -1234,7 +1710,7 @@ export default function ReportView({
               <g key={i} className="group cursor-pointer">
                 {/* Active hover vertical line highlight */}
                 {hoveredIdx === i && (
-                  <line 
+                  <line
                     x1={c.x}
                     y1={axisTopMargin}
                     x2={c.x}
@@ -1248,7 +1724,7 @@ export default function ReportView({
 
                 {/* Income point dot */}
                 {c.item.income > 0 && (
-                  <circle 
+                  <circle
                     cx={c.x}
                     cy={c.yInc}
                     r={hoveredIdx === i ? "5.5" : "3.5"}
@@ -1261,7 +1737,7 @@ export default function ReportView({
 
                 {/* Expense point dot */}
                 {c.item.expense > 0 && (
-                  <circle 
+                  <circle
                     cx={c.x}
                     cy={c.yExp}
                     r={hoveredIdx === i ? "5.5" : "3.5"}
@@ -1273,7 +1749,7 @@ export default function ReportView({
                 )}
 
                 {/* X Axis bottom labels */}
-                <text 
+                <text
                   x={c.x}
                   y={axisTopMargin + plotHeight + 18}
                   textAnchor="middle"
@@ -1289,7 +1765,7 @@ export default function ReportView({
               const colWidth = plotWidth / (totalPoints || 1);
               const xStart = c.x - colWidth / 2;
               return (
-                <rect 
+                <rect
                   key={i}
                   x={xStart}
                   y={axisTopMargin}
@@ -1310,10 +1786,8 @@ export default function ReportView({
 
   return (
     <div id="report-view-container" className="space-y-4 md:space-y-6">
-      
       {/* Dynamic Date, Month, Year Filter Header card configuration */}
       <div className="bg-white p-4 md:p-5 rounded-2xl md:rounded-3xl shadow-sm border border-slate-100 space-y-4 no-print">
-        
         {/* Row 1: Filter Tab Mode Pickers */}
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div className="flex items-center gap-2">
@@ -1321,49 +1795,78 @@ export default function ReportView({
               <Filter className="w-4 h-4" />
             </div>
             <div>
-              <h3 className="text-sm font-black text-slate-800">Filter Analitik Modern</h3>
-              <p className="text-[10px] text-slate-400 font-medium">Saring laporan sesuai kebutuhan waktu Anda</p>
+              <h3 className="text-sm font-black text-slate-800">
+                Filter Analitik Modern
+              </h3>
+              <p className="text-[10px] text-slate-400 font-medium">
+                Saring laporan sesuai kebutuhan waktu Anda
+              </p>
             </div>
           </div>
 
           <div className="flex flex-col sm:flex-row flex-wrap items-start sm:items-center gap-3 w-full lg:w-auto">
             <div className="flex items-center gap-1 md:gap-1.5 bg-slate-100 p-1 md:p-1.5 rounded-2xl w-full sm:w-fit overflow-x-auto hide-scrollbar">
               <button
-                onClick={() => { setFilterType("harian"); setHoveredIdx(null); }}
+                onClick={() => {
+                  setFilterType("harian");
+                  setHoveredIdx(null);
+                }}
                 className={`px-3 py-1 md:px-3.5 md:py-1.5 rounded-xl text-[10px] md:text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
-                  filterType === "harian" ? "bg-white text-slate-800 shadow-xs" : "text-slate-500 hover:text-slate-800"
+                  filterType === "harian"
+                    ? "bg-white text-slate-800 shadow-xs"
+                    : "text-slate-500 hover:text-slate-800"
                 }`}
               >
                 Harian
               </button>
               <button
-                onClick={() => { setFilterType("mingguan"); setHoveredIdx(null); }}
+                onClick={() => {
+                  setFilterType("mingguan");
+                  setHoveredIdx(null);
+                }}
                 className={`px-3 py-1 md:px-3.5 md:py-1.5 rounded-xl text-[10px] md:text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
-                  filterType === "mingguan" ? "bg-white text-slate-800 shadow-xs" : "text-slate-500 hover:text-slate-800"
+                  filterType === "mingguan"
+                    ? "bg-white text-slate-800 shadow-xs"
+                    : "text-slate-500 hover:text-slate-800"
                 }`}
               >
                 Mingguan
               </button>
               <button
-                onClick={() => { setFilterType("bulanan"); setHoveredIdx(null); }}
+                onClick={() => {
+                  setFilterType("bulanan");
+                  setHoveredIdx(null);
+                }}
                 className={`px-3 py-1 md:px-3.5 md:py-1.5 rounded-xl text-[10px] md:text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
-                  filterType === "bulanan" ? "bg-white text-slate-800 shadow-xs" : "text-slate-500 hover:text-slate-800"
+                  filterType === "bulanan"
+                    ? "bg-white text-slate-800 shadow-xs"
+                    : "text-slate-500 hover:text-slate-800"
                 }`}
               >
                 Bulanan
               </button>
               <button
-                onClick={() => { setFilterType("tahunan"); setHoveredIdx(null); }}
+                onClick={() => {
+                  setFilterType("tahunan");
+                  setHoveredIdx(null);
+                }}
                 className={`px-3 py-1 md:px-3.5 md:py-1.5 rounded-xl text-[10px] md:text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
-                  filterType === "tahunan" ? "bg-white text-slate-800 shadow-xs" : "text-slate-500 hover:text-slate-800"
+                  filterType === "tahunan"
+                    ? "bg-white text-slate-800 shadow-xs"
+                    : "text-slate-500 hover:text-slate-800"
                 }`}
               >
                 Tahunan
               </button>
               <button
-                onClick={() => { setFilterType("rentang"); setHoveredIdx(null); }}
+                onClick={() => {
+                  setFilterType("rentang");
+                  setHoveredIdx(null);
+                }}
                 className={`px-3 py-1 md:px-3.5 md:py-1.5 rounded-xl text-[10px] md:text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
-                  filterType === "rentang" ? "bg-white text-slate-800 shadow-xs" : "text-slate-500 hover:text-slate-800"
+                  filterType === "rentang"
+                    ? "bg-white text-slate-800 shadow-xs"
+                    : "text-slate-500 hover:text-slate-800"
                 }`}
               >
                 Rentang
@@ -1402,7 +1905,6 @@ export default function ReportView({
 
         {/* Row 2: Dynamic Input Sizing Controllers depending on state */}
         <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
-          
           {/* Arrow Scrollers widget */}
           <div className="md:col-span-5 flex items-center gap-3 bg-slate-50 p-2.5 rounded-2xl border border-slate-100 justify-between">
             <button
@@ -1412,7 +1914,9 @@ export default function ReportView({
               <ChevronLeft className="w-4 h-4" />
             </button>
             <div className="text-center">
-              <span className="text-xs uppercase font-extrabold text-slate-400 block tracking-widest text-[8px] leading-none">Periode Terpiliih</span>
+              <span className="text-xs uppercase font-extrabold text-slate-400 block tracking-widest text-[8px] leading-none">
+                Periode Terpiliih
+              </span>
               <span className="text-xs font-bold text-indigo-900 tracking-tight block mt-1">
                 {formattedPeriodLabel}
               </span>
@@ -1427,11 +1931,12 @@ export default function ReportView({
 
           {/* Form control dropdown fields */}
           <div className="md:col-span-7 flex flex-wrap gap-3 items-center">
-            
             {/* Input Date Picker for Harian */}
             {filterType === "harian" && (
               <div className="flex-1 min-w-[200px]">
-                <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block mb-1">Pilih Tanggal Spesifik</label>
+                <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block mb-1">
+                  Pilih Tanggal Spesifik
+                </label>
                 <div className="relative">
                   <Calendar className="absolute left-3 top-2.5 w-4 h-4 text-indigo-500 pointer-events-none" />
                   <input
@@ -1447,7 +1952,9 @@ export default function ReportView({
             {/* Input Date Picker for Mingguan */}
             {filterType === "mingguan" && (
               <div className="flex-1 min-w-[200px]">
-                <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block mb-1">Pilih Acuan Tanggal Minggu</label>
+                <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block mb-1">
+                  Pilih Acuan Tanggal Minggu
+                </label>
                 <div className="relative">
                   <Calendar className="absolute left-3 top-2.5 w-4 h-4 text-indigo-500 pointer-events-none" />
                   <input
@@ -1464,7 +1971,9 @@ export default function ReportView({
             {filterType === "rentang" && (
               <div className="flex flex-col sm:flex-row gap-3 flex-1 min-w-[260px]">
                 <div className="flex-1 min-w-[120px]">
-                  <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block mb-1">Mulai Tanggal</label>
+                  <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block mb-1">
+                    Mulai Tanggal
+                  </label>
                   <div className="relative">
                     <Calendar className="absolute left-3 top-2.5 w-4 h-4 text-indigo-500 pointer-events-none" />
                     <input
@@ -1476,7 +1985,9 @@ export default function ReportView({
                   </div>
                 </div>
                 <div className="flex-1 min-w-[120px]">
-                  <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block mb-1">Sampai Tanggal</label>
+                  <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block mb-1">
+                    Sampai Tanggal
+                  </label>
                   <div className="relative">
                     <Calendar className="absolute left-3 top-2.5 w-4 h-4 text-indigo-500 pointer-events-none" />
                     <input
@@ -1494,7 +2005,9 @@ export default function ReportView({
             {filterType === "bulanan" && (
               <>
                 <div className="flex-1 min-w-[130px]">
-                  <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block mb-1">Pilih Bulan</label>
+                  <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block mb-1">
+                    Pilih Bulan
+                  </label>
                   <select
                     value={selectedMonth}
                     onChange={(e) => {
@@ -1504,13 +2017,17 @@ export default function ReportView({
                     className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs font-bold text-slate-800 focus:outline-indigo-500 cursor-pointer"
                   >
                     {MONTH_NAMES.map((name, idx) => (
-                      <option key={name} value={idx}>{name}</option>
+                      <option key={name} value={idx}>
+                        {name}
+                      </option>
                     ))}
                   </select>
                 </div>
 
                 <div className="w-[100px]">
-                  <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block mb-1">Tahun</label>
+                  <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block mb-1">
+                    Tahun
+                  </label>
                   <select
                     value={selectedYear}
                     onChange={(e) => {
@@ -1519,8 +2036,10 @@ export default function ReportView({
                     }}
                     className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs font-bold text-slate-800 focus:outline-indigo-500 cursor-pointer"
                   >
-                    {availableYears.map(yr => (
-                      <option key={yr} value={yr}>{yr}</option>
+                    {availableYears.map((yr) => (
+                      <option key={yr} value={yr}>
+                        {yr}
+                      </option>
                     ))}
                   </select>
                 </div>
@@ -1530,7 +2049,9 @@ export default function ReportView({
             {/* Year lists only for Tahunan */}
             {filterType === "tahunan" && (
               <div className="flex-1 min-w-[150px]">
-                <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block mb-1">Pilih Tahun Analitik</label>
+                <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block mb-1">
+                  Pilih Tahun Analitik
+                </label>
                 <select
                   value={selectedYear}
                   onChange={(e) => {
@@ -1539,18 +2060,26 @@ export default function ReportView({
                   }}
                   className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs font-bold text-slate-800 focus:outline-indigo-500 cursor-pointer"
                 >
-                  {availableYears.map(yr => (
-                    <option key={yr} value={yr}>Tahun {yr}</option>
+                  {availableYears.map((yr) => (
+                    <option key={yr} value={yr}>
+                      Tahun {yr}
+                    </option>
                   ))}
                 </select>
               </div>
             )}
 
             <div className="flex-1 min-w-[150px]">
-              <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block mb-1">Jenis Laporan</label>
+              <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block mb-1">
+                Jenis Laporan
+              </label>
               <select
                 value={reportViewType}
-                onChange={(e) => setReportViewType(e.target.value as "semua" | "tunai" | "rekening")}
+                onChange={(e) =>
+                  setReportViewType(
+                    e.target.value as "semua" | "tunai" | "rekening",
+                  )
+                }
                 className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs font-bold text-slate-800 focus:outline-indigo-500 cursor-pointer"
               >
                 <option value="semua">Gabungan (Tunai & Rekening)</option>
@@ -1560,12 +2089,18 @@ export default function ReportView({
             </div>
 
             {/* Quick reset button */}
-            <button 
+            <button
               type="button"
               onClick={() => {
                 const today = new Date();
                 const todayStr = today.toISOString().split("T")[0];
-                const startOfMonthStr = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split("T")[0];
+                const startOfMonthStr = new Date(
+                  today.getFullYear(),
+                  today.getMonth(),
+                  1,
+                )
+                  .toISOString()
+                  .split("T")[0];
                 setSelectedDate(todayStr);
                 setSelectedMonth(today.getMonth());
                 setSelectedYear(today.getFullYear());
@@ -1578,7 +2113,6 @@ export default function ReportView({
             >
               <RefreshCw className="w-4 h-4" />
             </button>
-
           </div>
         </div>
       </div>
@@ -1589,9 +2123,12 @@ export default function ReportView({
             <div className="w-14 h-14 bg-slate-50 text-indigo-400 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-dashed border-slate-200">
               <Calendar className="w-7 h-7" />
             </div>
-            <h3 className="text-base font-bold text-slate-800">Tidak Ada Rekaman Pembukuan</h3>
+            <h3 className="text-base font-bold text-slate-800">
+              Tidak Ada Rekaman Pembukuan
+            </h3>
             <p className="text-xs text-slate-500 mt-1 max-w-xs mx-auto">
-              Tidak ada pemasukan, pengeluaran atau transaksi tabungan pada periode {formattedPeriodLabel} yang dipilih.
+              Tidak ada pemasukan, pengeluaran atau transaksi tabungan pada
+              periode {formattedPeriodLabel} yang dipilih.
             </p>
           </div>
         ) : (
@@ -1603,14 +2140,20 @@ export default function ReportView({
                   <FileDown className="w-4 h-4" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-black text-slate-850">Format Rekonsiliasi &amp; Ekspor Pembukuan</h3>
-                  <p className="text-[10px] text-slate-400 font-medium">Bentuk pratinjau format standar laporan keuangan versi cetak / PDF</p>
+                  <h3 className="text-sm font-black text-slate-850">
+                    Format Rekonsiliasi &amp; Ekspor Pembukuan
+                  </h3>
+                  <p className="text-[10px] text-slate-400 font-medium">
+                    Bentuk pratinjau format standar laporan keuangan versi cetak
+                    / PDF
+                  </p>
                 </div>
               </div>
 
               {/* Exact format layout requested by user */}
-              <div className={`bg-slate-50 border border-slate-150 p-4 md:p-5 rounded-2xl grid grid-cols-1 md:grid-cols-2 ${reportViewType === "semua" ? "lg:grid-cols-3" : "lg:grid-cols-2"} gap-4 md:gap-6 font-mono text-[10px] md:text-xs text-slate-800 leading-relaxed`}>
-                
+              <div
+                className={`bg-slate-50 border border-slate-150 p-4 md:p-5 rounded-2xl grid grid-cols-1 md:grid-cols-2 ${reportViewType === "semua" ? "lg:grid-cols-3" : "lg:grid-cols-2"} gap-4 md:gap-6 font-mono text-[10px] md:text-xs text-slate-800 leading-relaxed`}
+              >
                 {/* Column 1: Pendapatan Tunai, Pengeluaran Tunai & Sisa */}
                 {(reportViewType === "semua" || reportViewType === "tunai") && (
                   <div className="space-y-3 md:space-y-4">
@@ -1622,7 +2165,9 @@ export default function ReportView({
                         </div>
                         <div className="flex justify-between text-[10px] md:text-[11px]">
                           <span className="text-slate-600">RP</span>
-                          <span className="font-bold text-slate-900">{pdfMetrics.cashSaldoAwal.toLocaleString("id-ID")}</span>
+                          <span className="font-bold text-slate-900">
+                            {pdfMetrics.cashSaldoAwal.toLocaleString("id-ID")}
+                          </span>
                         </div>
                       </div>
                     )}
@@ -1633,20 +2178,34 @@ export default function ReportView({
                           PENDAPATAN TUNAI
                         </div>
                         {pdfMetrics.incomeTunaiList.length === 0 ? (
-                          <div className="text-slate-400 italic text-[10px] md:text-[11px] py-1">NIHIL</div>
+                          <div className="text-slate-400 italic text-[10px] md:text-[11px] py-1">
+                            NIHIL
+                          </div>
                         ) : (
                           <div className="space-y-1">
                             {pdfMetrics.incomeTunaiList.map((item, idx) => (
-                              <div key={idx} className="flex justify-between text-[10px] md:text-[11px]">
-                                <span className="text-slate-600">{item.category}</span>
-                                <span className="font-bold">Rp {item.amount.toLocaleString("id-ID")}</span>
+                              <div
+                                key={idx}
+                                className="flex justify-between text-[10px] md:text-[11px]"
+                              >
+                                <span className="text-slate-600">
+                                  {item.category}
+                                </span>
+                                <span className="font-bold">
+                                  Rp {item.amount.toLocaleString("id-ID")}
+                                </span>
                               </div>
                             ))}
                           </div>
                         )}
                         <div className="flex justify-between font-extrabold text-[#000] border-t border-slate-100 pt-1.5 mt-1 text-[10px] md:text-[11px]">
                           <span>TOTAL</span>
-                          <span>Rp {pdfMetrics.incomeTunaiTotal.toLocaleString("id-ID")}</span>
+                          <span>
+                            Rp{" "}
+                            {pdfMetrics.incomeTunaiTotal.toLocaleString(
+                              "id-ID",
+                            )}
+                          </span>
                         </div>
                       </div>
                     )}
@@ -1662,29 +2221,55 @@ export default function ReportView({
                           PENDAPATAN TRANSFER
                         </div>
                         {pdfMetrics.incomeTransferList.length === 0 ? (
-                          <div className="text-slate-400 italic text-[10px] md:text-[11px] py-1">NIHIL</div>
+                          <div className="text-slate-400 italic text-[10px] md:text-[11px] py-1">
+                            NIHIL
+                          </div>
                         ) : (
                           <div className="space-y-1">
                             {pdfMetrics.incomeTransferList.map((item, idx) => (
-                              <div key={idx} className="flex justify-between text-[10px] md:text-[11px]">
-                                <span className="text-slate-600">{item.category}</span>
-                                <span className="font-bold">Rp {item.amount.toLocaleString("id-ID")}</span>
+                              <div
+                                key={idx}
+                                className="flex justify-between text-[10px] md:text-[11px]"
+                              >
+                                <span className="text-slate-600">
+                                  {item.category}
+                                </span>
+                                <span className="font-bold">
+                                  Rp {item.amount.toLocaleString("id-ID")}
+                                </span>
                               </div>
                             ))}
                           </div>
                         )}
                         <div className="flex justify-between text-[10px] md:text-[11px] border-t border-slate-100 pt-1.5 mt-1">
-                          <span className="text-slate-600 font-bold">TOTAL PENDAPATAN TF</span>
-                          <span className="font-bold">Rp {pdfMetrics.incomeTransferTotal.toLocaleString("id-ID")}</span>
+                          <span className="text-slate-600 font-bold">
+                            TOTAL PENDAPATAN TF
+                          </span>
+                          <span className="font-bold">
+                            Rp{" "}
+                            {pdfMetrics.incomeTransferTotal.toLocaleString(
+                              "id-ID",
+                            )}
+                          </span>
                         </div>
                         <div className="flex justify-between font-extrabold text-slate-900 border-t border-slate-100 pt-1.5 mt-1 text-[10px] md:text-[11px]">
                           <span>TOTAL PENDAPATAN</span>
-                          <span className="text-indigo-700">Rp {pdfMetrics.totalIncomeCombine.toLocaleString("id-ID")}</span>
+                          <span className="text-indigo-700">
+                            Rp{" "}
+                            {pdfMetrics.totalIncomeCombine.toLocaleString(
+                              "id-ID",
+                            )}
+                          </span>
                         </div>
                         {showTotalPendapatanPlusMetko && (
                           <div className="flex justify-between font-extrabold text-slate-900 border-t border-slate-100 pt-1.5 mt-1 text-[10px] md:text-[11px]">
                             <span>TOTAL PENDAPATAN + METKO KEMARIN</span>
-                            <span className="text-indigo-700">Rp {pdfMetrics.totalIncomePlusMetko.toLocaleString("id-ID")}</span>
+                            <span className="text-indigo-700">
+                              Rp{" "}
+                              {pdfMetrics.totalIncomePlusMetko.toLocaleString(
+                                "id-ID",
+                              )}
+                            </span>
                           </div>
                         )}
                       </div>
@@ -1696,20 +2281,36 @@ export default function ReportView({
                           PENGELUARAN TUNAI
                         </div>
                         {pdfMetrics.expenseTunaiList.length === 0 ? (
-                          <div className="text-slate-400 italic text-[10px] md:text-[11px] py-1">NIHIL</div>
+                          <div className="text-slate-400 italic text-[10px] md:text-[11px] py-1">
+                            NIHIL
+                          </div>
                         ) : (
                           <div className="space-y-1">
                             {pdfMetrics.expenseTunaiList.map((item, idx) => (
-                              <div key={idx} className="flex justify-between text-[10px] md:text-[11px]">
-                                <span className="text-slate-600">{item.category}</span>
-                                <span className="font-bold text-red-650">Rp {item.amount.toLocaleString("id-ID")}</span>
+                              <div
+                                key={idx}
+                                className="flex justify-between text-[10px] md:text-[11px]"
+                              >
+                                <span className="text-slate-600">
+                                  {item.category}
+                                </span>
+                                <span className="font-bold text-red-650">
+                                  Rp {item.amount.toLocaleString("id-ID")}
+                                </span>
                               </div>
                             ))}
                           </div>
                         )}
                         <div className="flex justify-between text-red-650 text-[10px] md:text-[11px] font-bold border-t border-slate-100 pt-1.5 mt-1">
-                          <span className="text-slate-650">TOTAL PENGELUARAN</span>
-                          <span>Rp {pdfMetrics.expenseTunaiTotal.toLocaleString("id-ID")}</span>
+                          <span className="text-slate-650">
+                            TOTAL PENGELUARAN
+                          </span>
+                          <span>
+                            Rp{" "}
+                            {pdfMetrics.expenseTunaiTotal.toLocaleString(
+                              "id-ID",
+                            )}
+                          </span>
                         </div>
                       </div>
                     )}
@@ -1721,7 +2322,12 @@ export default function ReportView({
                         </div>
                         <div className="flex justify-between text-indigo-900 text-[10px] md:text-[11px] font-black">
                           <span className="text-slate-650">Sisa Kas Tunai</span>
-                          <span>Rp {pdfMetrics.sisaSebelumNabung.toLocaleString("id-ID")}</span>
+                          <span>
+                            Rp{" "}
+                            {pdfMetrics.sisaSebelumNabung.toLocaleString(
+                              "id-ID",
+                            )}
+                          </span>
                         </div>
                       </div>
                     )}
@@ -1732,20 +2338,31 @@ export default function ReportView({
                           NABUNG
                         </div>
                         {pdfMetrics.nabungList.length === 0 ? (
-                          <div className="text-slate-400 italic text-[10px] md:text-[11px] py-1">NIHIL</div>
+                          <div className="text-slate-400 italic text-[10px] md:text-[11px] py-1">
+                            NIHIL
+                          </div>
                         ) : (
                           <div className="space-y-1">
                             {pdfMetrics.nabungList.map((item, idx) => (
-                              <div key={idx} className="flex justify-between text-[10px] md:text-[11px]">
-                                <span className="text-slate-600">{item.category}</span>
-                                <span className="font-bold text-amber-700">Rp {item.amount.toLocaleString("id-ID")}</span>
+                              <div
+                                key={idx}
+                                className="flex justify-between text-[10px] md:text-[11px]"
+                              >
+                                <span className="text-slate-600">
+                                  {item.category}
+                                </span>
+                                <span className="font-bold text-amber-700">
+                                  Rp {item.amount.toLocaleString("id-ID")}
+                                </span>
                               </div>
                             ))}
                           </div>
                         )}
                         <div className="flex justify-between font-extrabold text-[#000] border-t border-slate-100 pt-1.5 mt-1 text-[10px] md:text-[11px]">
                           <span>TOTAL NABUNG</span>
-                          <span className="text-amber-700">Rp {pdfMetrics.nabungTotal.toLocaleString("id-ID")}</span>
+                          <span className="text-amber-700">
+                            Rp {pdfMetrics.nabungTotal.toLocaleString("id-ID")}
+                          </span>
                         </div>
                       </div>
                     )}
@@ -1756,8 +2373,13 @@ export default function ReportView({
                           SISA UANG TUNAI
                         </div>
                         <div className="flex justify-between text-emerald-800 text-[10px] md:text-[11px]">
-                          <span className="text-emerald-700 font-bold">Rp.</span>
-                          <span className="font-black">Rp {pdfMetrics.sisaUangTunai.toLocaleString("id-ID")}</span>
+                          <span className="text-emerald-700 font-bold">
+                            Rp.
+                          </span>
+                          <span className="font-black">
+                            Rp{" "}
+                            {pdfMetrics.sisaUangTunai.toLocaleString("id-ID")}
+                          </span>
                         </div>
                       </div>
                     )}
@@ -1765,263 +2387,413 @@ export default function ReportView({
                 )}
 
                 {/* Column 3: Saldo Rekening */}
-                {(reportViewType === "semua" || reportViewType === "rekening") && (
-                  <div className={reportViewType === "rekening" ? "md:col-span-2" : "md:col-span-2 lg:col-span-1"}>
-                  <div className="bg-slate-900 text-slate-100 p-3 md:p-4 rounded-xl border border-slate-800 shadow-2xs space-y-1.5 md:space-y-2 h-full flex flex-col justify-between">
-                    <div>
-                      <div className="font-extrabold text-indigo-300 uppercase tracking-wider text-[10px] md:text-[11px] border-b pb-1 border-slate-800">
-                        SALDO REKENING
+                {(reportViewType === "semua" ||
+                  reportViewType === "rekening") && (
+                  <div
+                    className={
+                      reportViewType === "rekening"
+                        ? "md:col-span-2"
+                        : "md:col-span-2 lg:col-span-1"
+                    }
+                  >
+                    <div className="bg-slate-900 text-slate-100 p-3 md:p-4 rounded-xl border border-slate-800 shadow-2xs space-y-1.5 md:space-y-2 h-full flex flex-col justify-between">
+                      <div>
+                        <div className="font-extrabold text-indigo-300 uppercase tracking-wider text-[10px] md:text-[11px] border-b pb-1 border-slate-800">
+                          SALDO REKENING
+                        </div>
+                        <div className="space-y-1 md:space-y-1.5 text-[10px] md:text-[11px] mt-2">
+                          {showRekeningSaldoAwal && (
+                            <div className="flex justify-between">
+                              <span className="text-slate-400">SALDO AWAL</span>
+                              <span className="font-bold text-white">
+                                Rp{" "}
+                                {pdfMetrics.rekeningSaldoAwal.toLocaleString(
+                                  "id-ID",
+                                )}
+                              </span>
+                            </div>
+                          )}
+                          {showPendapatanTransfer &&
+                            (pdfMetrics.incomeTransferList.length > 0 ? (
+                              <div className="space-y-1 mb-2">
+                                <div className="text-[10px] font-bold text-emerald-500 mb-1">
+                                  PENDAPATAN TF
+                                </div>
+                                {pdfMetrics.incomeTransferList.map(
+                                  (item, idx) => (
+                                    <div
+                                      key={idx}
+                                      className="flex justify-between text-emerald-400 italic font-mono pl-2"
+                                    >
+                                      <span className="text-emerald-500 text-[10px]">
+                                        {item.category}
+                                      </span>
+                                      <span className="font-bold text-[10px]">
+                                        Rp {item.amount.toLocaleString("id-ID")}
+                                      </span>
+                                    </div>
+                                  ),
+                                )}
+                                <div className="flex justify-between text-emerald-400 font-bold text-[10px] pt-1">
+                                  <span>TOTAL PENDAPATAN TF</span>
+                                  <span>
+                                    Rp{" "}
+                                    {pdfMetrics.incomeTransferTotal.toLocaleString(
+                                      "id-ID",
+                                    )}
+                                  </span>
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="flex justify-between">
+                                <span className="text-slate-400">
+                                  PENDAPATAN TF
+                                </span>
+                                <span className="font-bold text-emerald-400">
+                                  Rp 0
+                                </span>
+                              </div>
+                            ))}
+                          {showNabung &&
+                            (pdfMetrics.nabungList.length > 0 ? (
+                              <div className="space-y-1 mt-2 mb-2 border-t border-slate-700/50 pt-2">
+                                <div className="text-[10px] font-bold text-amber-500 mb-1">
+                                  NABUNG
+                                </div>
+                                {pdfMetrics.nabungList.map((item, idx) => (
+                                  <div
+                                    key={idx}
+                                    className="flex justify-between text-amber-400 italic font-mono pl-2"
+                                  >
+                                    <span className="text-amber-500 text-[10px]">
+                                      {item.category}
+                                    </span>
+                                    <span className="font-bold text-[10px]">
+                                      Rp {item.amount.toLocaleString("id-ID")}
+                                    </span>
+                                  </div>
+                                ))}
+                                <div className="flex justify-between text-amber-400 font-bold text-[10px] pt-1">
+                                  <span>TOTAL NABUNG</span>
+                                  <span>
+                                    Rp{" "}
+                                    {pdfMetrics.nabungTotal.toLocaleString(
+                                      "id-ID",
+                                    )}
+                                  </span>
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="flex justify-between border-t border-slate-700/50 pt-2">
+                                <span className="text-slate-400">NABUNG</span>
+                                <span className="font-bold text-amber-400">
+                                  Rp 0
+                                </span>
+                              </div>
+                            ))}
+                          {showPengeluaranTransfer &&
+                            pdfMetrics.expenseTransferList.length > 0 && (
+                              <div className="space-y-1 mt-2 mb-2 border-t border-slate-700/50 pt-2">
+                                <div className="text-[10px] font-bold text-red-400 mb-1">
+                                  PENGELUARAN TF
+                                </div>
+                                {pdfMetrics.expenseTransferList.map(
+                                  (item, idx) => (
+                                    <div
+                                      key={idx}
+                                      className="flex justify-between text-red-300 italic font-mono pl-2"
+                                    >
+                                      <span className="text-slate-400 text-[10px]">
+                                        {item.category}
+                                      </span>
+                                      <span className="font-bold text-[10px]">
+                                        -Rp{" "}
+                                        {item.amount.toLocaleString("id-ID")}
+                                      </span>
+                                    </div>
+                                  ),
+                                )}
+                                <div className="flex justify-between text-red-500 font-bold text-[10px] pt-1">
+                                  <span>TOTAL PENGELUARAN TF</span>
+                                  <span>
+                                    -Rp{" "}
+                                    {pdfMetrics.expenseTransferTotal.toLocaleString(
+                                      "id-ID",
+                                    )}
+                                  </span>
+                                </div>
+                              </div>
+                            )}
+                        </div>
                       </div>
-                      <div className="space-y-1 md:space-y-1.5 text-[10px] md:text-[11px] mt-2">
-                        {showRekeningSaldoAwal && (
-                          <div className="flex justify-between">
-                            <span className="text-slate-400">SALDO AWAL</span>
-                            <span className="font-bold text-white">Rp {pdfMetrics.rekeningSaldoAwal.toLocaleString("id-ID")}</span>
-                          </div>
-                        )}
-                        {showPendapatanTransfer && (pdfMetrics.incomeTransferList.length > 0 ? (
-                          <div className="space-y-1 mb-2">
-                            <div className="text-[10px] font-bold text-emerald-500 mb-1">PENDAPATAN TF</div>
-                            {pdfMetrics.incomeTransferList.map((item, idx) => (
-                              <div key={idx} className="flex justify-between text-emerald-400 italic font-mono pl-2">
-                                <span className="text-emerald-500 text-[10px]">{item.category}</span>
-                                <span className="font-bold text-[10px]">Rp {item.amount.toLocaleString("id-ID")}</span>
-                              </div>
-                            ))}
-                            <div className="flex justify-between text-emerald-400 font-bold text-[10px] pt-1">
-                              <span>TOTAL PENDAPATAN TF</span>
-                              <span>Rp {pdfMetrics.incomeTransferTotal.toLocaleString("id-ID")}</span>
-                            </div>
-                          </div>
-                        ) : (
-                          <div className="flex justify-between">
-                            <span className="text-slate-400">PENDAPATAN TF</span>
-                            <span className="font-bold text-emerald-400">Rp 0</span>
-                          </div>
-                        ))}
-                        {showNabung && (pdfMetrics.nabungList.length > 0 ? (
-                          <div className="space-y-1 mt-2 mb-2 border-t border-slate-700/50 pt-2">
-                            <div className="text-[10px] font-bold text-amber-500 mb-1">NABUNG</div>
-                            {pdfMetrics.nabungList.map((item, idx) => (
-                              <div key={idx} className="flex justify-between text-amber-400 italic font-mono pl-2">
-                                <span className="text-amber-500 text-[10px]">{item.category}</span>
-                                <span className="font-bold text-[10px]">Rp {item.amount.toLocaleString("id-ID")}</span>
-                              </div>
-                            ))}
-                            <div className="flex justify-between text-amber-400 font-bold text-[10px] pt-1">
-                              <span>TOTAL NABUNG</span>
-                              <span>Rp {pdfMetrics.nabungTotal.toLocaleString("id-ID")}</span>
-                            </div>
-                          </div>
-                        ) : (
-                          <div className="flex justify-between border-t border-slate-700/50 pt-2">
-                            <span className="text-slate-400">NABUNG</span>
-                            <span className="font-bold text-amber-400">Rp 0</span>
-                          </div>
-                        ))}
-                        {showPengeluaranTransfer && pdfMetrics.expenseTransferList.length > 0 && (
-                          <div className="space-y-1 mt-2 mb-2 border-t border-slate-700/50 pt-2">
-                            <div className="text-[10px] font-bold text-red-400 mb-1">PENGELUARAN TF</div>
-                            {pdfMetrics.expenseTransferList.map((item, idx) => (
-                              <div key={idx} className="flex justify-between text-red-300 italic font-mono pl-2">
-                                <span className="text-slate-400 text-[10px]">{item.category}</span>
-                                <span className="font-bold text-[10px]">-Rp {item.amount.toLocaleString("id-ID")}</span>
-                              </div>
-                            ))}
-                            <div className="flex justify-between text-red-500 font-bold text-[10px] pt-1">
-                              <span>TOTAL PENGELUARAN TF</span>
-                              <span>-Rp {pdfMetrics.expenseTransferTotal.toLocaleString("id-ID")}</span>
-                            </div>
-                          </div>
-                        )}
+
+                      <div className="flex justify-between font-black text-indigo-200 border-t border-slate-800 pt-2 mt-4 text-[12px]">
+                        <span>SALDO AKHIR REKENING</span>
+                        <span className="text-emerald-400 font-mono">
+                          Rp{" "}
+                          {pdfMetrics.rekeningSaldoAkhir.toLocaleString(
+                            "id-ID",
+                          )}
+                        </span>
                       </div>
-                    </div>
-                    
-                    <div className="flex justify-between font-black text-indigo-200 border-t border-slate-800 pt-2 mt-4 text-[12px]">
-                      <span>SALDO AKHIR REKENING</span>
-                      <span className="text-emerald-400 font-mono">Rp {pdfMetrics.rekeningSaldoAkhir.toLocaleString("id-ID")}</span>
                     </div>
                   </div>
-                </div>
                 )}
-
               </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 md:gap-6 items-start">
-            
-            {/* Column Left: Visual stats totals cockpit */}
-            <div className="lg:col-span-4 space-y-3 md:space-y-6">
-              
-              {/* Net Savings Box */}
-              <div className="bg-gradient-to-br from-indigo-900 to-slate-900 text-white p-3.5 md:p-5 rounded-2xl md:rounded-3xl shadow-md border border-indigo-950 relative overflow-hidden">
-                <div className="absolute right-0 bottom-0 w-24 h-24 bg-indigo-500 opacity-10 rounded-full blur-xl pointer-events-none" />
-                <span className="text-[9px] md:text-[10px] font-bold text-slate-400 uppercase tracking-widest block">Selisih Bersih (Pencapaian)</span>
-                <h3 className={`text-xl md:text-2xl font-black tracking-tight mt-0.5 md:mt-1.5 ${stats.netBalance >= 0 ? "text-emerald-400" : "text-red-400"}`}>
-                  {stats.netBalance >= 0 ? "+" : ""}
-                  Rp {stats.netBalance.toLocaleString("id-ID")}
-                </h3>
-                <p className="hidden md:flex text-[10px] md:text-xs text-slate-400 mt-2 items-center gap-1.5">
-                  <Activity className="w-3.5 h-3.5 md:w-4 md:h-4 text-indigo-400" />
-                  <span>Pembukuan Arus Kas Periode Terpilih</span>
-                </p>
-              </div>
-
-              {/* Automatic Tabungan box */}
-              {stats.savingTotal > 0 && (
-                <div className="bg-emerald-50/70 border border-emerald-100/60 p-3 md:p-4 rounded-2xl md:rounded-3xl flex items-center justify-between shadow-xs">
-                  <div className="flex items-center gap-2 md:gap-2.5">
-                    <div className="w-7 h-7 md:w-9 md:h-9 rounded-[10px] md:rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center">
-                      <PiggyBank className="w-4 h-4 md:w-5 md:h-5" />
-                    </div>
-                    <div>
-                      <span className="text-[8px] font-extrabold uppercase tracking-wider text-slate-400 block">Dana Terpindahkan</span>
-                      <span className="text-[11px] md:text-xs font-bold text-emerald-900">Rp {stats.savingTotal.toLocaleString("id-ID")}</span>
-                    </div>
-                  </div>
-                  <span className="bg-emerald-100/50 text-emerald-800 px-2 py-0.5 rounded-lg text-[8px] md:text-[9px] font-bold border border-emerald-200/50">Nabung Aman</span>
-                </div>
-              )}
-
-              {/* Split Tunai vs Transfer (Aliran Dana Otomatis) */}
-              <div className="bg-white p-3.5 md:p-5 rounded-2xl md:rounded-3xl shadow-sm border border-slate-100 space-y-2 md:space-y-4">
-                <h3 className="text-[9px] md:text-xs font-black text-slate-800 flex items-center gap-1.5 md:gap-2 uppercase tracking-wider">
-                  <Layers className="w-3.5 h-3.5 md:w-4 md:h-4 text-indigo-600" />
-                  <span>Rincian Jenis Pembayaran</span>
-                </h3>
-
-                <div className="space-y-3 md:space-y-4 pt-0.5 md:pt-1">
-                  {/* Pemasukan block */}
-                  <div>
-                    <span className="text-[9px] md:text-[10px] font-extrabold text-emerald-600 uppercase tracking-widest block mb-1.5 md:mb-2">Sumber Pemasukan</span>
-                    <div className="grid grid-cols-2 gap-2 md:gap-2.5">
-                      <div className="bg-slate-50 p-2 md:p-2.5 rounded-xl border border-slate-100">
-                        <span className="text-[8px] md:text-[9px] font-medium text-slate-400 block mb-0.5">TUNAI</span>
-                        <span className="text-[10px] md:text-xs font-bold text-slate-800 block">
-                          Rp {stats.incomeTunai.toLocaleString("id-ID")}
-                        </span>
-                      </div>
-                      <div className="bg-slate-50 p-2 md:p-2.5 rounded-xl border border-slate-100">
-                        <span className="text-[8px] md:text-[9px] font-medium text-slate-400 block mb-0.5">TRANSFER/BANK</span>
-                        <span className="text-[10px] md:text-xs font-bold text-slate-800 block">
-                          Rp {stats.incomeTransfer.toLocaleString("id-ID")}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="border-t border-slate-150 border-dashed" />
-
-                  {/* Pengeluaran block */}
-                  <div>
-                    <span className="text-[9px] md:text-[10px] font-extrabold text-red-500 uppercase tracking-widest block mb-1.5 md:mb-2">Pos Pengeluaran</span>
-                    <div className="grid grid-cols-2 gap-2 md:gap-2.5">
-                      <div className="bg-slate-50 p-2 md:p-2.5 rounded-xl border border-slate-100">
-                        <span className="text-[8px] md:text-[9px] font-medium text-slate-400 block mb-0.5">TUNAI</span>
-                        <span className="text-[10px] md:text-xs font-bold text-slate-700 block">
-                          Rp {stats.expenseTunai.toLocaleString("id-ID")}
-                        </span>
-                      </div>
-                      <div className="bg-slate-50 p-2 md:p-2.5 rounded-xl border border-slate-100">
-                        <span className="text-[8px] md:text-[9px] font-medium text-slate-400 block mb-0.5">TRANSFER/BANK</span>
-                        <span className="text-[10px] md:text-xs font-bold text-slate-700 block">
-                          Rp {stats.expenseTransfer.toLocaleString("id-ID")}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-              </div>
-
-            </div>
-
-            {/* Column Right: Interactive Trend Chart & Breakdown grids */}
-            <div className="lg:col-span-8 space-y-3 md:space-y-6">
-              
-              {/* Visual Modern Trend Charts Card component */}
-              <div className="space-y-3">
-                <div className="flex items-center justify-between px-1">
-                  <div>
-                    <h4 className="text-xs md:text-sm font-black text-slate-800 flex items-center gap-1.5 md:gap-2">
-                      <BarChart2 className="w-4 h-4 md:w-5 md:h-5 text-indigo-600" />
-                      <span>Tren Arus Kas Keuangan</span>
-                    </h4>
-                    <p className="text-[9px] md:text-[10px] text-slate-400 font-medium mt-0.5">Layout pergerakan saldo tunai masuk (hijau) vs keluar (merah)</p>
-                  </div>
-                  <span className="text-[8px] md:text-[9px] font-bold text-indigo-600 bg-indigo-50 border border-indigo-100 px-1.5 md:px-2 py-0.5 rounded-md uppercase tracking-wider hidden sm:inline-block">
-                    Grafik Interaktif
+              {/* Column Left: Visual stats totals cockpit */}
+              <div className="lg:col-span-4 space-y-3 md:space-y-6">
+                {/* Net Savings Box */}
+                <div className="bg-gradient-to-br from-indigo-900 to-slate-900 text-white p-3.5 md:p-5 rounded-2xl md:rounded-3xl shadow-md border border-indigo-950 relative overflow-hidden">
+                  <div className="absolute right-0 bottom-0 w-24 h-24 bg-indigo-500 opacity-10 rounded-full blur-xl pointer-events-none" />
+                  <span className="text-[9px] md:text-[10px] font-bold text-slate-400 uppercase tracking-widest block">
+                    Selisih Bersih (Pencapaian)
                   </span>
+                  <h3
+                    className={`text-xl md:text-2xl font-black tracking-tight mt-0.5 md:mt-1.5 ${stats.netBalance >= 0 ? "text-emerald-400" : "text-red-400"}`}
+                  >
+                    {stats.netBalance >= 0 ? "+" : ""}
+                    Rp {stats.netBalance.toLocaleString("id-ID")}
+                  </h3>
+                  <p className="hidden md:flex text-[10px] md:text-xs text-slate-400 mt-2 items-center gap-1.5">
+                    <Activity className="w-3.5 h-3.5 md:w-4 md:h-4 text-indigo-400" />
+                    <span>Pembukuan Arus Kas Periode Terpilih</span>
+                  </p>
                 </div>
 
-                {renderTrendChart()}
-              </div>
-
-              {/* Category breakdown dual boxes */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-                
-                {/* Pie/Donut Chart visual */}
-                <div className="bg-white p-3.5 md:p-5 rounded-2xl md:rounded-3xl shadow-sm border border-slate-100 flex flex-col justify-between space-y-3 md:space-y-4">
-                  <div>
-                    <h4 className="text-[10px] md:text-xs font-black uppercase text-slate-500 flex items-center gap-1.5 md:gap-2 tracking-wide">
-                      <PieChart className="w-3.5 h-3.5 md:w-4 md:h-4 text-pink-500" />
-                      <span>Distribusi Pengeluaran</span>
-                    </h4>
-                    <p className="text-[9px] md:text-[10px] text-slate-400 font-medium mt-0.5">Beban alokasi per kategori pos pembelanjaan</p>
-                  </div>
-
-                  <div className="flex justify-center py-1 md:py-2">
-                    {customDonutChart || (
-                      <p className="text-[10px] md:text-xs text-slate-400 italic py-4 md:py-6">Belum ada pengeluaran pada periode ini.</p>
-                    )}
-                  </div>
-
-                  {/* Donut Legend items */}
-                  <div className="space-y-1.5 md:space-y-2 max-h-[140px] overflow-y-auto pr-1 hide-scrollbar">
-                    {stats.categoriesExpense.slice(0, 4).map((item, idx) => (
-                      <div key={idx} className="flex items-center justify-between text-[10px] md:text-xs">
-                        <div className="flex items-center gap-1.5 md:gap-2 truncate">
-                          <span className="w-2 h-2 md:w-2.5 md:h-2.5 rounded-full shrink-0" style={{ backgroundColor: item.color }} />
-                          <span className="text-slate-600 font-medium truncate">{item.category}</span>
-                        </div>
-                        <span className="font-bold text-slate-800 font-mono text-[9px] md:text-[11px]">
-                          {item.percentage.toFixed(0)}%
+                {/* Automatic Tabungan box */}
+                {stats.savingTotal > 0 && (
+                  <div className="bg-emerald-50/70 border border-emerald-100/60 p-3 md:p-4 rounded-2xl md:rounded-3xl flex items-center justify-between shadow-xs">
+                    <div className="flex items-center gap-2 md:gap-2.5">
+                      <div className="w-7 h-7 md:w-9 md:h-9 rounded-[10px] md:rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center">
+                        <PiggyBank className="w-4 h-4 md:w-5 md:h-5" />
+                      </div>
+                      <div>
+                        <span className="text-[8px] font-extrabold uppercase tracking-wider text-slate-400 block">
+                          Dana Terpindahkan
+                        </span>
+                        <span className="text-[11px] md:text-xs font-bold text-emerald-900">
+                          Rp {stats.savingTotal.toLocaleString("id-ID")}
                         </span>
                       </div>
-                    ))}
+                    </div>
+                    <span className="bg-emerald-100/50 text-emerald-800 px-2 py-0.5 rounded-lg text-[8px] md:text-[9px] font-bold border border-emerald-200/50">
+                      Nabung Aman
+                    </span>
+                  </div>
+                )}
+
+                {/* Split Tunai vs Transfer (Aliran Dana Otomatis) */}
+                <div className="bg-white p-3.5 md:p-5 rounded-2xl md:rounded-3xl shadow-sm border border-slate-100 space-y-2 md:space-y-4">
+                  <h3 className="text-[9px] md:text-xs font-black text-slate-800 flex items-center gap-1.5 md:gap-2 uppercase tracking-wider">
+                    <Layers className="w-3.5 h-3.5 md:w-4 md:h-4 text-indigo-600" />
+                    <span>Rincian Jenis Pembayaran</span>
+                  </h3>
+
+                  <div className="space-y-3 md:space-y-4 pt-0.5 md:pt-1">
+                    {/* Pemasukan block */}
+                    <div>
+                      <span className="text-[9px] md:text-[10px] font-extrabold text-emerald-600 uppercase tracking-widest block mb-1.5 md:mb-2">
+                        Sumber Pemasukan
+                      </span>
+                      <div className="grid grid-cols-2 gap-2 md:gap-2.5">
+                        <div className="bg-slate-50 p-2 md:p-2.5 rounded-xl border border-slate-100">
+                          <span className="text-[8px] md:text-[9px] font-medium text-slate-400 block mb-0.5">
+                            TUNAI
+                          </span>
+                          <span className="text-[10px] md:text-xs font-bold text-slate-800 block">
+                            Rp {stats.incomeTunai.toLocaleString("id-ID")}
+                          </span>
+                        </div>
+                        <div className="bg-slate-50 p-2 md:p-2.5 rounded-xl border border-slate-100">
+                          <span className="text-[8px] md:text-[9px] font-medium text-slate-400 block mb-0.5">
+                            TRANSFER/BANK
+                          </span>
+                          <span className="text-[10px] md:text-xs font-bold text-slate-800 block">
+                            Rp {stats.incomeTransfer.toLocaleString("id-ID")}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="border-t border-slate-150 border-dashed" />
+
+                    {/* Pengeluaran block */}
+                    <div>
+                      <span className="text-[9px] md:text-[10px] font-extrabold text-red-500 uppercase tracking-widest block mb-1.5 md:mb-2">
+                        Pos Pengeluaran
+                      </span>
+                      <div className="grid grid-cols-2 gap-2 md:gap-2.5">
+                        <div className="bg-slate-50 p-2 md:p-2.5 rounded-xl border border-slate-100">
+                          <span className="text-[8px] md:text-[9px] font-medium text-slate-400 block mb-0.5">
+                            TUNAI
+                          </span>
+                          <span className="text-[10px] md:text-xs font-bold text-slate-700 block">
+                            Rp {stats.expenseTunai.toLocaleString("id-ID")}
+                          </span>
+                        </div>
+                        <div className="bg-slate-50 p-2 md:p-2.5 rounded-xl border border-slate-100">
+                          <span className="text-[8px] md:text-[9px] font-medium text-slate-400 block mb-0.5">
+                            TRANSFER/BANK
+                          </span>
+                          <span className="text-[10px] md:text-xs font-bold text-slate-700 block">
+                            Rp {stats.expenseTransfer.toLocaleString("id-ID")}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
+              </div>
 
-                {/* Cash Progress targets table limits */}
-                <div className="bg-white p-3.5 md:p-5 rounded-2xl md:rounded-3xl shadow-sm border border-slate-100 space-y-3 md:space-y-4">
-                  <div>
-                    <h4 className="text-[10px] md:text-xs font-black uppercase text-slate-500 flex items-center gap-1.5 md:gap-2 tracking-wide">
-                      <TrendingUp className="w-3.5 h-3.5 md:w-4 md:h-4 text-emerald-500" />
-                      <span>Aliran Pemasukan</span>
-                    </h4>
-                    <p className="text-[9px] md:text-[10px] text-slate-400 font-medium mt-0.5">Sumber dana pemasukan saku & bank</p>
+              {/* Column Right: Interactive Trend Chart & Breakdown grids */}
+              <div className="lg:col-span-8 space-y-3 md:space-y-6">
+                {/* Visual Modern Trend Charts Card component */}
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between px-1">
+                    <div>
+                      <h4 className="text-xs md:text-sm font-black text-slate-800 flex items-center gap-1.5 md:gap-2">
+                        <BarChart2 className="w-4 h-4 md:w-5 md:h-5 text-indigo-600" />
+                        <span>Tren Arus Kas Keuangan</span>
+                      </h4>
+                      <p className="text-[9px] md:text-[10px] text-slate-400 font-medium mt-0.5">
+                        Layout pergerakan saldo tunai masuk (hijau) vs keluar
+                        (merah)
+                      </p>
+                    </div>
+                    <span className="text-[8px] md:text-[9px] font-bold text-indigo-600 bg-indigo-50 border border-indigo-100 px-1.5 md:px-2 py-0.5 rounded-md uppercase tracking-wider hidden sm:inline-block">
+                      Grafik Interaktif
+                    </span>
                   </div>
 
-                  {stats.categoriesIncome.length === 0 ? (
-                    <div className="h-40 md:h-56 flex items-center justify-center text-[10px] md:text-xs text-slate-400 italic border border-dashed border-slate-100 rounded-xl md:rounded-2xl">
-                      Belum ada dana masuk pada periode ini
+                  {renderTrendChart()}
+                </div>
+
+                {/* Category breakdown dual boxes */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                  {/* Pie/Donut Chart visual */}
+                  <div className="bg-white p-3.5 md:p-5 rounded-2xl md:rounded-3xl shadow-sm border border-slate-100 flex flex-col justify-between space-y-3 md:space-y-4">
+                    <div>
+                      <h4 className="text-[10px] md:text-xs font-black uppercase text-slate-500 flex items-center gap-1.5 md:gap-2 tracking-wide">
+                        <PieChart className="w-3.5 h-3.5 md:w-4 md:h-4 text-pink-500" />
+                        <span>Distribusi Pengeluaran</span>
+                      </h4>
+                      <p className="text-[9px] md:text-[10px] text-slate-400 font-medium mt-0.5">
+                        Beban alokasi per kategori pos pembelanjaan
+                      </p>
                     </div>
-                  ) : (
-                    <div className="space-y-3 md:space-y-4 overflow-y-auto max-h-[250px] md:max-h-[300px] pr-1 hide-scrollbar">
-                      {stats.categoriesIncome.map((item, idx) => (
-                        <div key={idx} className="space-y-1">
-                          <div className="flex justify-between items-center text-[10px] md:text-xs">
-                            <span className="font-semibold text-slate-700">{item.category}</span>
-                            <span className="font-extrabold text-emerald-600 font-mono">
-                              Rp {item.amount.toLocaleString("id-ID")}
+
+                    <div className="flex justify-center py-1 md:py-2">
+                      {customDonutChart || (
+                        <p className="text-[10px] md:text-xs text-slate-400 italic py-4 md:py-6">
+                          Belum ada pengeluaran pada periode ini.
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Donut Legend items */}
+                    <div className="space-y-1.5 md:space-y-2 max-h-[140px] overflow-y-auto pr-1 hide-scrollbar">
+                      {stats.categoriesExpense.slice(0, 4).map((item, idx) => (
+                        <div
+                          key={idx}
+                          className="flex items-center justify-between text-[10px] md:text-xs"
+                        >
+                          <div className="flex items-center gap-1.5 md:gap-2 truncate">
+                            <span
+                              className="w-2 h-2 md:w-2.5 md:h-2.5 rounded-full shrink-0"
+                              style={{ backgroundColor: item.color }}
+                            />
+                            <span className="text-slate-600 font-medium truncate">
+                              {item.category}
                             </span>
                           </div>
-                          <div className="w-full bg-slate-100 h-1 md:h-1.5 rounded-full overflow-hidden">
-                            <motion.div 
+                          <span className="font-bold text-slate-800 font-mono text-[9px] md:text-[11px]">
+                            {item.percentage.toFixed(0)}%
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Cash Progress targets table limits */}
+                  <div className="bg-white p-3.5 md:p-5 rounded-2xl md:rounded-3xl shadow-sm border border-slate-100 space-y-3 md:space-y-4">
+                    <div>
+                      <h4 className="text-[10px] md:text-xs font-black uppercase text-slate-500 flex items-center gap-1.5 md:gap-2 tracking-wide">
+                        <TrendingUp className="w-3.5 h-3.5 md:w-4 md:h-4 text-emerald-500" />
+                        <span>Aliran Pemasukan</span>
+                      </h4>
+                      <p className="text-[9px] md:text-[10px] text-slate-400 font-medium mt-0.5">
+                        Sumber dana pemasukan saku & bank
+                      </p>
+                    </div>
+
+                    {stats.categoriesIncome.length === 0 ? (
+                      <div className="h-40 md:h-56 flex items-center justify-center text-[10px] md:text-xs text-slate-400 italic border border-dashed border-slate-100 rounded-xl md:rounded-2xl">
+                        Belum ada dana masuk pada periode ini
+                      </div>
+                    ) : (
+                      <div className="space-y-3 md:space-y-4 overflow-y-auto max-h-[250px] md:max-h-[300px] pr-1 hide-scrollbar">
+                        {stats.categoriesIncome.map((item, idx) => (
+                          <div key={idx} className="space-y-1">
+                            <div className="flex justify-between items-center text-[10px] md:text-xs">
+                              <span className="font-semibold text-slate-700">
+                                {item.category}
+                              </span>
+                              <span className="font-extrabold text-emerald-600 font-mono">
+                                Rp {item.amount.toLocaleString("id-ID")}
+                              </span>
+                            </div>
+                            <div className="w-full bg-slate-100 h-1 md:h-1.5 rounded-full overflow-hidden">
+                              <motion.div
+                                initial={{ width: 0 }}
+                                animate={{ width: `${item.percentage}%` }}
+                                transition={{ duration: 0.5 }}
+                                className="bg-emerald-500 h-full rounded-full"
+                              />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Comprehensive category table with indicators */}
+                <div className="bg-white p-3.5 md:p-5 rounded-2xl md:rounded-3xl shadow-sm border border-slate-100">
+                  <h4 className="text-[11px] md:text-sm font-black text-slate-800 mb-3 md:mb-4">
+                    Urutan Beban Belanja (Tertinggi)
+                  </h4>
+
+                  {stats.categoriesExpense.length === 0 ? (
+                    <p className="text-[10px] md:text-xs text-slate-400 italic py-4 md:py-6 text-center">
+                      Belum ada pengeluaran belanja yang tercatat.
+                    </p>
+                  ) : (
+                    <div className="space-y-3 md:space-y-3.5">
+                      {stats.categoriesExpense.map((item, idx) => (
+                        <div key={idx} className="space-y-1 md:space-y-1.5">
+                          <div className="flex items-center justify-between text-[10px] md:text-xs">
+                            <span className="font-bold text-slate-700">
+                              {item.category}
+                            </span>
+                            <div className="flex items-center gap-1.5 md:gap-2 font-mono text-[9px] md:text-[11px]">
+                              <span className="text-slate-500">
+                                Rp {item.amount.toLocaleString("id-ID")}
+                              </span>
+                              <span className="bg-slate-100 text-slate-700 px-1.5 md:px-2 py-0.5 rounded flex items-center justify-center font-bold">
+                                {item.percentage.toFixed(1)}% porsi
+                              </span>
+                            </div>
+                          </div>
+                          <div className="w-full bg-slate-100 h-1.5 md:h-2 rounded-full overflow-hidden">
+                            <motion.div
                               initial={{ width: 0 }}
                               animate={{ width: `${item.percentage}%` }}
-                              transition={{ duration: 0.5 }}
-                              className="bg-emerald-500 h-full rounded-full"
+                              transition={{ duration: 0.6 }}
+                              className="h-full rounded-full"
+                              style={{ backgroundColor: item.color }}
                             />
                           </div>
                         </div>
@@ -2029,329 +2801,434 @@ export default function ReportView({
                     </div>
                   )}
                 </div>
-
               </div>
-
-              {/* Comprehensive category table with indicators */}
-              <div className="bg-white p-3.5 md:p-5 rounded-2xl md:rounded-3xl shadow-sm border border-slate-100">
-                <h4 className="text-[11px] md:text-sm font-black text-slate-800 mb-3 md:mb-4">Urutan Beban Belanja (Tertinggi)</h4>
-                
-                {stats.categoriesExpense.length === 0 ? (
-                  <p className="text-[10px] md:text-xs text-slate-400 italic py-4 md:py-6 text-center">Belum ada pengeluaran belanja yang tercatat.</p>
-                ) : (
-                  <div className="space-y-3 md:space-y-3.5">
-                    {stats.categoriesExpense.map((item, idx) => (
-                      <div key={idx} className="space-y-1 md:space-y-1.5">
-                        <div className="flex items-center justify-between text-[10px] md:text-xs">
-                          <span className="font-bold text-slate-700">{item.category}</span>
-                          <div className="flex items-center gap-1.5 md:gap-2 font-mono text-[9px] md:text-[11px]">
-                            <span className="text-slate-500">Rp {item.amount.toLocaleString("id-ID")}</span>
-                            <span className="bg-slate-100 text-slate-700 px-1.5 md:px-2 py-0.5 rounded flex items-center justify-center font-bold">
-                              {item.percentage.toFixed(1)}% porsi
-                            </span>
-                          </div>
-                        </div>
-                        <div className="w-full bg-slate-100 h-1.5 md:h-2 rounded-full overflow-hidden">
-                          <motion.div
-                            initial={{ width: 0 }}
-                            animate={{ width: `${item.percentage}%` }}
-                            transition={{ duration: 0.6 }}
-                            className="h-full rounded-full"
-                            style={{ backgroundColor: item.color }}
-                          />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
             </div>
-
-          </div>
-
           </>
         )}
       </div>
 
       {/* ================= PRINT CHRONICLE (ONLY SHOWN IN PRINTER / EXP PDF) ================= */}
       <div className="hidden only-print print-container font-sans text-black p-8 space-y-6">
-        
         {/* Kop Surat / Letterhead */}
         <div className="border-b-4 border-double border-slate-900 pb-4 text-center">
           <h1 className="text-2xl font-black tracking-tight uppercase text-slate-900">
-            {companyProfile?.reportTitle || "MANAJEMEN KEUANGAN APOTEK ASSYIFA FARMA CIDERES"}
+            {companyProfile?.reportTitle ||
+              "MANAJEMEN KEUANGAN APOTEK ASSYIFA FARMA CIDERES"}
           </h1>
           {companyProfile ? (
             <div className="text-[10px] text-slate-600 mt-1 space-y-0.5">
               <p className="font-semibold">{companyProfile.businessType}</p>
               <p>{companyProfile.address}</p>
-              <p className="font-mono">Telp: {companyProfile.phone} | Surel: {companyProfile.email} | NPWP: {companyProfile.npwp}</p>
+              <p className="font-mono">
+                Telp: {companyProfile.phone} | Surel: {companyProfile.email} |
+                NPWP: {companyProfile.npwp}
+              </p>
             </div>
           ) : (
-            <p className="text-xs tracking-widest text-slate-500 uppercase mt-1">Sistem Laporan Pembukuan Kas Personal &amp; Bisnis Terintegrasi</p>
+            <p className="text-xs tracking-widest text-slate-500 uppercase mt-1">
+              Sistem Laporan Pembukuan Kas Personal &amp; Bisnis Terintegrasi
+            </p>
           )}
-          
+
           <div className="mt-4 flex justify-between items-center px-1 text-[9px] font-mono text-slate-500">
             <span>Model: Sistem Kas Manajemen Keuangan</span>
-            <span>Tanggal Cetak: {new Date().toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" })} WIB</span>
+            <span>
+              Tanggal Cetak:{" "}
+              {new Date().toLocaleDateString("id-ID", {
+                day: "numeric",
+                month: "long",
+                year: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
+              })}{" "}
+              WIB
+            </span>
           </div>
         </div>
 
         {/* User Identity Info */}
         <div className="grid grid-cols-2 gap-4 text-xs pt-1">
           <div>
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Disusun Oleh/Untuk:</span>
-            <p className="font-bold text-slate-800 text-sm mt-0.5">{user?.name || "Pengguna Sistem"}</p>
-            <p className="font-mono text-slate-500 text-[10px] mt-0.5">Username: @{user?.username || "user"}</p>
-            <p className="text-slate-500 text-[10px]">Email: {user?.email || "-"}</p>
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+              Disusun Oleh/Untuk:
+            </span>
+            <p className="font-bold text-slate-800 text-sm mt-0.5">
+              {user?.name || "Pengguna Sistem"}
+            </p>
+            <p className="font-mono text-slate-500 text-[10px] mt-0.5">
+              Username: @{user?.username || "user"}
+            </p>
+            <p className="text-slate-500 text-[10px]">
+              Email: {user?.email || "-"}
+            </p>
           </div>
           <div className="text-right">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Periode Laporan:</span>
-            <p className="font-extrabold text-indigo-900 text-sm mt-0.5 uppercase tracking-wide">{formattedPeriodLabel}</p>
-            <p className="text-slate-500 text-[10px] mt-0.5">Filter Jenis: {filterType === 'harian' ? 'Harian' : filterType === 'mingguan' ? 'Mingguan (7 Hari)' : filterType === 'bulanan' ? 'Bulanan' : filterType === 'rentang' ? 'Rentang Tanggal' : 'Tahunan'}</p>
-            <p className="text-slate-500 text-[10px]">Aliran Dana: {reportViewType === "semua" ? "Gabungan (Tunai & Rekening)" : reportViewType === "tunai" ? "Hanya Kas Tunai" : "Hanya Rekening / Bank"}</p>
-            <p className="text-slate-500 text-[10px]">Jumlah Ledger: {chronologicalTransactions.length} transaksi</p>
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+              Periode Laporan:
+            </span>
+            <p className="font-extrabold text-indigo-900 text-sm mt-0.5 uppercase tracking-wide">
+              {formattedPeriodLabel}
+            </p>
+            <p className="text-slate-500 text-[10px] mt-0.5">
+              Filter Jenis:{" "}
+              {filterType === "harian"
+                ? "Harian"
+                : filterType === "mingguan"
+                  ? "Mingguan (7 Hari)"
+                  : filterType === "bulanan"
+                    ? "Bulanan"
+                    : filterType === "rentang"
+                      ? "Rentang Tanggal"
+                      : "Tahunan"}
+            </p>
+            <p className="text-slate-500 text-[10px]">
+              Aliran Dana:{" "}
+              {reportViewType === "semua"
+                ? "Gabungan (Tunai & Rekening)"
+                : reportViewType === "tunai"
+                  ? "Hanya Kas Tunai"
+                  : "Hanya Rekening / Bank"}
+            </p>
+            <p className="text-slate-500 text-[10px]">
+              Jumlah Ledger: {chronologicalTransactions.length} transaksi
+            </p>
           </div>
         </div>
 
         {/* ================= EXACT USER REQUESTED RECONCILIATION FORMAT SECTION ================= */}
-        <div className="border-2 border-slate-900 p-8 rounded-lg font-mono text-xs text-slate-900 space-y-6 max-w-2xl mx-auto tracking-wide" style={{ lineHeight: "1.6" }}>
-          
+        <div
+          className="border-2 border-slate-900 p-8 rounded-lg font-mono text-xs text-slate-900 space-y-6 max-w-2xl mx-auto tracking-wide"
+          style={{ lineHeight: "1.6" }}
+        >
           {/* PENDAPATAN TUNAI */}
-          {(reportViewType === "semua" || reportViewType === "tunai") && showPendapatanTunai && (
-          <div className="space-y-1">
-            <div className="font-extrabold">PENDAPATAN TUNAI</div>
-            {showMetkoKemarin && (
-              <div className="flex justify-between pl-6 font-medium text-slate-600 italic">
-                <span>SALDO AWAL KAS TUNAI / METKO KEMARIN</span>
-                <span>Rp {pdfMetrics.cashSaldoAwal.toLocaleString("id-ID")}</span>
+          {(reportViewType === "semua" || reportViewType === "tunai") &&
+            showPendapatanTunai && (
+              <div className="space-y-1">
+                <div className="font-extrabold">PENDAPATAN TUNAI</div>
+                {showMetkoKemarin && (
+                  <div className="flex justify-between pl-6 font-medium text-slate-600 italic">
+                    <span>SALDO AWAL KAS TUNAI / METKO KEMARIN</span>
+                    <span>
+                      Rp {pdfMetrics.cashSaldoAwal.toLocaleString("id-ID")}
+                    </span>
+                  </div>
+                )}
+                {pdfMetrics.incomeTunaiList.length === 0 ? (
+                  <div className="pl-6 text-slate-500">NIHIL Rp 0</div>
+                ) : (
+                  pdfMetrics.incomeTunaiList.map((item, idx) => (
+                    <div
+                      key={idx}
+                      className="flex justify-between pl-6 font-medium"
+                    >
+                      <span>{item.category}</span>
+                      <span>Rp {item.amount.toLocaleString("id-ID")}</span>
+                    </div>
+                  ))
+                )}
+                <div className="flex justify-between font-extrabold border-t border-slate-900 pt-1 mt-1 pl-6">
+                  <span>TOTAL</span>
+                  <span>
+                    Rp {pdfMetrics.incomeTunaiTotal.toLocaleString("id-ID")}
+                  </span>
+                </div>
               </div>
             )}
-            {pdfMetrics.incomeTunaiList.length === 0 ? (
-              <div className="pl-6 text-slate-500">NIHIL Rp 0</div>
-            ) : (
-              pdfMetrics.incomeTunaiList.map((item, idx) => (
-                <div key={idx} className="flex justify-between pl-6 font-medium">
-                  <span>{item.category}</span>
-                  <span>Rp {item.amount.toLocaleString("id-ID")}</span>
-                </div>
-              ))
-            )}
-            <div className="flex justify-between font-extrabold border-t border-slate-900 pt-1 mt-1 pl-6">
-              <span>TOTAL</span>
-              <span>Rp {pdfMetrics.incomeTunaiTotal.toLocaleString("id-ID")}</span>
-            </div>
-          </div>
-          )}
 
           {/* PENDAPATAN TRANSFER */}
-          {(reportViewType === "semua" || reportViewType === "tunai") && showPendapatanTransfer && (
-          <div className="space-y-1 pt-1">
-            <div className="font-extrabold">PENDAPATAN TRANSFER</div>
-            {pdfMetrics.incomeTransferList.length === 0 ? (
-              <div className="pl-6 text-slate-500">NIHIL Rp 0</div>
-            ) : (
-              pdfMetrics.incomeTransferList.map((item, idx) => (
-                <div key={idx} className="flex justify-between pl-6 font-medium">
-                  <span>{item.category}</span>
-                  <span>Rp {item.amount.toLocaleString("id-ID")}</span>
+          {(reportViewType === "semua" || reportViewType === "tunai") &&
+            showPendapatanTransfer && (
+              <div className="space-y-1 pt-1">
+                <div className="font-extrabold">PENDAPATAN TRANSFER</div>
+                {pdfMetrics.incomeTransferList.length === 0 ? (
+                  <div className="pl-6 text-slate-500">NIHIL Rp 0</div>
+                ) : (
+                  pdfMetrics.incomeTransferList.map((item, idx) => (
+                    <div
+                      key={idx}
+                      className="flex justify-between pl-6 font-medium"
+                    >
+                      <span>{item.category}</span>
+                      <span>Rp {item.amount.toLocaleString("id-ID")}</span>
+                    </div>
+                  ))
+                )}
+                <div className="flex justify-between font-extrabold border-t border-slate-900 pt-1 mt-1 pl-6">
+                  <span>TOTAL PENDAPATAN TF</span>
+                  <span>
+                    Rp {pdfMetrics.incomeTransferTotal.toLocaleString("id-ID")}
+                  </span>
                 </div>
-              ))
-            )}
-            <div className="flex justify-between font-extrabold border-t border-slate-900 pt-1 mt-1 pl-6">
-              <span>TOTAL PENDAPATAN TF</span>
-              <span>Rp {pdfMetrics.incomeTransferTotal.toLocaleString("id-ID")}</span>
-            </div>
-            <div className="flex justify-between font-extrabold border-t border-slate-900 pt-1 mt-1 pl-6">
-              <span>TOTAL PENDAPATAN</span>
-              <span>Rp {pdfMetrics.totalIncomeCombine.toLocaleString("id-ID")}</span>
-            </div>
-            {showTotalPendapatanPlusMetko && (
-              <div className="flex justify-between font-black border-t border-slate-900 pt-1 mt-1 pl-6">
-                <span>TOTAL PENDAPATAN + METKO KEMARIN</span>
-                <span>Rp {pdfMetrics.totalIncomePlusMetko.toLocaleString("id-ID")}</span>
+                <div className="flex justify-between font-extrabold border-t border-slate-900 pt-1 mt-1 pl-6">
+                  <span>TOTAL PENDAPATAN</span>
+                  <span>
+                    Rp {pdfMetrics.totalIncomeCombine.toLocaleString("id-ID")}
+                  </span>
+                </div>
+                {showTotalPendapatanPlusMetko && (
+                  <div className="flex justify-between font-black border-t border-slate-900 pt-1 mt-1 pl-6">
+                    <span>TOTAL PENDAPATAN + METKO KEMARIN</span>
+                    <span>
+                      Rp{" "}
+                      {pdfMetrics.totalIncomePlusMetko.toLocaleString("id-ID")}
+                    </span>
+                  </div>
+                )}
               </div>
             )}
-          </div>
-          )}
 
           {/* PENGELUARAN TUNAI */}
-          {(reportViewType === "semua" || reportViewType === "tunai") && showPengeluaranTunai && (
-          <div className="space-y-1 pt-1">
-            <div className="font-extrabold">PENGELUARAN TUNAI</div>
-            {pdfMetrics.expenseTunaiList.length === 0 ? (
-              <div className="pl-6 text-slate-500">NIHIL Rp 0</div>
-            ) : (
-              pdfMetrics.expenseTunaiList.map((item, idx) => (
-                <div key={idx} className="flex justify-between pl-6 font-medium">
-                  <span>{item.category}</span>
-                  <span>Rp {item.amount.toLocaleString("id-ID")}</span>
+          {(reportViewType === "semua" || reportViewType === "tunai") &&
+            showPengeluaranTunai && (
+              <div className="space-y-1 pt-1">
+                <div className="font-extrabold">PENGELUARAN TUNAI</div>
+                {pdfMetrics.expenseTunaiList.length === 0 ? (
+                  <div className="pl-6 text-slate-500">NIHIL Rp 0</div>
+                ) : (
+                  pdfMetrics.expenseTunaiList.map((item, idx) => (
+                    <div
+                      key={idx}
+                      className="flex justify-between pl-6 font-medium"
+                    >
+                      <span>{item.category}</span>
+                      <span>Rp {item.amount.toLocaleString("id-ID")}</span>
+                    </div>
+                  ))
+                )}
+                <div className="flex justify-between font-extrabold border-t border-slate-900 pt-1 mt-1 pl-6">
+                  <span>TOTAL PENGELUARAN</span>
+                  <span>
+                    Rp {pdfMetrics.expenseTunaiTotal.toLocaleString("id-ID")}
+                  </span>
                 </div>
-              ))
+              </div>
             )}
-            <div className="flex justify-between font-extrabold border-t border-slate-900 pt-1 mt-1 pl-6">
-              <span>TOTAL PENGELUARAN</span>
-              <span>Rp {pdfMetrics.expenseTunaiTotal.toLocaleString("id-ID")}</span>
-            </div>
-          </div>
-          )}
 
           {/* SISA */}
-          {(reportViewType === "semua" || reportViewType === "tunai") && showSisaSebelumNabung && (
-          <div className="space-y-1 pt-1">
-            <div className="font-extrabold pb-0.5 border-b border-dashed border-slate-300">SISA</div>
-            <div className="flex justify-between pl-6 font-extrabold pt-0.5">
-              <span>Rp</span>
-              <span>Rp {pdfMetrics.sisaSebelumNabung.toLocaleString("id-ID")}</span>
-            </div>
-          </div>
-          )}
+          {(reportViewType === "semua" || reportViewType === "tunai") &&
+            showSisaSebelumNabung && (
+              <div className="space-y-1 pt-1">
+                <div className="font-extrabold pb-0.5 border-b border-dashed border-slate-300">
+                  SISA
+                </div>
+                <div className="flex justify-between pl-6 font-extrabold pt-0.5">
+                  <span>Rp</span>
+                  <span>
+                    Rp {pdfMetrics.sisaSebelumNabung.toLocaleString("id-ID")}
+                  </span>
+                </div>
+              </div>
+            )}
 
           {/* NABUNG */}
-          {(reportViewType === "semua" || reportViewType === "tunai") && showNabung && (
-          <div className="space-y-1 pt-1">
-            <div className="font-extrabold">NABUNG</div>
-            {pdfMetrics.nabungList.length === 0 ? (
-              <div className="pl-6 text-slate-500">NIHIL Rp 0</div>
-            ) : (
-              pdfMetrics.nabungList.map((item, idx) => (
-                <div key={idx} className="flex justify-between pl-6 font-medium text-slate-600 italic">
-                  <span>{item.category}</span>
-                  <span>Rp {item.amount.toLocaleString("id-ID")}</span>
+          {(reportViewType === "semua" || reportViewType === "tunai") &&
+            showNabung && (
+              <div className="space-y-1 pt-1">
+                <div className="font-extrabold">NABUNG</div>
+                {pdfMetrics.nabungList.length === 0 ? (
+                  <div className="pl-6 text-slate-500">NIHIL Rp 0</div>
+                ) : (
+                  pdfMetrics.nabungList.map((item, idx) => (
+                    <div
+                      key={idx}
+                      className="flex justify-between pl-6 font-medium text-slate-600 italic"
+                    >
+                      <span>{item.category}</span>
+                      <span>Rp {item.amount.toLocaleString("id-ID")}</span>
+                    </div>
+                  ))
+                )}
+                <div className="flex justify-between pl-6 font-extrabold border-t border-slate-900 pt-1 mt-1">
+                  <span>TOTAL NABUNG</span>
+                  <span>
+                    Rp {pdfMetrics.nabungTotal.toLocaleString("id-ID")}
+                  </span>
                 </div>
-              ))
+              </div>
             )}
-            <div className="flex justify-between pl-6 font-extrabold border-t border-slate-900 pt-1 mt-1">
-              <span>TOTAL NABUNG</span>
-              <span>Rp {pdfMetrics.nabungTotal.toLocaleString("id-ID")}</span>
-            </div>
-          </div>
-          )}
 
           {/* SISA UANG TUNAI */}
-          {(reportViewType === "semua" || reportViewType === "tunai") && showSisaUangTunai && (
-          <div className="space-y-1 pt-1">
-            <div className="font-extrabold">SISA UANG TUNAI</div>
-            <div className="flex justify-between pl-6 font-extrabold">
-              <span>Rp.</span>
-              <span>Rp {pdfMetrics.sisaUangTunai.toLocaleString("id-ID")}</span>
-            </div>
-          </div>
-          )}
+          {(reportViewType === "semua" || reportViewType === "tunai") &&
+            showSisaUangTunai && (
+              <div className="space-y-1 pt-1">
+                <div className="font-extrabold">SISA UANG TUNAI</div>
+                <div className="flex justify-between pl-6 font-extrabold">
+                  <span>Rp.</span>
+                  <span>
+                    Rp {pdfMetrics.sisaUangTunai.toLocaleString("id-ID")}
+                  </span>
+                </div>
+              </div>
+            )}
 
           {/* SALDO REKENING */}
           {(reportViewType === "semua" || reportViewType === "rekening") && (
-          <div className="space-y-1 pt-1">
-            <div className="font-extrabold">SALDO REKENING</div>
-            <div className="space-y-1 pl-6">
-              {showRekeningSaldoAwal && (
-                <div className="flex justify-between font-medium">
-                  <span>SALDO AWAL</span>
-                  <span>Rp {pdfMetrics.rekeningSaldoAwal.toLocaleString("id-ID")}</span>
-                </div>
-              )}
-              {showPendapatanTransfer && (pdfMetrics.incomeTransferList.length > 0 ? (
-                <div className="space-y-1">
-                  <div className="font-extrabold pb-1">PENDAPATAN TF</div>
-                  {pdfMetrics.incomeTransferList.map((item, idx) => (
-                    <div key={idx} className="flex justify-between italic text-slate-700 font-medium pl-6">
-                      <span>{item.category}</span>
-                      <span>Rp {item.amount.toLocaleString("id-ID")}</span>
+            <div className="space-y-1 pt-1">
+              <div className="font-extrabold">SALDO REKENING</div>
+              <div className="space-y-1 pl-6">
+                {showRekeningSaldoAwal && (
+                  <div className="flex justify-between font-medium">
+                    <span>SALDO AWAL</span>
+                    <span>
+                      Rp {pdfMetrics.rekeningSaldoAwal.toLocaleString("id-ID")}
+                    </span>
+                  </div>
+                )}
+                {showPendapatanTransfer &&
+                  (pdfMetrics.incomeTransferList.length > 0 ? (
+                    <div className="space-y-1">
+                      <div className="font-extrabold pb-1">PENDAPATAN TF</div>
+                      {pdfMetrics.incomeTransferList.map((item, idx) => (
+                        <div
+                          key={idx}
+                          className="flex justify-between italic text-slate-700 font-medium pl-6"
+                        >
+                          <span>{item.category}</span>
+                          <span>Rp {item.amount.toLocaleString("id-ID")}</span>
+                        </div>
+                      ))}
+                      <div className="flex justify-between font-extrabold border-t border-slate-900 pt-1 mt-1 pl-6">
+                        <span>TOTAL PENDAPATAN TF</span>
+                        <span>
+                          Rp{" "}
+                          {pdfMetrics.incomeTransferTotal.toLocaleString(
+                            "id-ID",
+                          )}
+                        </span>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex justify-between font-medium">
+                      <span>PENDAPATAN TF</span>
+                      <span>Rp 0</span>
                     </div>
                   ))}
-                  <div className="flex justify-between font-extrabold border-t border-slate-900 pt-1 mt-1 pl-6">
-                    <span>TOTAL PENDAPATAN TF</span>
-                    <span>Rp {pdfMetrics.incomeTransferTotal.toLocaleString("id-ID")}</span>
-                  </div>
-                </div>
-              ) : (
-                <div className="flex justify-between font-medium">
-                  <span>PENDAPATAN TF</span>
-                  <span>Rp 0</span>
-                </div>
-              ))}
-              {showNabung && (pdfMetrics.nabungList.length > 0 ? (
-                <div className="space-y-1">
-                  <div className="font-extrabold pb-1">NABUNG</div>
-                  {pdfMetrics.nabungList.map((item, idx) => (
-                    <div key={idx} className="flex justify-between italic text-slate-700 font-medium pl-6">
-                      <span>{item.category}</span>
-                      <span>Rp {item.amount.toLocaleString("id-ID")}</span>
+                {showNabung &&
+                  (pdfMetrics.nabungList.length > 0 ? (
+                    <div className="space-y-1">
+                      <div className="font-extrabold pb-1">NABUNG</div>
+                      {pdfMetrics.nabungList.map((item, idx) => (
+                        <div
+                          key={idx}
+                          className="flex justify-between italic text-slate-700 font-medium pl-6"
+                        >
+                          <span>{item.category}</span>
+                          <span>Rp {item.amount.toLocaleString("id-ID")}</span>
+                        </div>
+                      ))}
+                      <div className="flex justify-between font-extrabold border-t border-slate-900 pt-1 mt-1 pl-6">
+                        <span>TOTAL NABUNG</span>
+                        <span>
+                          Rp {pdfMetrics.nabungTotal.toLocaleString("id-ID")}
+                        </span>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex justify-between font-medium">
+                      <span>NABUNG</span>
+                      <span>Rp 0</span>
                     </div>
                   ))}
-                  <div className="flex justify-between font-extrabold border-t border-slate-900 pt-1 mt-1 pl-6">
-                    <span>TOTAL NABUNG</span>
-                    <span>Rp {pdfMetrics.nabungTotal.toLocaleString("id-ID")}</span>
-                  </div>
-                </div>
-              ) : (
-                <div className="flex justify-between font-medium">
-                  <span>NABUNG</span>
-                  <span>Rp 0</span>
-                </div>
-              ))}
-              {showPengeluaranTransfer && pdfMetrics.expenseTransferList.length > 0 && (
-                <div className="space-y-1">
-                  <div className="font-extrabold pb-1">PENGELUARAN TF</div>
-                  {pdfMetrics.expenseTransferList.map((item, idx) => (
-                    <div key={idx} className="flex justify-between italic text-slate-700 font-medium pl-6">
-                      <span>{item.category}</span>
-                      <span>-Rp {item.amount.toLocaleString("id-ID")}</span>
+                {showPengeluaranTransfer &&
+                  pdfMetrics.expenseTransferList.length > 0 && (
+                    <div className="space-y-1">
+                      <div className="font-extrabold pb-1">PENGELUARAN TF</div>
+                      {pdfMetrics.expenseTransferList.map((item, idx) => (
+                        <div
+                          key={idx}
+                          className="flex justify-between italic text-slate-700 font-medium pl-6"
+                        >
+                          <span>{item.category}</span>
+                          <span>-Rp {item.amount.toLocaleString("id-ID")}</span>
+                        </div>
+                      ))}
+                      <div className="flex justify-between font-extrabold border-t border-slate-900 pt-1 mt-1 pl-6">
+                        <span>TOTAL PENGELUARAN TF</span>
+                        <span>
+                          -Rp{" "}
+                          {pdfMetrics.expenseTransferTotal.toLocaleString(
+                            "id-ID",
+                          )}
+                        </span>
+                      </div>
                     </div>
-                  ))}
-                  <div className="flex justify-between font-extrabold border-t border-slate-900 pt-1 mt-1 pl-6">
-                    <span>TOTAL PENGELUARAN TF</span>
-                    <span>-Rp {pdfMetrics.expenseTransferTotal.toLocaleString("id-ID")}</span>
-                  </div>
+                  )}
+                <div className="flex justify-between font-extrabold border-t-2 border-slate-900 pt-2 mt-2 text-sm text-[#000]">
+                  <span>SALDO AKHIR REKENING</span>
+                  <span>
+                    Rp {pdfMetrics.rekeningSaldoAkhir.toLocaleString("id-ID")}
+                  </span>
                 </div>
-              )}
-              <div className="flex justify-between font-extrabold border-t-2 border-slate-900 pt-2 mt-2 text-sm text-[#000]">
-                <span>SALDO AKHIR REKENING</span>
-                <span>Rp {pdfMetrics.rekeningSaldoAkhir.toLocaleString("id-ID")}</span>
               </div>
             </div>
-          </div>
           )}
         </div>
 
         {/* Detailed ledger table in PDF */}
         <div className="space-y-2 pt-2 page-break-before">
-          <h3 className="text-[10px] font-extrabold uppercase tracking-widest text-[#1e293b] border-b border-[#cbd5e1] pb-1">Daftar Rincian Arus Kas Transaksi</h3>
-          
-          {chronologicalTransactions.length === 0 ? (
-            <p className="text-xs text-slate-400 italic py-4 text-center">Belum ada transaksi terekam pada periode ini.</p>
+          <h3 className="text-[10px] font-extrabold uppercase tracking-widest text-[#1e293b] border-b border-[#cbd5e1] pb-1">
+            Daftar Rincian Arus Kas Transaksi
+          </h3>
+
+          {tableRowsData.rows.length === 0 ? (
+            <p className="text-xs text-slate-400 italic py-4 text-center">
+              Belum ada transaksi terekam pada periode ini.
+            </p>
           ) : (
             <table className="print-table w-full text-[9px]">
               <thead>
                 <tr>
-                  <th className="w-8 text-center">No</th>
                   <th className="w-24 text-left">Tanggal</th>
-                  <th className="text-left">Kategori</th>
-                  <th className="text-left">Keterangan / Deskripsi</th>
-                  <th className="w-14 text-center">Metode</th>
-                  <th className="w-20 text-center">Tipe Transaksi</th>
-                  <th className="w-28 text-right">Nominal</th>
+                  <th className="text-left">Jenis Transaksi</th>
+                  <th className="w-28 text-right">Nominal Pendapatan</th>
+                  <th className="w-28 text-right">Nominal Pengeluaran</th>
+                  <th className="w-28 text-right">Total</th>
                 </tr>
               </thead>
               <tbody>
-                {chronologicalTransactions.map((tx, idx) => (
-                  <tr key={tx.id}>
-                    <td className="text-center text-slate-500">{idx + 1}</td>
-                    <td className="font-mono">{new Date(tx.date).toLocaleDateString("id-ID", { weekday: "short", day: "numeric", month: "short", year: "numeric" })}</td>
-                    <td className="font-bold text-[#0f172a]">{tx.category}</td>
-                    <td className="text-slate-650 italic">{tx.description || "-"}</td>
-                    <td className="text-center lowercase text-slate-500 font-mono text-[8px]">{tx.method}</td>
-                    <td className="text-center capitalize font-bold">
-                      <span className="print-badge">
-                        {tx.type === "pemasukan" ? "Masuk" : tx.type === "pengeluaran" ? "Keluar" : "Rekening"}
-                      </span>
+                {tableRowsData.rows.map((row, idx) => (
+                  <tr key={row.id || idx}>
+                    <td className="font-mono">
+                      {new Date(row.date)
+                        .toLocaleDateString("id-ID", {
+                          day: "numeric",
+                          month: "long",
+                          year: "numeric",
+                        })
+                        .toLowerCase()}
                     </td>
-                    <td className={`text-right font-bold font-mono text-[10px] ${tx.type === "pemasukan" ? "text-emerald-700" : tx.type === "pengeluaran" ? "text-red-700" : "text-indigo-700"}`}>
-                      {tx.type === "pengeluaran" ? "-" : tx.type === "pemasukan" ? "+" : ""}Rp {tx.amount.toLocaleString("id-ID")}
+                    <td className="font-bold text-[#0f172a]">
+                      {row.jenisTransaksi}
+                    </td>
+                    <td className="text-right font-bold font-mono text-emerald-700">
+                      {row.income > 0
+                        ? `Rp ${row.income.toLocaleString("id-ID")}`
+                        : ""}
+                    </td>
+                    <td className="text-right font-bold font-mono text-red-700">
+                      {row.expense > 0
+                        ? `Rp ${row.expense.toLocaleString("id-ID")}`
+                        : ""}
+                    </td>
+                    <td className="text-right font-bold font-mono text-indigo-700">
+                      Rp {row.rowTotal.toLocaleString("id-ID")}
                     </td>
                   </tr>
                 ))}
+                <tr className="bg-slate-100 border-t-2 border-slate-900">
+                  <td colSpan={2} className="text-center font-black py-2">
+                    Total
+                  </td>
+                  <td className="text-right font-black font-mono text-emerald-700">
+                    Rp {tableRowsData.sumIncome.toLocaleString("id-ID")}
+                  </td>
+                  <td className="text-right font-black font-mono text-red-700">
+                    Rp {tableRowsData.sumExpense.toLocaleString("id-ID")}
+                  </td>
+                  <td className="text-right font-black font-mono text-indigo-700">
+                    Rp {tableRowsData.finalTotal.toLocaleString("id-ID")}
+                  </td>
+                </tr>
               </tbody>
             </table>
           )}
@@ -2360,7 +3237,9 @@ export default function ReportView({
         {/* Tanda Tangan Section */}
         <div className="grid grid-cols-2 gap-4 pt-10 text-[9px]">
           <div className="text-center h-20 flex flex-col justify-between">
-            <span className="text-slate-600">Disetujui &amp; Disahkan Oleh,</span>
+            <span className="text-slate-600">
+              Disetujui &amp; Disahkan Oleh,
+            </span>
             <div className="border-t border-slate-800 w-32 mx-auto pt-1 font-bold">
               (................................)
             </div>
@@ -2372,7 +3251,6 @@ export default function ReportView({
             </div>
           </div>
         </div>
-
       </div>
 
       {/* ================= PDF GUIDE MODAL (NO-PRINT) ================= */}
@@ -2391,11 +3269,15 @@ export default function ReportView({
                   <FileDown className="w-5 h-5 text-white" />
                 </div>
                 <div>
-                  <h3 className="font-extrabold text-sm tracking-wide">Panduan Ekspor PDF</h3>
-                  <p className="text-[10px] text-emerald-100 font-medium">Tips untuk hasil dokumen resolusi tinggi</p>
+                  <h3 className="font-extrabold text-sm tracking-wide">
+                    Panduan Ekspor PDF
+                  </h3>
+                  <p className="text-[10px] text-emerald-100 font-medium">
+                    Tips untuk hasil dokumen resolusi tinggi
+                  </p>
                 </div>
               </div>
-              <button 
+              <button
                 onClick={() => setShowPdfGuide(false)}
                 className="w-8 h-8 rounded-full bg-black/10 hover:bg-black/20 text-white flex items-center justify-center cursor-pointer transition-colors"
                 title="Tutup"
@@ -2409,37 +3291,63 @@ export default function ReportView({
               <div className="p-3 bg-emerald-50 rounded-2xl border border-emerald-100 flex items-start gap-2.5">
                 <Info className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
                 <p className="text-[11px] text-emerald-950 leading-relaxed font-semibold">
-                  Sistem menggunakan mesin render native browser untuk hasil ekspor PDF vektor beresolusi tinggi, tajam, dan siap cetak. Ikuti langkah sederhana berikut di jendela print setelah ini:
+                  Sistem menggunakan mesin render native browser untuk hasil
+                  ekspor PDF vektor beresolusi tinggi, tajam, dan siap cetak.
+                  Ikuti langkah sederhana berikut di jendela print setelah ini:
                 </p>
               </div>
 
               <div className="space-y-3.5 text-left">
                 <div className="flex gap-3">
-                  <div className="w-6 h-6 rounded-full bg-slate-100 text-slate-700 font-bold font-mono text-xs flex items-center justify-center shrink-0">1</div>
+                  <div className="w-6 h-6 rounded-full bg-slate-100 text-slate-700 font-bold font-mono text-xs flex items-center justify-center shrink-0">
+                    1
+                  </div>
                   <div>
-                    <h4 className="text-xs font-black text-slate-800">Pilih Tujuan (Destination)</h4>
+                    <h4 className="text-xs font-black text-slate-800">
+                      Pilih Tujuan (Destination)
+                    </h4>
                     <p className="text-[11px] text-slate-500 leading-relaxed mt-0.5">
-                      Pada kolom tujuan pencetakan, klik dropdown dan ubah pilihan menjadi <strong>"Simpan sebagai PDF"</strong> atau <strong>"Save as PDF"</strong>.
+                      Pada kolom tujuan pencetakan, klik dropdown dan ubah
+                      pilihan menjadi <strong>"Simpan sebagai PDF"</strong> atau{" "}
+                      <strong>"Save as PDF"</strong>.
                     </p>
                   </div>
                 </div>
 
                 <div className="flex gap-3">
-                  <div className="w-6 h-6 rounded-full bg-slate-100 text-slate-700 font-bold font-mono text-xs flex items-center justify-center shrink-0">2</div>
+                  <div className="w-6 h-6 rounded-full bg-slate-100 text-slate-700 font-bold font-mono text-xs flex items-center justify-center shrink-0">
+                    2
+                  </div>
                   <div>
-                    <h4 className="text-xs font-black text-slate-800">Centang Opsi Grafis Latar Belakang</h4>
+                    <h4 className="text-xs font-black text-slate-800">
+                      Centang Opsi Grafis Latar Belakang
+                    </h4>
                     <p className="text-[11px] text-slate-500 leading-relaxed mt-0.5">
-                      Buka menu <strong>"Setelan Lainnya" / "More Settings"</strong>, gulir ke bawah lalu pastikan Anda memberi centang pada pilihan <strong>"Background graphics" / "Grafis latar belakang"</strong> agar desain tabel, warna badge, dan latar belakang logo tercetak secara penuh.
+                      Buka menu{" "}
+                      <strong>"Setelan Lainnya" / "More Settings"</strong>,
+                      gulir ke bawah lalu pastikan Anda memberi centang pada
+                      pilihan{" "}
+                      <strong>
+                        "Background graphics" / "Grafis latar belakang"
+                      </strong>{" "}
+                      agar desain tabel, warna badge, dan latar belakang logo
+                      tercetak secara penuh.
                     </p>
                   </div>
                 </div>
 
                 <div className="flex gap-3">
-                  <div className="w-6 h-6 rounded-full bg-slate-100 text-slate-700 font-bold font-mono text-xs flex items-center justify-center shrink-0">3</div>
+                  <div className="w-6 h-6 rounded-full bg-slate-100 text-slate-700 font-bold font-mono text-xs flex items-center justify-center shrink-0">
+                    3
+                  </div>
                   <div>
-                    <h4 className="text-xs font-black text-slate-800">Ukuran Kertas & Margin</h4>
+                    <h4 className="text-xs font-black text-slate-800">
+                      Ukuran Kertas & Margin
+                    </h4>
                     <p className="text-[11px] text-slate-500 leading-relaxed mt-0.5">
-                      Gunakan ukuran kertas <strong>A4</strong> dengan orientasi <strong>Portrait (Tegak)</strong>, dan biarkan setelan margin pada pilihan <strong>Default</strong>.
+                      Gunakan ukuran kertas <strong>A4</strong> dengan orientasi{" "}
+                      <strong>Portrait (Tegak)</strong>, dan biarkan setelan
+                      margin pada pilihan <strong>Default</strong>.
                     </p>
                   </div>
                 </div>
@@ -2470,7 +3378,6 @@ export default function ReportView({
           </motion.div>
         </div>
       )}
-
     </div>
   );
 }
