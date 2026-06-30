@@ -350,6 +350,7 @@ export default function ReportView({
         expense,
         rowTotal,
         jenisTransaksi,
+        caraBayar: (tx.method || "tunai").toUpperCase(),
       };
     });
 
@@ -1037,32 +1038,29 @@ export default function ReportView({
           </tbody>
         </table>
 
-        <table>
+        <table style="border: 2px solid #000; width: 100%; border-collapse: collapse;">
           <thead>
-            <tr>
-              <th colspan="5" class="section-title" style="background-color: #1e3a8a;">DAFTAR RINCIAN ARUS KAS TRANSAKSI</th>
-            </tr>
-            <tr style="background-color: #475569; color: #ffffff; font-weight: bold;">
-              <th style="width: 120px; text-align: center;">Tanggal</th>
-              <th style="width: 240px; text-align: left;">Jenis Transaksi</th>
-              <th style="width: 150px; text-align: right;">Nominal Pendapatan</th>
-              <th style="width: 150px; text-align: right;">Nominal Pengeluaran</th>
-              <th style="width: 150px; text-align: right;">Total</th>
+            <tr style="background-color: #ffffff; color: #000000; font-weight: bold;">
+              <th style="width: 50px; text-align: center; border: 2px solid #000; padding: 5px;">NO</th>
+              <th style="width: 150px; text-align: center; border: 2px solid #000; padding: 5px;">TANGGAL TRANSAKSI</th>
+              <th style="width: 120px; text-align: center; border: 2px solid #000; padding: 5px;">CARA BAYAR</th>
+              <th style="width: 150px; text-align: center; border: 2px solid #000; padding: 5px;">JUMLAH PEMASUKAN</th>
+              <th style="width: 150px; text-align: center; border: 2px solid #000; padding: 5px;">JUMLAH PENGELUARAN</th>
             </tr>
           </thead>
           <tbody>
             ${
               tableRowsData.rows.length === 0
-                ? `<tr><td colspan="5" class="text-center" style="color: #64748b; font-style: italic;">Tidak ada catatan transaksi dalam periode ini</td></tr>`
+                ? `<tr><td colspan="5" class="text-center" style="border: 2px solid #000; color: #64748b; font-style: italic;">Tidak ada catatan transaksi dalam periode ini</td></tr>`
                 : tableRowsData.rows
                     .map(
                       (row, idx) => `
-                  <tr class="${idx % 2 === 0 ? "bg-light" : ""}">
-                    <td class="text-center">${new Date(row.date).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" }).toLowerCase()}</td>
-                    <td class="bold" style="color: #0f172a;">${row.jenisTransaksi}</td>
-                    <td class="num" style="color: #047857;">${row.income > 0 ? "Rp " + row.income.toLocaleString("id-ID") : ""}</td>
-                    <td class="num" style="color: #b91c1c;">${row.expense > 0 ? "Rp " + row.expense.toLocaleString("id-ID") : ""}</td>
-                    <td class="num" style="color: #4f46e5;">Rp ${row.rowTotal.toLocaleString("id-ID")}</td>
+                  <tr>
+                    <td class="text-center" style="border: 2px solid #000; padding: 5px;">${idx + 1}</td>
+                    <td class="text-center" style="border: 2px solid #000; padding: 5px;">${new Date(row.date).toLocaleDateString("id-ID", { day: "2-digit", month: "2-digit", year: "numeric" })}</td>
+                    <td class="text-center" style="border: 2px solid #000; padding: 5px;">${row.caraBayar}</td>
+                    <td class="num" style="border: 2px solid #000; text-align: right; padding: 5px;">Rp ${row.income > 0 ? row.income.toLocaleString("id-ID") : "0"}</td>
+                    <td class="num" style="border: 2px solid #000; text-align: right; padding: 5px;">Rp ${row.expense > 0 ? row.expense.toLocaleString("id-ID") : "0"}</td>
                   </tr>
                 `,
                     )
@@ -1071,11 +1069,11 @@ export default function ReportView({
             ${
               tableRowsData.rows.length > 0
                 ? `
-              <tr class="bg-total" style="background-color: #cbd5e1; font-weight: bold;">
-                <td colspan="2" style="font-weight: bold; text-align: center;">Total</td>
-                <td class="num" style="font-weight: bold; color: #047857;">Rp ${tableRowsData.sumIncome.toLocaleString("id-ID")}</td>
-                <td class="num" style="font-weight: bold; color: #b91c1c;">Rp ${tableRowsData.sumExpense.toLocaleString("id-ID")}</td>
-                <td class="num" style="font-weight: bold; color: #4f46e5;">Rp ${tableRowsData.finalTotal.toLocaleString("id-ID")}</td>
+              <tr style="font-weight: bold;">
+                <td colspan="2" style="border: none;"></td>
+                <td class="text-center" style="border: 2px solid #000; font-weight: bold; padding: 5px;">TOTAL</td>
+                <td class="num" style="border: 2px solid #000; text-align: right; font-weight: bold; padding: 5px;">Rp ${tableRowsData.sumIncome.toLocaleString("id-ID")}</td>
+                <td class="num" style="border: 2px solid #000; text-align: right; font-weight: bold; padding: 5px;">Rp ${tableRowsData.sumExpense.toLocaleString("id-ID")}</td>
               </tr>
             `
                 : ""
@@ -1085,13 +1083,13 @@ export default function ReportView({
         
         <table style="border: none !important; margin-top: 40px; width: 100%;">
           <tr style="border: none !important;">
-            <td style="border: none !important; width: 50%; text-align: center; font-size: 10px;">
-              Petugas Audit Keuangan Digital,<br/><br/><br/><br/>
-              <strong>( ${user?.name || `Sistem ${companyProfile?.appName || "Manajemen Keuangan"}`} )</strong>
+            <td style="border: none !important; width: 50%; text-align: left; padding-left: 50px; font-size: 12px; font-weight: bold;">
+              Pemilik / Owner<br/><br/><br/><br/><br/>
+              M.Zaenal Abidin
             </td>
-            <td style="border: none !important; width: 50%; text-align: center; font-size: 10px;">
-              Mengetahui dan Disetujui,<br/><br/><br/><br/>
-              <strong>( Kepala Pengawas Finansial )</strong>
+            <td style="border: none !important; width: 50%; text-align: right; padding-right: 50px; font-size: 12px; font-weight: bold;">
+              ${new Date().toLocaleDateString("id-ID", { day: "2-digit", month: "2-digit", year: "numeric" })}<br/><br/><br/><br/><br/>
+              Leli
             </td>
           </tr>
         </table>
@@ -3175,58 +3173,112 @@ export default function ReportView({
               Belum ada transaksi terekam pada periode ini.
             </p>
           ) : (
-            <table className="print-table w-full text-[9px]">
+            <table
+              className="print-table w-full text-[9px]"
+              style={{ border: "2px solid #000", borderCollapse: "collapse" }}
+            >
               <thead>
-                <tr>
-                  <th className="w-24 text-left">Tanggal</th>
-                  <th className="text-left">Jenis Transaksi</th>
-                  <th className="w-28 text-right">Nominal Pendapatan</th>
-                  <th className="w-28 text-right">Nominal Pengeluaran</th>
-                  <th className="w-28 text-right">Total</th>
+                <tr
+                  style={{
+                    backgroundColor: "#fff",
+                    color: "#000",
+                    fontWeight: "bold",
+                  }}
+                >
+                  <th
+                    className="w-8 text-center"
+                    style={{ border: "2px solid #000", padding: "4px" }}
+                  >
+                    NO
+                  </th>
+                  <th
+                    className="w-24 text-center"
+                    style={{ border: "2px solid #000", padding: "4px" }}
+                  >
+                    TANGGAL TRANSAKSI
+                  </th>
+                  <th
+                    className="w-24 text-center"
+                    style={{ border: "2px solid #000", padding: "4px" }}
+                  >
+                    CARA BAYAR
+                  </th>
+                  <th
+                    className="w-28 text-center"
+                    style={{ border: "2px solid #000", padding: "4px" }}
+                  >
+                    JUMLAH PEMASUKAN
+                  </th>
+                  <th
+                    className="w-28 text-center"
+                    style={{ border: "2px solid #000", padding: "4px" }}
+                  >
+                    JUMLAH PENGELUARAN
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 {tableRowsData.rows.map((row, idx) => (
                   <tr key={row.id || idx}>
-                    <td className="font-mono">
-                      {new Date(row.date)
-                        .toLocaleDateString("id-ID", {
-                          day: "numeric",
-                          month: "long",
-                          year: "numeric",
-                        })
-                        .toLowerCase()}
+                    <td
+                      className="text-center font-mono"
+                      style={{ border: "2px solid #000", padding: "4px" }}
+                    >
+                      {idx + 1}
                     </td>
-                    <td className="font-bold text-[#0f172a]">
-                      {row.jenisTransaksi}
+                    <td
+                      className="font-mono text-center"
+                      style={{ border: "2px solid #000", padding: "4px" }}
+                    >
+                      {new Date(row.date).toLocaleDateString("id-ID", {
+                        day: "2-digit",
+                        month: "2-digit",
+                        year: "numeric",
+                      })}
                     </td>
-                    <td className="text-right font-bold font-mono text-emerald-700">
+                    <td
+                      className="font-bold text-[#0f172a] text-center"
+                      style={{ border: "2px solid #000", padding: "4px" }}
+                    >
+                      {row.caraBayar}
+                    </td>
+                    <td
+                      className="text-right font-bold font-mono text-black"
+                      style={{ border: "2px solid #000", padding: "4px" }}
+                    >
                       {row.income > 0
                         ? `Rp ${row.income.toLocaleString("id-ID")}`
-                        : ""}
+                        : "Rp 0"}
                     </td>
-                    <td className="text-right font-bold font-mono text-red-700">
+                    <td
+                      className="text-right font-bold font-mono text-black"
+                      style={{ border: "2px solid #000", padding: "4px" }}
+                    >
                       {row.expense > 0
                         ? `Rp ${row.expense.toLocaleString("id-ID")}`
-                        : ""}
-                    </td>
-                    <td className="text-right font-bold font-mono text-indigo-700">
-                      Rp {row.rowTotal.toLocaleString("id-ID")}
+                        : "Rp 0"}
                     </td>
                   </tr>
                 ))}
-                <tr className="bg-slate-100 border-t-2 border-slate-900">
-                  <td colSpan={2} className="text-center font-black py-2">
-                    Total
+                <tr>
+                  <td colSpan={2} style={{ border: "none" }}></td>
+                  <td
+                    className="text-center font-black py-2"
+                    style={{ border: "2px solid #000" }}
+                  >
+                    TOTAL
                   </td>
-                  <td className="text-right font-black font-mono text-emerald-700">
+                  <td
+                    className="text-right font-black font-mono text-black"
+                    style={{ border: "2px solid #000", padding: "4px" }}
+                  >
                     Rp {tableRowsData.sumIncome.toLocaleString("id-ID")}
                   </td>
-                  <td className="text-right font-black font-mono text-red-700">
+                  <td
+                    className="text-right font-black font-mono text-black"
+                    style={{ border: "2px solid #000", padding: "4px" }}
+                  >
                     Rp {tableRowsData.sumExpense.toLocaleString("id-ID")}
-                  </td>
-                  <td className="text-right font-black font-mono text-indigo-700">
-                    Rp {tableRowsData.finalTotal.toLocaleString("id-ID")}
                   </td>
                 </tr>
               </tbody>
@@ -3235,20 +3287,20 @@ export default function ReportView({
         </div>
 
         {/* Tanda Tangan Section */}
-        <div className="grid grid-cols-2 gap-4 pt-10 text-[9px]">
-          <div className="text-center h-20 flex flex-col justify-between">
-            <span className="text-slate-600">
-              Disetujui &amp; Disahkan Oleh,
-            </span>
-            <div className="border-t border-slate-800 w-32 mx-auto pt-1 font-bold">
-              (................................)
-            </div>
+        <div className="flex justify-between pt-10 text-[11px] font-bold px-10">
+          <div className="text-left h-24 flex flex-col justify-between">
+            <span>Pemilik / Owner</span>
+            <span>M.Zaenal Abidin</span>
           </div>
-          <div className="text-center h-20 flex flex-col justify-between">
-            <span className="text-slate-600">Penanggung Jawab Laporan,</span>
-            <div className="border-t border-slate-800 w-32 mx-auto pt-1 font-bold">
-              (................................)
-            </div>
+          <div className="text-center h-24 flex flex-col justify-between">
+            <span>
+              {new Date().toLocaleDateString("id-ID", {
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric",
+              })}
+            </span>
+            <span>Leli</span>
           </div>
         </div>
       </div>
